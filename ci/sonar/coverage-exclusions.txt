@@ -8,3 +8,4 @@ Cities/Assets/Scripts/World/Grid/WorldMap.cs
 Cities/Assets/Scripts/Core/Ids/IdAllocator.cs
 Cities/Assets/Scripts/Core/Spatial/SpatialGrid.cs
 Cities/Assets/Scripts/Core/Spatial/PointGrid.cs
+Cities/Assets/Scripts/Simulation/Scheduling/SimulationScheduler.cs
