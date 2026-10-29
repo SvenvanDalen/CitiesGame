@@ -1,0 +1,7 @@
+# Bestanden die alleen met de Unity-runtime werken (NativeArray, jobs, MonoBehaviours, editor-code).
+# CI kan ze niet uitvoeren; ze tellen niet mee voor de dekking en worden in Unity getest.
+# Eén glob per regel, relatief aan de root van de repository.
+Cities/Assets/Scripts/Editor/**
+Cities/Assets/Scripts/**/*Behaviour.cs
+Cities/Assets/Scripts/World/Grid/CellLayer.cs
+Cities/Assets/Scripts/World/Grid/WorldMap.cs
