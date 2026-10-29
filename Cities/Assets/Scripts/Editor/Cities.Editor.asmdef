@@ -1,0 +1,14 @@
+{
+    "name": "Cities.Editor",
+    "rootNamespace": "Cities.Editor",
+    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Cities.Gameplay", "Cities.Presentation"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    Alleen voor de SonarQube-analyse in CI: compileert de scripts onder Cities/Assets
+    Alleen voor de SonarQube-analyse in CI: compileert de scripts onder Cities/Assets/Scripts
     tegen de Unity-DLL's uit de editor-installatie, zonder Unity te starten (geen licentie nodig).
     Komen er asmdefs of packages met code-afhankelijkheden bij, voeg die DLL's hier toe.
   -->
@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(UnityProject)/Assets/**/*.cs" />
+    <Compile Include="$(UnityProject)/Assets/Scripts/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
