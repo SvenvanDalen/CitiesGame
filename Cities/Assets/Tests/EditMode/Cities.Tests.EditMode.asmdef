@@ -9,7 +9,9 @@
         "Cities.World",
         "Cities.Gameplay",
         "Cities.Presentation",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.Mathematics",
+        "Unity.Burst"
     ],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],

@@ -6,3 +6,5 @@ Cities/Assets/Scripts/**/*Behaviour.cs
 Cities/Assets/Scripts/World/Grid/CellLayer.cs
 Cities/Assets/Scripts/World/Grid/WorldMap.cs
 Cities/Assets/Scripts/Core/Ids/IdAllocator.cs
+Cities/Assets/Scripts/Core/Spatial/SpatialGrid.cs
+Cities/Assets/Scripts/Core/Spatial/PointGrid.cs
