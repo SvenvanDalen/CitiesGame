@@ -51,7 +51,7 @@ namespace Cities.Simulation.Commands
         /// <returns>Het volgnummer, terug te vinden in <see cref="CommandRecord.Sequence"/>.</returns>
         public long Enqueue<TCommand>(TCommand command) where TCommand : ISimulationCommand
         {
-            if (command == null)
+            if (command is null)
             {
                 throw new ArgumentNullException(nameof(command));
             }

@@ -7,6 +7,9 @@ namespace Cities.Tests.EditMode.Commands
 {
     public class CommandBusTests
     {
+        private static readonly int[] OnlyCellOne = { 1 };
+        private static readonly int[] CellsOneAndTwo = { 1, 2 };
+
         private struct BuildCommand : ISimulationCommand
         {
             public int Cell;
@@ -107,7 +110,7 @@ namespace Cities.Tests.EditMode.Commands
             var executed = _bus.ExecutePending(7);
 
             Assert.That(executed, Is.EqualTo(1));
-            Assert.That(_world.Built, Is.EquivalentTo(new[] { 1 }));
+            Assert.That(_world.Built, Is.EquivalentTo(OnlyCellOne));
             Assert.That(_world.Funds, Is.EqualTo(90));
             Assert.That(_records[0].Tick, Is.EqualTo(7));
             Assert.That(_records[0].Outcome, Is.EqualTo(CommandOutcome.Executed));
@@ -164,7 +167,7 @@ namespace Cities.Tests.EditMode.Commands
             Assert.That(_bus.ExecutePending(1), Is.EqualTo(1));
             Assert.That(_bus.PendingCount, Is.EqualTo(1));
             Assert.That(_bus.ExecutePending(2), Is.EqualTo(1));
-            Assert.That(_world.Built, Is.EquivalentTo(new[] { 1, 2 }));
+            Assert.That(_world.Built, Is.EquivalentTo(CellsOneAndTwo));
         }
 
         [Test]
