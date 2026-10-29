@@ -41,6 +41,13 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 - Willekeur gaat via de deterministische RNG (E01-11), nooit via `UnityEngine.Random`.
 - Deterministische logica krijgt minstens één EditMode-test.
 
+## Tests en dekking
+
+- Logica staat in gewone C#-klassen; MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
+- CI draait alle EditMode-tests die geen Unity-runtime nodig hebben met `dotnet test` en meet de dekking. SonarCloud eist minstens 80% dekking op nieuwe code.
+- `Cities/Assets/Scripts/Editor/**` en `*Behaviour.cs` tellen niet mee voor de dekking, omdat ze alleen in Unity te draaien zijn. Ze krijgen waar zinvol een PlayMode-test.
+- Een EditMode-test die Unity-API's met native code aanroept (bijvoorbeeld `GameObject`, `Physics`), hoort in PlayMode of moet in CI met `Assert.Ignore` worden overgeslagen.
+
 ## Git
 
 - Eén branch per backlogitem: `feature/<ID>-<korte-naam>`, bijvoorbeeld `feature/E01-03-simulation-clock`.
