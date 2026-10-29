@@ -29,7 +29,7 @@ namespace Cities.Presentation.UI
             _title.AddToClassList(UiClasses.PanelTitle);
             _close = new CityButton("×", ButtonVariant.Ghost) { name = "close", tooltip = "Sluiten" };
             _close.AddToClassList(UiClasses.PanelClose);
-            _close.clicked += () => CloseRequested?.Invoke();
+            _close.clicked += RequestClose;
             header.Add(_title);
             header.Add(_close);
             hierarchy.Add(header);
@@ -65,6 +65,9 @@ namespace Cities.Presentation.UI
 
         /// <summary>Balk onderaan voor knoppen; wordt zichtbaar zodra er een knop in staat.</summary>
         public VisualElement Footer { get; }
+
+        /// <summary>Meldt dat het paneel dicht moet, zoals de sluitknop doet.</summary>
+        protected void RequestClose() => CloseRequested?.Invoke();
 
         public CityButton AddFooterButton(string label, ButtonVariant variant, Action onClick)
         {

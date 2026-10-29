@@ -1,7 +1,15 @@
 {
     "name": "Cities.Presentation",
     "rootNamespace": "Cities.Presentation",
-    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Cities.Gameplay", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+    "references": [
+        "Cities.Core",
+        "Cities.Simulation",
+        "Cities.World",
+        "Cities.Gameplay",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
