@@ -41,6 +41,13 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 - Willekeur gaat via de deterministische RNG (E01-11), nooit via `UnityEngine.Random`.
 - Deterministische logica krijgt minstens één EditMode-test.
 
+## Logging en profiling
+
+- Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
+- Gebruik de generieke overloads (`_log.Debug("Route {0}", id)`), zodat een uitgeschakeld niveau niets opmaakt. In Burst-jobs wordt niet gelogd.
+- Logniveaus stel je in met een `LogConfiguration`-asset op de host, of bij het opstarten met `-loglevel Traffic=Debug,*=Warning`.
+- De scheduler geeft elk systeem automatisch een profiler-marker `Sim.<naam>`; `Sim.Tick` en `Sim.Commands` meten de tick en het werk op de main thread. Jobs met een eigen marker gebruiken het voorvoegsel `Sim.<systeem>.`.
+
 ## Definities (speldata)
 
 - Gebouwen, voertuigen, beleid en kosten zijn definities: een `GameDefinition`-asset onder `Cities/Assets/Data/<Soort>`, te bewerken in de inspector.

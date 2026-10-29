@@ -10,6 +10,14 @@ namespace UnityEngine.TestTools
     {
     }
 
+    public static class LogAssert
+    {
+        public static void Expect(LogType type, string message) => throw new NotSupportedException("Alleen beschikbaar in Unity.");
+
+        public static void Expect(LogType type, System.Text.RegularExpressions.Regex message) =>
+            throw new NotSupportedException("Alleen beschikbaar in Unity.");
+    }
+
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class UnitySetUpAttribute : NUnitAttribute
     {

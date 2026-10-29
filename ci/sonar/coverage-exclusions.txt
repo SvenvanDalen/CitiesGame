@@ -11,3 +11,5 @@ Cities/Assets/Scripts/Core/Spatial/PointGrid.cs
 Cities/Assets/Scripts/Simulation/Scheduling/SimulationScheduler.cs
 Cities/Assets/Scripts/**/*Definition.cs
 Cities/Assets/Scripts/Core/Configuration/DefinitionCatalog.cs
+Cities/Assets/Scripts/Core/Diagnostics/UnityLogSink.cs
+Cities/Assets/Scripts/Core/Diagnostics/LogConfiguration.cs

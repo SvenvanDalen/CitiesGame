@@ -9,8 +9,8 @@ namespace Cities.Simulation.Scheduling
     {
         void ScheduleTick(in SimulationTick tick);
 
-        /// <summary>Wacht tot alle simulatiejobs klaar zijn.</summary>
-        void Complete();
+        /// <summary>Wacht op alle simulatiejobs en voert daarna <paramref name="work"/> uit op de main thread.</summary>
+        void ExecuteOnMainThread(Action work);
     }
 
     /// <summary>
@@ -74,8 +74,7 @@ namespace Cities.Simulation.Scheduling
         private void ExecuteCommands(long tick)
         {
             // Commands wijzigen data die jobs mogelijk nog lezen of schrijven.
-            _scheduler.Complete();
-            _commands.ExecutePending(tick);
+            _scheduler.ExecuteOnMainThread(() => _commands.ExecutePending(tick));
         }
     }
 }

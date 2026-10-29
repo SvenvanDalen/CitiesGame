@@ -1,3 +1,4 @@
+using Cities.Core.Diagnostics;
 using Cities.Simulation.Commands;
 using Cities.Simulation.Timing;
 using UnityEngine;
@@ -16,6 +17,9 @@ namespace Cities.Simulation.Scheduling
         [SerializeField] private SimulationClockSettings _settings = SimulationClockSettings.Default;
         [SerializeField] private SimulationSpeed _initialSpeed = SimulationSpeed.Normal;
 
+        [Tooltip("Logniveaus per systeem; opstartargument -loglevel gaat hier overheen.")]
+        [SerializeField] private LogConfiguration _logConfiguration;
+
         public SimulationClock Clock { get; private set; }
 
         public CommandBus Commands { get; private set; }
@@ -26,6 +30,7 @@ namespace Cities.Simulation.Scheduling
 
         private void Awake()
         {
+            ApplyLogLevels();
             Clock = new SimulationClock(_settings);
             Clock.SetSpeed(_initialSpeed);
             Commands = new CommandBus();
@@ -42,6 +47,21 @@ namespace Cities.Simulation.Scheduling
         {
             Runner?.Dispose();
             Scheduler?.Dispose();
+        }
+
+        private void ApplyLogLevels()
+        {
+            if (_logConfiguration != null)
+            {
+                _logConfiguration.Apply();
+            }
+
+            var errors = new System.Collections.Generic.List<string>();
+            LogLevels.ApplyCommandLine(System.Environment.GetCommandLineArgs(), errors);
+            foreach (var error in errors)
+            {
+                Debug.LogWarning(error);
+            }
         }
 
         private void OnValidate()
