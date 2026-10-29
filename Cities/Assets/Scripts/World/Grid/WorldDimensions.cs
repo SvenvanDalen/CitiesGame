@@ -108,7 +108,8 @@ namespace Cities.World.Grid
         }
 
         public bool Equals(WorldDimensions other) =>
-            TilesX == other.TilesX && TilesZ == other.TilesZ && CellsPerTile == other.CellsPerTile && CellSize.Equals(other.CellSize);
+            TilesX == other.TilesX && TilesZ == other.TilesZ && CellsPerTile == other.CellsPerTile &&
+            BitConverter.SingleToInt32Bits(CellSize) == BitConverter.SingleToInt32Bits(other.CellSize);
 
         public override bool Equals(object obj) => obj is WorldDimensions other && Equals(other);
 

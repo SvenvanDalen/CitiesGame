@@ -102,7 +102,8 @@ namespace Cities.World.Grid
         }
 
         public bool Equals(LayerLayout other) =>
-            Width == other.Width && Depth == other.Depth && Spacing.Equals(other.Spacing) &&
+            Width == other.Width && Depth == other.Depth &&
+            BitConverter.SingleToInt32Bits(Spacing) == BitConverter.SingleToInt32Bits(other.Spacing) &&
             CellsPerSample == other.CellsPerSample && Sampling == other.Sampling;
 
         public override bool Equals(object obj) => obj is LayerLayout other && Equals(other);
@@ -115,7 +116,7 @@ namespace Cities.World.Grid
 
         public static bool operator !=(LayerLayout left, LayerLayout right) => !left.Equals(right);
 
-        private static float Clamp(float value, float min, float max) => value < min ? min : (value > max ? max : value);
+        private static float Clamp(float value, float min, float max) => Math.Max(min, Math.Min(max, value));
 
         private static int FloorDiv(int value, int divisor) => (int)Math.Floor((double)value / divisor);
     }
