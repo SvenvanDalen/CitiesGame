@@ -1,0 +1,69 @@
+name: SonarQube
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: sonarqube-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SONAR_HOST_URL: https://sonarcloud.io
+  SONAR_ORGANIZATION: svenvandalen
+  SONAR_PROJECT_KEY: SvenvanDalen_CitiesGame
+  UNITY_PROJECT: Cities
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  analyze:
+    name: Analyse
+    runs-on: ubuntu-latest
+    # Unity-editor in de container, zodat de gegenereerde csproj-verwijzingen naar Unity-DLL's kloppen
+    container: unityci/editor:ubuntu-6000.5.10f1-base-3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # volledige historie voor blame en nieuwe-code-detectie
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.UNITY_PROJECT }}/Library
+          key: library-${{ hashFiles('Cities/Packages/packages-lock.json', 'Cities/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: library-
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Unity-licentie plaatsen
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          mkdir -p "$HOME/.local/share/unity3d/Unity"
+          printf '%s' "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+
+      - name: Solution genereren
+        run: >
+          unity-editor -batchmode -nographics -quit -logFile -
+          -projectPath "$UNITY_PROJECT"
+          -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution
+
+      - name: Analyse met SonarScanner for .NET
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet sonarscanner begin \
+            /k:"$SONAR_PROJECT_KEY" \
+            /o:"$SONAR_ORGANIZATION" \
+            /d:sonar.host.url="$SONAR_HOST_URL" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.exclusions="**/TutorialInfo/**"
+          dotnet build "$(ls "$UNITY_PROJECT"/*.sln* | head -n 1)" --no-incremental
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
