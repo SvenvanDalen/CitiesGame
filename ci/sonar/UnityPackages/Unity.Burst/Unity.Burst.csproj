@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="$(BurstPackage)/Runtime/**/*.cs" Exclude="$(BurstPackage)/Runtime/Editor/**" />
+    <Reference Include="$(BurstPackage)/Unity.Burst.Unsafe.dll" />
+  </ItemGroup>
+</Project>

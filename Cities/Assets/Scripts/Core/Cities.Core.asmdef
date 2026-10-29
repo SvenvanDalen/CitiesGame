@@ -1,7 +1,7 @@
 {
     "name": "Cities.Core",
     "rootNamespace": "Cities.Core",
-    "references": [],
+    "references": ["Unity.Collections"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

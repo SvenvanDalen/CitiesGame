@@ -2,7 +2,7 @@
   <!--
     Alleen voor de SonarQube-analyse in CI: compileert de scripts onder Cities/Assets/Scripts
     tegen de Unity-DLL's uit de editor-installatie, zonder Unity te starten (geen licentie nodig).
-    Komen er asmdefs of packages met code-afhankelijkheden bij, voeg die DLL's hier toe.
+    Unity-packages (Collections, Burst, Mathematics) worden vanuit broncode gebouwd in ../UnityPackages.
   -->
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -22,5 +22,6 @@
 
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
+    <ProjectReference Include="../UnityPackages/Unity.Collections/Unity.Collections.csproj" />
   </ItemGroup>
 </Project>
