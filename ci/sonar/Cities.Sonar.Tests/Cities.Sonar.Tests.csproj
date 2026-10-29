@@ -11,7 +11,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <DefineConstants>$(DefineConstants);UNITY_EDITOR;UNITY_INCLUDE_TESTS;UNITY_6000_0_OR_NEWER</DefineConstants>
     <UnityManaged Condition="'$(UnityManaged)' == ''">/opt/unity/Editor/Data/Managed</UnityManaged>
-    <UnityProject>$(MSBuildThisFileDirectory)../../Cities</UnityProject>
+    <UnityProject>$(MSBuildThisFileDirectory)../../../Cities</UnityProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Cities.Sonar.csproj" />
+    <ProjectReference Include="../Cities.Sonar/Cities.Sonar.csproj" />
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
     <PackageReference Include="NUnit" Version="3.14.0" />
   </ItemGroup>
