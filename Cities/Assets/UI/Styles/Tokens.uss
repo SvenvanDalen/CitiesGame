@@ -1,0 +1,59 @@
+/*
+ * Ontwerptokens: alle kleuren, maten en lettertypes van de interface.
+ * Componenten gebruiken alleen deze variabelen, zodat het thema op één plek te wijzigen is.
+ */
+:root {
+    /* Oppervlakken: donker en licht doorschijnend, zodat de stad erachter zichtbaar blijft */
+    --color-surface: rgba(20, 25, 31, 0.92);
+    --color-surface-raised: rgb(31, 38, 47);
+    --color-surface-sunken: rgb(13, 17, 22);
+    --color-surface-hover: rgb(42, 51, 62);
+    --color-border: rgb(54, 64, 76);
+    --color-border-strong: rgb(84, 97, 112);
+    --color-overlay: rgba(0, 0, 0, 0.45);
+
+    /* Tekst */
+    --color-text: rgb(232, 236, 241);
+    --color-text-muted: rgb(152, 162, 174);
+    --color-text-disabled: rgb(96, 105, 116);
+    --color-text-on-accent: rgb(10, 24, 22);
+
+    /* Accent en status */
+    --color-accent: rgb(52, 186, 164);
+    --color-accent-hover: rgb(77, 207, 186);
+    --color-accent-pressed: rgb(36, 152, 134);
+    --color-success: rgb(98, 186, 96);
+    --color-warning: rgb(236, 172, 74);
+    --color-danger: rgb(219, 82, 72);
+    --color-danger-hover: rgb(232, 106, 96);
+    --color-info: rgb(92, 160, 230);
+
+    /* Zones: gedeeld met de info-views (E17), zodat kleuren overal hetzelfde betekenen */
+    --color-zone-residential: rgb(104, 190, 92);
+    --color-zone-commercial: rgb(82, 142, 230);
+    --color-zone-industrial: rgb(230, 182, 62);
+    --color-zone-office: rgb(160, 122, 222);
+
+    /* Ruimte (veelvouden van 4 px) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    /* Hoeken */
+    --radius-small: 4px;
+    --radius-medium: 8px;
+
+    /* Lettergroottes */
+    --font-size-caption: 12px;
+    --font-size-body: 14px;
+    --font-size-emphasis: 16px;
+    --font-size-heading: 20px;
+    --font-size-title: 28px;
+
+    /* Hoogte van standaardbedieningselementen */
+    --control-height: 32px;
+    --control-height-small: 24px;
+}

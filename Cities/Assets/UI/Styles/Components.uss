@@ -1,0 +1,282 @@
+/*
+ * Standaardcomponenten. Naamgeving volgt BEM: .c-<component>, .c-<component>__<deel>, .c-<component>--<variant>.
+ * C#-constanten voor deze klassen staan in Cities.Presentation.UI.UiClasses.
+ */
+
+/* Basis: lettertype en kleur voor alles binnen een spel-UI */
+.c-root {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Regular.asset");
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+
+/* ---------- Tekst ---------- */
+.c-text--title {
+    font-size: var(--font-size-title);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Bold.asset");
+}
+
+.c-text--heading {
+    font-size: var(--font-size-heading);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-SemiBold.asset");
+}
+
+.c-text--emphasis {
+    font-size: var(--font-size-emphasis);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Medium.asset");
+}
+
+.c-text--caption {
+    font-size: var(--font-size-caption);
+    color: var(--color-text-muted);
+}
+
+.c-text--muted {
+    color: var(--color-text-muted);
+}
+
+/* ---------- Knoppen ---------- */
+.c-button {
+    height: var(--control-height);
+    min-width: 64px;
+    padding: 0 var(--space-4);
+    margin: 0;
+    border-width: 1px;
+    border-radius: var(--radius-small);
+    border-color: var(--color-border-strong);
+    background-color: var(--color-surface-raised);
+    color: var(--color-text);
+    font-size: var(--font-size-body);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Medium.asset");
+    -unity-text-align: middle-center;
+    transition-property: background-color, border-color;
+    transition-duration: 0.08s;
+}
+
+.c-button:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.c-button:active {
+    background-color: var(--color-surface-sunken);
+}
+
+.c-button:disabled {
+    color: var(--color-text-disabled);
+    border-color: var(--color-border);
+    background-color: var(--color-surface-raised);
+}
+
+.c-button--primary {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+}
+
+.c-button--primary:hover {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.c-button--primary:active {
+    background-color: var(--color-accent-pressed);
+    border-color: var(--color-accent-pressed);
+}
+
+.c-button--ghost {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+}
+
+.c-button--ghost:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.c-button--danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: rgb(255, 255, 255);
+}
+
+.c-button--danger:hover {
+    background-color: var(--color-danger-hover);
+    border-color: var(--color-danger-hover);
+}
+
+.c-button--small {
+    height: var(--control-height-small);
+    padding: 0 var(--space-2);
+    font-size: var(--font-size-caption);
+}
+
+/* Vierkante knop met alleen een icoon, bijvoorbeeld in de werkbalk */
+.c-button--icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    padding: var(--space-2);
+}
+
+/* Geselecteerde toolknop in de werkbalk */
+.c-button--selected {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-hover);
+}
+
+/* ---------- Panelen ---------- */
+.c-panel {
+    background-color: var(--color-surface);
+    border-width: 1px;
+    border-color: var(--color-border);
+    border-radius: var(--radius-medium);
+    min-width: 240px;
+}
+
+.c-panel__header {
+    flex-direction: row;
+    align-items: center;
+    height: 40px;
+    padding: 0 var(--space-2) 0 var(--space-4);
+    border-bottom-width: 1px;
+    border-color: var(--color-border);
+}
+
+.c-panel__title {
+    flex-grow: 1;
+    font-size: var(--font-size-emphasis);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-SemiBold.asset");
+}
+
+.c-panel__close {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+    font-size: var(--font-size-emphasis);
+}
+
+.c-panel__body {
+    padding: var(--space-4);
+}
+
+.c-panel__footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    padding: var(--space-3) var(--space-4);
+    border-top-width: 1px;
+    border-color: var(--color-border);
+}
+
+.c-panel__footer > .c-button {
+    margin-left: var(--space-2);
+}
+
+/* ---------- Werkbalk ---------- */
+.c-toolbar {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-1);
+    background-color: var(--color-surface);
+    border-width: 1px;
+    border-color: var(--color-border);
+    border-radius: var(--radius-medium);
+}
+
+.c-toolbar > .c-button {
+    margin: 0 2px;
+}
+
+.c-toolbar__separator {
+    width: 1px;
+    height: 28px;
+    margin: 0 var(--space-2);
+    background-color: var(--color-border);
+}
+
+/* ---------- Badges ---------- */
+.c-badge {
+    padding: 2px var(--space-2);
+    border-radius: 10px;
+    font-size: var(--font-size-caption);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Medium.asset");
+    background-color: var(--color-surface-hover);
+    color: var(--color-text);
+}
+
+.c-badge--success { background-color: var(--color-success); color: rgb(10, 30, 10); }
+.c-badge--warning { background-color: var(--color-warning); color: rgb(40, 25, 0); }
+.c-badge--danger { background-color: var(--color-danger); color: rgb(255, 255, 255); }
+.c-badge--info { background-color: var(--color-info); color: rgb(5, 20, 40); }
+
+/* ---------- Meter (bijvoorbeeld vraag naar wonen, werken, winkelen) ---------- */
+.c-meter {
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--color-surface-sunken);
+    overflow: hidden;
+}
+
+.c-meter__fill {
+    height: 100%;
+    border-radius: 4px;
+    background-color: var(--color-accent);
+}
+
+.c-meter--residential > .c-meter__fill { background-color: var(--color-zone-residential); }
+.c-meter--commercial > .c-meter__fill { background-color: var(--color-zone-commercial); }
+.c-meter--industrial > .c-meter__fill { background-color: var(--color-zone-industrial); }
+.c-meter--office > .c-meter__fill { background-color: var(--color-zone-office); }
+
+/* ---------- Tooltip ---------- */
+.c-tooltip {
+    position: absolute;
+    max-width: 320px;
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-surface-raised);
+    border-width: 1px;
+    border-color: var(--color-border-strong);
+    border-radius: var(--radius-small);
+    font-size: var(--font-size-caption);
+    white-space: normal;
+}
+
+/* ---------- Ingebouwde besturingselementen in de huisstijl ---------- */
+.c-root .unity-base-field__label {
+    color: var(--color-text-muted);
+    min-width: 120px;
+}
+
+.c-root .unity-base-text-field__input,
+.c-root .unity-base-popup-field__input {
+    background-color: var(--color-surface-sunken);
+    border-color: var(--color-border);
+    border-radius: var(--radius-small);
+    color: var(--color-text);
+    min-height: var(--control-height-small);
+}
+
+.c-root .unity-toggle__checkmark {
+    background-color: var(--color-surface-sunken);
+    border-color: var(--color-border-strong);
+    border-radius: var(--radius-small);
+}
+
+.c-root .unity-toggle > .unity-toggle__input:checked > .unity-toggle__checkmark {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.c-root .unity-base-slider__tracker {
+    background-color: var(--color-surface-sunken);
+    border-color: var(--color-border);
+}
+
+.c-root .unity-base-slider__dragger {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    border-radius: 6px;
+}
+
+.c-root .unity-scroller {
+    background-color: rgba(0, 0, 0, 0);
+}

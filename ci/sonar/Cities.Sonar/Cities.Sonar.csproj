@@ -23,6 +23,8 @@
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
     <ProjectReference Include="../UnityPackages/Unity.Collections/Unity.Collections.csproj" />
+    <!-- Zelfde toegang als de Unity-testassemblies krijgen via AssemblyInfo.cs -->
+    <InternalsVisibleTo Include="Cities.Sonar.Tests" />
     <ProjectReference Include="../UnityPackages/Unity.InputSystem/Unity.InputSystem.csproj" />
   </ItemGroup>
 </Project>
