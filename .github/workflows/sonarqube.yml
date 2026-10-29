@@ -45,16 +45,17 @@ jobs:
         run: |
           dotnet tool install --global dotnet-sonarscanner
           export PATH="$PATH:$HOME/.dotnet/tools"
+          coverage_exclusions=$(grep -v -e '^#' -e '^[[:space:]]*$' ci/sonar/coverage-exclusions.txt | paste -sd, -)
           dotnet sonarscanner begin \
             /k:"$SONAR_PROJECT_KEY" \
             /o:"$SONAR_ORGANIZATION" \
             /d:sonar.host.url="$SONAR_HOST_URL" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="Cities/Assets/Scripts/Editor/**,Cities/Assets/Scripts/**/*Behaviour.cs"
+            /d:sonar.coverage.exclusions="$coverage_exclusions"
           dotnet build ci/sonar/Cities.Sonar.Tests/Cities.Sonar.Tests.csproj --no-incremental
-          # EditMode-tests zonder Unity-runtime; PlayMode-tests draaien alleen in Unity
+          # EditMode-tests zonder Unity-runtime; PlayMode-tests en categorie UnityRuntime draaien alleen in Unity
           dotnet test ci/sonar/Cities.Sonar.Tests/Cities.Sonar.Tests.csproj --no-build \
-            --filter "FullyQualifiedName!~Cities.Tests.PlayMode" \
+            --filter "FullyQualifiedName!~Cities.Tests.PlayMode&TestCategory!=UnityRuntime" \
             --collect "XPlat Code Coverage;Format=opencover" --results-directory TestResults
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"

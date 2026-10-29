@@ -43,10 +43,10 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 
 ## Tests en dekking
 
-- Logica staat in gewone C#-klassen; MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
-- CI draait alle EditMode-tests die geen Unity-runtime nodig hebben met `dotnet test` en meet de dekking. SonarCloud eist minstens 80% dekking op nieuwe code.
-- `Cities/Assets/Scripts/Editor/**` en `*Behaviour.cs` tellen niet mee voor de dekking, omdat ze alleen in Unity te draaien zijn. Ze krijgen waar zinvol een PlayMode-test.
-- Een EditMode-test die Unity-API's met native code aanroept (bijvoorbeeld `GameObject`, `Physics`), hoort in PlayMode of moet in CI met `Assert.Ignore` worden overgeslagen.
+- Logica staat waar mogelijk in gewone C#-klassen en structs. MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
+- CI draait de EditMode-tests die geen Unity-runtime nodig hebben met `dotnet test` en meet de dekking. SonarCloud eist minstens 80% dekking op nieuwe code.
+- Code die alleen met de Unity-runtime werkt (`NativeArray`, jobs, `ProfilerMarker`, MonoBehaviours, editor-code) telt niet mee voor de dekking. Zet zulke bronbestanden in `ci/sonar/coverage-exclusions.txt`, en hou de rekenregels daarbuiten (zoals `LayerLayout` naast `CellLayer`), zodat die wel gemeten worden.
+- Tests die de Unity-runtime nodig hebben, krijgen `[Category("UnityRuntime")]`; CI slaat ze over en ze draaien in Unity. PlayMode-tests draaien altijd alleen in Unity.
 
 ## Git
 
