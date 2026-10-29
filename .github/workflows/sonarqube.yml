@@ -15,7 +15,6 @@ env:
   SONAR_HOST_URL: https://sonarcloud.io
   SONAR_ORGANIZATION: svenvandalen
   SONAR_PROJECT_KEY: SvenvanDalen_CitiesGame
-  UNITY_PROJECT: Cities
   DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
 
@@ -23,18 +22,12 @@ jobs:
   analyze:
     name: Analyse
     runs-on: ubuntu-latest
-    # Unity-editor in de container, zodat de gegenereerde csproj-verwijzingen naar Unity-DLL's kloppen
+    # Alleen voor de Unity-DLL's in /opt/unity; de editor zelf wordt niet gestart, dus geen licentie nodig
     container: unityci/editor:ubuntu-6000.5.10f1-base-3
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # volledige historie voor blame en nieuwe-code-detectie
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.UNITY_PROJECT }}/Library
-          key: library-${{ hashFiles('Cities/Packages/packages-lock.json', 'Cities/ProjectSettings/ProjectVersion.txt') }}
-          restore-keys: library-
 
       - uses: actions/cache@v4
         with:
@@ -45,22 +38,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
-
-      - name: Unity-licentie plaatsen
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        run: |
-          # De licensing client draait als root en kijkt niet in $HOME (/github/home) van de container
-          for dir in "$HOME" /root; do
-            mkdir -p "$dir/.local/share/unity3d/Unity"
-            printf '%s' "$UNITY_LICENSE" > "$dir/.local/share/unity3d/Unity/Unity_lic.ulf"
-          done
-
-      - name: Solution genereren
-        run: >
-          unity-editor -batchmode -nographics -quit -logFile -
-          -projectPath "$UNITY_PROJECT"
-          -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution
 
       - name: Analyse met SonarScanner for .NET
         env:
@@ -74,5 +51,5 @@ jobs:
             /d:sonar.host.url="$SONAR_HOST_URL" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.exclusions="**/TutorialInfo/**"
-          dotnet build "$(ls "$UNITY_PROJECT"/*.sln* | head -n 1)" --no-incremental
+          dotnet build ci/sonar/Cities.Sonar.csproj --no-incremental
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
