@@ -1,28 +1,47 @@
+using Cities.Simulation.Commands;
+using Cities.Simulation.Timing;
 using UnityEngine;
 
-namespace Cities.Simulation.Timing
+namespace Cities.Simulation.Scheduling
 {
     /// <summary>
-    /// Koppelt de <see cref="SimulationClock"/> aan de Unity-speellus. Gebruikt ongeschaalde tijd,
-    /// zodat <c>Time.timeScale</c> de simulatie niet beïnvloedt.
+    /// Eigenaar van de simulatie in een scene: klok, command-bus, scheduler en runner. Gebruikt ongeschaalde tijd,
+    /// zodat <c>Time.timeScale</c> de simulatie niet beïnvloedt. Systemen registreren zich in hun eigen
+    /// <c>Awake</c>/<c>Start</c> via <see cref="Scheduler"/>; deze component draait als een van de eersten.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class SimulationClockBehaviour : MonoBehaviour
+    [DefaultExecutionOrder(-1000)]
+    public sealed class SimulationHostBehaviour : MonoBehaviour
     {
         [SerializeField] private SimulationClockSettings _settings = SimulationClockSettings.Default;
         [SerializeField] private SimulationSpeed _initialSpeed = SimulationSpeed.Normal;
 
         public SimulationClock Clock { get; private set; }
 
+        public CommandBus Commands { get; private set; }
+
+        public SimulationScheduler Scheduler { get; private set; }
+
+        public SimulationRunner Runner { get; private set; }
+
         private void Awake()
         {
             Clock = new SimulationClock(_settings);
             Clock.SetSpeed(_initialSpeed);
+            Commands = new CommandBus();
+            Scheduler = new SimulationScheduler();
+            Runner = new SimulationRunner(Clock, Commands, Scheduler);
         }
 
         private void Update()
         {
-            Clock.Advance(UnityEngine.Time.unscaledDeltaTime);
+            Runner.Update(UnityEngine.Time.unscaledDeltaTime);
+        }
+
+        private void OnDestroy()
+        {
+            Runner?.Dispose();
+            Scheduler?.Dispose();
         }
 
         private void OnValidate()

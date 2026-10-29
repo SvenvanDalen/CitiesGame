@@ -27,7 +27,7 @@ namespace Cities.Simulation.Commands
         /// <summary>Volgnummer in de volgorde van indienen; uniek per bus.</summary>
         public long Sequence { get; }
 
-        /// <summary>Tick waarop het command is verwerkt.</summary>
+        /// <summary>De laatste tick die vóór dit command is uitgevoerd; het command geldt vanaf de tick erna.</summary>
         public long Tick { get; }
 
         public ISimulationCommand Command { get; }

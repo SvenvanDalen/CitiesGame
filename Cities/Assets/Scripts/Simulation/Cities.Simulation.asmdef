@@ -1,7 +1,7 @@
 {
     "name": "Cities.Simulation",
     "rootNamespace": "Cities.Simulation",
-    "references": ["Cities.Core"],
+    "references": ["Cities.Core", "Unity.Collections", "Unity.Mathematics", "Unity.Burst"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
