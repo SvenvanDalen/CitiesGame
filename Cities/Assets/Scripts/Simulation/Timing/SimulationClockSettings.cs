@@ -49,43 +49,55 @@ namespace Cities.Simulation.Timing
 
         public double TickSeconds => 1.0 / TicksPerSecond;
 
-        /// <summary>Gooit een uitzondering als de instellingen niet bruikbaar zijn.</summary>
-        public void Validate()
+        /// <summary>Gooit een <see cref="ArgumentException"/> als de instellingen niet bruikbaar zijn.</summary>
+        public static void Validate(SimulationClockSettings settings)
+        {
+            var error = settings.FindError();
+            if (error != null)
+            {
+                throw new ArgumentException(error, nameof(settings));
+            }
+        }
+
+        /// <summary>Beschrijving van de eerste ongeldige instelling, of null als alles klopt.</summary>
+        public string FindError()
         {
             if (TicksPerSecond < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(TicksPerSecond), TicksPerSecond, "Minstens 1 tick per seconde.");
+                return $"{nameof(TicksPerSecond)} moet minstens 1 zijn (is {TicksPerSecond}).";
             }
 
             if (MaxTicksPerUpdate < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(MaxTicksPerUpdate), MaxTicksPerUpdate, "Minstens 1 tick per update.");
+                return $"{nameof(MaxTicksPerUpdate)} moet minstens 1 zijn (is {MaxTicksPerUpdate}).";
             }
 
             if (MaxFrameSeconds <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(MaxFrameSeconds), MaxFrameSeconds, "Moet groter dan 0 zijn.");
+                return $"{nameof(MaxFrameSeconds)} moet groter dan 0 zijn (is {MaxFrameSeconds}).";
             }
 
             if (TicksPerDay < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(TicksPerDay), TicksPerDay, "Minstens 1 tick per dag.");
+                return $"{nameof(TicksPerDay)} moet minstens 1 zijn (is {TicksPerDay}).";
             }
 
             if (StartYear < 1 || StartYear > 9000)
             {
-                throw new ArgumentOutOfRangeException(nameof(StartYear), StartYear, "Startjaar moet tussen 1 en 9000 liggen.");
+                return $"{nameof(StartYear)} moet tussen 1 en 9000 liggen (is {StartYear}).";
             }
 
             if (StartMonth < 1 || StartMonth > 12)
             {
-                throw new ArgumentOutOfRangeException(nameof(StartMonth), StartMonth, "Maand moet tussen 1 en 12 liggen.");
+                return $"{nameof(StartMonth)} moet tussen 1 en 12 liggen (is {StartMonth}).";
             }
 
             if (StartDay < 1 || StartDay > DateTime.DaysInMonth(StartYear, StartMonth))
             {
-                throw new ArgumentOutOfRangeException(nameof(StartDay), StartDay, "Dag bestaat niet in de startmaand.");
+                return $"{nameof(StartDay)} {StartDay} bestaat niet in maand {StartMonth} van {StartYear}.";
             }
+
+            return null;
         }
     }
 }

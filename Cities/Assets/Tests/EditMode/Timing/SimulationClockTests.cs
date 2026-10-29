@@ -162,7 +162,8 @@ namespace Cities.Tests.EditMode.Timing
             settings.StartMonth = 2;
             settings.StartDay = 30;
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SimulationClock(settings));
+            var error = Assert.Throws<ArgumentException>(() => new SimulationClock(settings));
+            Assert.That(error.Message, Does.Contain(nameof(SimulationClockSettings.StartDay)));
         }
 
         [Test]

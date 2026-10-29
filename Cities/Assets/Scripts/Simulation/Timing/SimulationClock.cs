@@ -19,7 +19,7 @@ namespace Cities.Simulation.Timing
 
         public SimulationClock(SimulationClockSettings settings)
         {
-            settings.Validate();
+            SimulationClockSettings.Validate(settings);
             _settings = settings;
             Calendar = new GameCalendar(new GameDate(settings.StartYear, settings.StartMonth, settings.StartDay), settings.TicksPerDay);
         }
