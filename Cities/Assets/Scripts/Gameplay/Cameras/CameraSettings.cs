@@ -36,6 +36,16 @@ namespace Cities.Gameplay.Cameras
 
         public float MaxDistance;
 
+        [Tooltip("Hoogste camerapositie in meters boven zeeniveau.")]
+        public float MaxHeight;
+
+        [Tooltip("Minimale afstand in meters tussen camera en terrein of water.")]
+        [Min(0f)]
+        public float TerrainClearance;
+
+        [Tooltip("Zoomen richt op het punt onder de muis in plaats van op het midden van het beeld.")]
+        public bool ZoomToCursor;
+
         [Range(1f, 89.9f)]
         public float MinPitch;
 
@@ -68,6 +78,9 @@ namespace Cities.Gameplay.Cameras
             KeyZoomSpeed = 1.5f,
             MinDistance = 20f,
             MaxDistance = 6000f,
+            MaxHeight = 4000f,
+            TerrainClearance = 6f,
+            ZoomToCursor = true,
             MinPitch = 12f,
             MaxPitch = 88f,
             SmoothingHalfLife = 0.06f,

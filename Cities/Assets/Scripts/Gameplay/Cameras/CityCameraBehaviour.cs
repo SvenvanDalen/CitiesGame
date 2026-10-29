@@ -24,6 +24,11 @@ namespace Cities.Gameplay.Cameras
         [Tooltip("Factor van de muiswielwaarde naar scrollstappen (1 = één stap per klik).")]
         [SerializeField] private float _scrollScale = 1f;
 
+        [Tooltip("Lagen waarmee de camera botst en waarop zoomen naar de cursor richt (terrein, water, gebouwen).")]
+        [SerializeField] private LayerMask _surfaceLayers = ~0;
+
+        private PhysicsSurfaceHeight _surface;
+
         private UnityEngine.Camera _camera;
         private InputAction _move;
         private InputAction _rotate;
@@ -42,11 +47,13 @@ namespace Cities.Gameplay.Cameras
         {
             _camera = GetComponent<UnityEngine.Camera>();
             var world = WorldDimensions.Default;
+            _surface = new PhysicsSurfaceHeight(_surfaceLayers);
             Controller = new CameraController(
                 _settings,
                 new CameraRig(new float3(_startPivot.x, 0f, _startPivot.y), _startYaw, _startPitch, _startDistance),
                 float2.zero,
-                new float2(world.SizeX, world.SizeZ));
+                new float2(world.SizeX, world.SizeZ),
+                _surface);
 
             var map = _controls.FindActionMap("Camera", throwIfNotFound: true);
             _move = map.FindAction("Move", true);
@@ -69,18 +76,31 @@ namespace Cities.Gameplay.Cameras
         private void LateUpdate()
         {
             var pointerDelta = (float2)_pointerDelta.ReadValue<Vector2>();
+            var pointer = _pointer.ReadValue<Vector2>();
+            var scroll = _scroll.ReadValue<float>() * _scrollScale;
+            var zoom = _zoom.ReadValue<float>();
+            var hasCursorPoint = false;
+            var cursorPoint = float3.zero;
+            if (math.abs(scroll) > 0f || math.abs(zoom) > 0f)
+            {
+                // Alleen raycasten als er gezoomd wordt; dat scheelt een raycast per frame.
+                hasCursorPoint = _surface.TryGetCursorPoint(_camera.ScreenPointToRay(pointer), Controller.Current.Pivot.y, out cursorPoint);
+            }
+
             var input = new CameraInput
             {
                 Move = _move.ReadValue<Vector2>(),
                 Rotate = _rotate.ReadValue<float>(),
                 Tilt = _tilt.ReadValue<float>(),
-                Zoom = _zoom.ReadValue<float>(),
-                ScrollSteps = _scroll.ReadValue<float>() * _scrollScale,
+                Zoom = zoom,
+                ScrollSteps = scroll,
                 DragPanPixels = _panDrag.IsPressed() ? pointerDelta : float2.zero,
                 OrbitPixels = _orbitDrag.IsPressed() ? pointerDelta : float2.zero,
                 Fast = _fast.IsPressed(),
-                PointerPosition = _pointer.ReadValue<Vector2>(),
+                PointerPosition = pointer,
                 ScreenSize = new float2(Screen.width, Screen.height),
+                HasCursorPoint = hasCursorPoint,
+                CursorPoint = cursorPoint,
             };
 
             Controller.Settings = _settings;

@@ -34,5 +34,11 @@ namespace Cities.Gameplay.Cameras
 
         /// <summary>Schermgrootte in pixels; 0 schakelt randscrollen en slepen uit.</summary>
         public float2 ScreenSize { get; set; }
+
+        /// <summary>Of <see cref="CursorPoint"/> geldig is (de muis wijst naar de grond).</summary>
+        public bool HasCursorPoint { get; set; }
+
+        /// <summary>Punt op terrein of water onder de muis, voor zoomen naar de cursor.</summary>
+        public float3 CursorPoint { get; set; }
     }
 }
