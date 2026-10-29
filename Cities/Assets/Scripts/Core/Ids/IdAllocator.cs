@@ -1,4 +1,5 @@
 using System;
+using Cities.Core.Persistence;
 using Unity.Collections;
 
 namespace Cities.Core.Ids
@@ -101,6 +102,40 @@ namespace Cities.Core.Ids
 
             var generation = _generations[index];
             return (generation & 1u) == 1u ? new EntityId<TKind>(index, generation) : EntityId<TKind>.None;
+        }
+
+        /// <summary>
+        /// Schrijft generaties en vrije plekken (in volgorde), zodat na laden dezelfde ID's in dezelfde volgorde
+        /// worden uitgedeeld als zonder opslaan.
+        /// </summary>
+        public readonly void WriteTo(SaveWriter writer)
+        {
+            writer.WriteArray<uint>(_generations.AsArray().AsReadOnlySpan());
+            using (var free = _free.ToArray(Allocator.Temp))
+            {
+                writer.WriteArray<int>(free.AsReadOnlySpan());
+            }
+        }
+
+        /// <summary>Vervangt de inhoud door een staat uit <see cref="IdAllocatorState.Read"/>.</summary>
+        public void Restore(IdAllocatorState state)
+        {
+            if (state is null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            _generations.Clear();
+            _generations.ResizeUninitialized(state.Generations.Length);
+            _generations.AsArray().CopyFrom(state.Generations);
+            _free.Clear();
+            foreach (var index in state.Free)
+            {
+                _free.Enqueue(index);
+            }
+
+            _aliveCount = state.AliveCount;
+            _retiredCount = state.RetiredCount;
         }
 
         public void Dispose()
