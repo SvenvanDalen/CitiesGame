@@ -132,7 +132,7 @@ namespace Cities.Tests.EditMode.Spatial
         [Test]
         public void RebuildWithFewerPointsShrinks()
         {
-            using var few = new NativeArray<float2>(new[] { new float2(10f, 10f), new float2(1990f, 1990f) }, Allocator.Temp);
+            using var few = new NativeArray<float2>(new[] { new float2(10f, 10f), new float2(1990f, 1990f) }, Allocator.TempJob);
 
             _grid.Build(few);
 

@@ -82,6 +82,18 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 - Code die alleen met de Unity-runtime werkt (`NativeArray`, jobs, `ProfilerMarker`, MonoBehaviours, editor-code) telt niet mee voor de dekking. Zet zulke bronbestanden in `ci/sonar/coverage-exclusions.txt`, en hou de rekenregels daarbuiten (zoals `LayerLayout` naast `CellLayer`), zodat die wel gemeten worden.
 - Tests die de Unity-runtime nodig hebben, krijgen `[Category("UnityRuntime")]`; CI slaat ze over en ze draaien in Unity. PlayMode-tests draaien altijd alleen in Unity.
 
+### Tests draaien
+
+| Opdracht | Wat | Duur |
+| --- | --- | --- |
+| `tools/test.ps1 -Suite Fast` | EditMode-tests zonder Unity-runtime met dotnet, gelijk aan CI | ± 1 min |
+| `tools/test.ps1 -Suite EditMode` / `PlayMode` / `Unity` | Unity in batchmode | enkele minuten |
+| `tools/test.ps1` | Alles | |
+
+- `-Filter <naam>` beperkt tot een namespace of test, en `-Coverage` maakt bij Fast een dekkingsrapport. Resultaten en logs komen in `TestResults/`. Exitcode 0 betekent geslaagd, 1 mislukte tests, 2 een fout in de opzet.
+- De Unity-suites kunnen niet draaien terwijl de editor het project open heeft. Gebruik dan het Test Runner-venster, of een tweede werkmap: `git worktree add ../CitiesGame-tests main` en daarna `tools/test.ps1 -Suite Unity -ProjectPath ../CitiesGame-tests/Cities`.
+- **Bij elke commit**: CI draait de snelle tests bij elke push naar main en bij elke pull request, en zet de telling in de samenvatting van de run. Lokaal zet `tools/install-hooks.ps1` een pre-push-hook aan die de snelle tests eerst draait (overslaan: `git push --no-verify`). Unity-tests draaien niet in CI, want daarvoor is geen licentie in CI. Draai ze vóór elke pull request lokaal.
+
 ## Git
 
 - Eén branch per backlogitem: `feature/<ID>-<korte-naam>`, bijvoorbeeld `feature/E01-03-simulation-clock`.

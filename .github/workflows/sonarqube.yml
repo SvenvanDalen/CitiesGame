@@ -68,5 +68,26 @@ jobs:
           # EditMode-tests zonder Unity-runtime; PlayMode-tests en categorie UnityRuntime draaien alleen in Unity
           dotnet test ci/sonar/Cities.Sonar.Tests/Cities.Sonar.Tests.csproj --no-build \
             --filter "FullyQualifiedName!~Cities.Tests.PlayMode&TestCategory!=UnityRuntime" \
-            --collect "XPlat Code Coverage;Format=opencover" --results-directory TestResults
+            --collect "XPlat Code Coverage;Format=opencover" --results-directory TestResults             --logger "trx;LogFileName=fast.trx"
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+      - name: Testresultaten
+        if: always()
+        # Zelfde telling als tools/test.ps1 -Suite Fast, als samenvatting bij de run
+        run: |
+          trx=$(find TestResults -name fast.trx | head -1)
+          if [ -z "$trx" ]; then
+            echo "Geen testresultaten gevonden." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          counters=$(grep -o '<Counters [^>]*>' "$trx")
+          value() { echo "$counters" | sed -E "s/.* $1=\"([0-9]+)\".*/\1/"; }
+          {
+            echo "### Snelle tests (zonder Unity)"
+            echo ""
+            echo "| Totaal | Geslaagd | Mislukt |"
+            echo "| --- | --- | --- |"
+            echo "| $(value total) | $(value passed) | $(value failed) |"
+            echo ""
+            echo "EditMode-tests met de Unity-runtime en PlayMode-tests draaien lokaal: \`tools/test.ps1 -Suite Unity\`."
+          } >> "$GITHUB_STEP_SUMMARY"
