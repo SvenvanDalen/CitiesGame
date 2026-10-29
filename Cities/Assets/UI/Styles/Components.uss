@@ -226,6 +226,9 @@
 .c-meter--commercial > .c-meter__fill { background-color: var(--color-zone-commercial); }
 .c-meter--industrial > .c-meter__fill { background-color: var(--color-zone-industrial); }
 .c-meter--office > .c-meter__fill { background-color: var(--color-zone-office); }
+.c-meter--success > .c-meter__fill { background-color: var(--color-success); }
+.c-meter--warning > .c-meter__fill { background-color: var(--color-warning); }
+.c-meter--danger > .c-meter__fill { background-color: var(--color-danger); }
 
 /* ---------- Tooltip ---------- */
 .c-tooltip {
@@ -345,6 +348,52 @@
     margin-top: var(--space-3);
     color: var(--color-text-muted);
     white-space: normal;
+}
+
+/* ---------- Debugpaneel en overlay-labels ---------- */
+.c-debug {
+    width: 360px;
+    max-height: 95%;
+}
+
+.c-debug__row {
+    flex-direction: row;
+    justify-content: space-between;
+    min-height: 20px;
+    font-size: var(--font-size-caption);
+}
+
+.c-debug__name {
+    flex-shrink: 1;
+    color: var(--color-text-muted);
+}
+
+.c-debug__value {
+    -unity-text-align: middle-right;
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Medium.asset");
+}
+
+.c-debug .c-text--caption {
+    white-space: normal;
+}
+
+.c-debug__timing {
+    margin-bottom: var(--space-1);
+}
+
+.c-debug__timing > .c-meter {
+    height: 4px;
+}
+
+/* Tekst op een punt in de wereld; klein en met een donkere achtergrond, zodat hij op elk terrein leesbaar is */
+.c-debug__label {
+    position: absolute;
+    padding: 0 var(--space-1);
+    background-color: rgba(13, 17, 22, 0.75);
+    border-radius: var(--radius-small);
+    font-size: var(--font-size-caption);
+    color: var(--color-text);
+    translate: -50% -100%;
 }
 
 /* ---------- Ingebouwde besturingselementen in de huisstijl ---------- */

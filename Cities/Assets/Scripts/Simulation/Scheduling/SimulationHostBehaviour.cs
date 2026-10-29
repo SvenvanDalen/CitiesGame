@@ -28,6 +28,19 @@ namespace Cities.Simulation.Scheduling
 
         public SimulationRunner Runner { get; private set; }
 
+        private readonly System.Collections.Generic.List<System.IDisposable> _debugCounters = new System.Collections.Generic.List<System.IDisposable>();
+
+        private void RegisterDebugCounters(DebugRegistry registry)
+        {
+            const string category = "Simulatie";
+            _debugCounters.Add(registry.AddCounter(category, "Tick", () => Clock.Tick));
+            _debugCounters.Add(registry.AddCounter(category, "Snelheid", () => (long)Clock.Speed));
+            _debugCounters.Add(registry.AddCounter(category, "Overgeslagen ticks", () => Clock.DroppedTicks));
+            _debugCounters.Add(registry.AddCounter(category, "Systemen", () => Scheduler.Systems.Count));
+            _debugCounters.Add(registry.AddCounter(category, "Synchronisatiepunten", () => Scheduler.SyncPointCount));
+            _debugCounters.Add(registry.AddCounter(category, "Openstaande commands", () => Commands.PendingCount));
+        }
+
         private void Awake()
         {
             ApplyLogLevels();
@@ -36,6 +49,7 @@ namespace Cities.Simulation.Scheduling
             Commands = new CommandBus();
             Scheduler = new SimulationScheduler();
             Runner = new SimulationRunner(Clock, Commands, Scheduler);
+            RegisterDebugCounters(DebugRegistry.Shared);
         }
 
         private void Update()
@@ -45,6 +59,12 @@ namespace Cities.Simulation.Scheduling
 
         private void OnDestroy()
         {
+            foreach (var registration in _debugCounters)
+            {
+                registration.Dispose();
+            }
+
+            _debugCounters.Clear();
             Runner?.Dispose();
             Scheduler?.Dispose();
         }
