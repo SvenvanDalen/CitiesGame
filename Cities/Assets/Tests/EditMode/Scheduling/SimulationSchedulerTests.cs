@@ -7,6 +7,8 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Cities.Tests.EditMode.Scheduling
 {
@@ -166,6 +168,7 @@ namespace Cities.Tests.EditMode.Scheduling
             _scheduler.Register(ok);
             _scheduler.Register(broken, ok);
 
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(@"\[Scheduler\] Systeem Kapot faalde"));
             var error = Assert.Throws<InvalidOperationException>(() => _scheduler.ScheduleTick(Tick));
 
             Assert.That(error.Message, Does.Contain("Kapot"));

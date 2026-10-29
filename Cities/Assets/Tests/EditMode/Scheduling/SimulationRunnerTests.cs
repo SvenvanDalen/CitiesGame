@@ -39,7 +39,11 @@ namespace Cities.Tests.EditMode.Scheduling
                 _log.Add($"tick {tick.Tick}");
             }
 
-            public void Complete() => _log.Add("complete");
+            public void ExecuteOnMainThread(Action work)
+            {
+                _log.Add("complete");
+                work();
+            }
         }
 
         private List<string> _log;
