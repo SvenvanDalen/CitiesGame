@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Testcode onder Cities/Assets/Tests als apart project, zodat SonarQube productie- en testcode
+    uit elkaar houdt. Unity levert zijn eigen NUnit 3.x mee; voor de analyse volstaat de NuGet-versie.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);UNITY_EDITOR;UNITY_INCLUDE_TESTS;UNITY_6000_0_OR_NEWER</DefineConstants>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">/opt/unity/Editor/Data/Managed</UnityManaged>
+    <UnityProject>$(MSBuildThisFileDirectory)../../../Cities</UnityProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(UnityProject)/Assets/Tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Cities.Sonar/Cities.Sonar.csproj" />
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+  </ItemGroup>
+</Project>

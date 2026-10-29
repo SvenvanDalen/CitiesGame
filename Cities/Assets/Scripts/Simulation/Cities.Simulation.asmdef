@@ -1,0 +1,14 @@
+{
+    "name": "Cities.Simulation",
+    "rootNamespace": "Cities.Simulation",
+    "references": ["Cities.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -49,7 +49,6 @@ jobs:
             /k:"$SONAR_PROJECT_KEY" \
             /o:"$SONAR_ORGANIZATION" \
             /d:sonar.host.url="$SONAR_HOST_URL" \
-            /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.exclusions="**/TutorialInfo/**"
-          dotnet build ci/sonar/Cities.Sonar.csproj --no-incremental
+            /d:sonar.token="$SONAR_TOKEN"
+          dotnet build ci/sonar/Cities.Sonar.Tests/Cities.Sonar.Tests.csproj --no-incremental
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"

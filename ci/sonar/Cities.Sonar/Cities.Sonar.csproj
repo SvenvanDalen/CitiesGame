@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Alleen voor de SonarQube-analyse in CI: compileert de scripts onder Cities/Assets/Scripts
+    tegen de Unity-DLL's uit de editor-installatie, zonder Unity te starten (geen licentie nodig).
+    Komen er asmdefs of packages met code-afhankelijkheden bij, voeg die DLL's hier toe.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);UNITY_EDITOR;UNITY_6000_0_OR_NEWER</DefineConstants>
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">/opt/unity/Editor/Data/Managed</UnityManaged>
+    <UnityProject>$(MSBuildThisFileDirectory)../../../Cities</UnityProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(UnityProject)/Assets/Scripts/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
+  </ItemGroup>
+</Project>
