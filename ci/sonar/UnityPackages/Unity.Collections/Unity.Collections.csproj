@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="$(UnityBuiltInPackages)/com.unity.collections/Unity.Collections/**/*.cs" />
+    <Reference Include="$(UnityBuiltInPackages)/com.unity.collections/Unity.Collections.LowLevel.ILSupport/Unity.Collections.LowLevel.ILSupport.dll" />
+    <!-- Unity ships System.Runtime.CompilerServices.Unsafe in the runtime; outside Unity it comes from NuGet -->
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <ProjectReference Include="../Unity.Mathematics/Unity.Mathematics.csproj" />
+    <ProjectReference Include="../Unity.Burst/Unity.Burst.csproj" />
+  </ItemGroup>
+</Project>

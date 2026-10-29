@@ -39,6 +39,14 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Burst-package ophalen
+        # Collections en Mathematics zitten in de editor; Burst komt uit de Unity-registry, in de versie van packages-lock.json
+        run: |
+          version=$(grep -A1 '"com.unity.burst"' Cities/Packages/packages-lock.json | grep '"version"' | sed -E 's/.*"([0-9][^"]*)".*/\1/')
+          mkdir -p ci/sonar/.packages/com.unity.burst
+          curl -sSfL "https://download.packages.unity.com/com.unity.burst/-/com.unity.burst-${version}.tgz" \
+            | tar -xz -C ci/sonar/.packages/com.unity.burst --strip-components=1
+
       - name: Analyse met SonarScanner for .NET
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

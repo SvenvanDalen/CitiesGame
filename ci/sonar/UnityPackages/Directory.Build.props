@@ -1,0 +1,30 @@
+<Project>
+  <!--
+    Compile references for the Unity packages that our code uses (Mathematics, Burst, Collections), built from source,
+    so the analysis compiles without Unity. Only used as references; this code is not analyzed or shipped.
+    Paths: the editor's BuiltInPackages (Mathematics, Collections) and an unpacked Burst package (from the Unity registry).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS0618;CS0649;CS0169;CS0414;CS1591;CS0436;CS8632;CS0108;CS0219;CS0162;CS0067;CS0109;CS0168</NoWarn>
+    <RunAnalyzers>false</RunAnalyzers>
+    <SonarQubeExclude>true</SonarQubeExclude>
+    <!-- No pdb, so coverlet doesn't instrument these assemblies -->
+    <DebugType>none</DebugType>
+    <!-- Same defines as Unity 6000.5 in the editor on Windows -->
+    <DefineConstants>$(DefineConstants);UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_5_OR_NEWER;UNITY_2017_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;UNITY_2020_4_OR_NEWER;UNITY_2021_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2021_2_OR_NEWER;UNITY_2021_3_OR_NEWER;UNITY_2021_4_OR_NEWER;UNITY_2022_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2022_2_OR_NEWER;UNITY_2022_3_OR_NEWER;UNITY_2022_4_OR_NEWER;UNITY_2023_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2023_2_OR_NEWER;UNITY_2023_3_OR_NEWER;UNITY_2023_4_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_6000_1_OR_NEWER;UNITY_6000_2_OR_NEWER;UNITY_6000_3_OR_NEWER;UNITY_6000_4_OR_NEWER;UNITY_6000_5_OR_NEWER;UNITY_6000_OR_NEWER;UNITY_2022_2_14F1_OR_NEWER;UNITY_2022_2_16F1_OR_NEWER;UNITY_EDITOR;UNITY_EDITOR_WIN;UNITY_64;UNITY_STANDALONE;UNITY_STANDALONE_WIN;ENABLE_MONO;NET_STANDARD_2_1;NET_STANDARD;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT</DefineConstants>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">/opt/unity/Editor/Data/Managed</UnityManaged>
+    <UnityBuiltInPackages Condition="'$(UnityBuiltInPackages)' == ''">$(UnityManaged)/../Resources/PackageManager/BuiltInPackages</UnityBuiltInPackages>
+    <BurstPackage Condition="'$(BurstPackage)' == ''">$(MSBuildThisFileDirectory)../.packages/com.unity.burst</BurstPackage>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
+  </ItemGroup>
+</Project>

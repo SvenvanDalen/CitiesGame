@@ -8,7 +8,8 @@
         "Cities.Simulation",
         "Cities.World",
         "Cities.Gameplay",
-        "Cities.Presentation"
+        "Cities.Presentation",
+        "Unity.Collections"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
