@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Compile Include="$(UnityProject)/Assets/Tests/**/*.cs" />
+    <Compile Include="Shims/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
