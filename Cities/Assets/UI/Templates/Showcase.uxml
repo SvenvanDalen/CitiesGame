@@ -1,0 +1,48 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:city="Cities.Presentation.UI" editor-extension-mode="False">
+    <ui:VisualElement name="showcase" class="c-root" style="flex-grow: 1; padding: 24px; flex-direction: row; align-items: flex-start;">
+        <city:CityPanel title="Knoppen" style="width: 300px; margin-right: 16px;">
+            <ui:Label text="Varianten" class="c-text--caption" style="margin-bottom: 8px;" />
+            <ui:VisualElement style="flex-direction: row; flex-wrap: wrap;">
+                <city:CityButton text="Bouwen" variant="Primary" style="margin: 0 8px 8px 0;" />
+                <city:CityButton text="Annuleren" style="margin: 0 8px 8px 0;" />
+                <city:CityButton text="Info" variant="Ghost" style="margin: 0 8px 8px 0;" />
+                <city:CityButton text="Slopen" variant="Danger" style="margin: 0 8px 8px 0;" />
+                <city:CityButton text="Klein" small="true" style="margin: 0 8px 8px 0;" />
+                <city:CityButton text="Uit" enabled="false" style="margin: 0 8px 8px 0;" />
+            </ui:VisualElement>
+        </city:CityPanel>
+        <city:CityPanel title="Vraag" style="width: 300px; margin-right: 16px;">
+            <ui:Label text="Wonen" class="c-text--caption" />
+            <city:CityMeter value="0.72" color="Residential" style="margin: 4px 0 12px 0;" />
+            <ui:Label text="Winkels" class="c-text--caption" />
+            <city:CityMeter value="0.41" color="Commercial" style="margin: 4px 0 12px 0;" />
+            <ui:Label text="Industrie" class="c-text--caption" />
+            <city:CityMeter value="0.18" color="Industrial" style="margin: 4px 0 12px 0;" />
+            <ui:Label text="Kantoren" class="c-text--caption" />
+            <city:CityMeter value="0.55" color="Office" style="margin: 4px 0 12px 0;" />
+            <ui:VisualElement style="flex-direction: row; margin-top: 4px;">
+                <ui:Label text="Gezond" class="c-badge c-badge--success" style="margin-right: 6px;" />
+                <ui:Label text="Druk" class="c-badge c-badge--warning" style="margin-right: 6px;" />
+                <ui:Label text="Brand" class="c-badge c-badge--danger" style="margin-right: 6px;" />
+                <ui:Label text="Nieuw" class="c-badge c-badge--info" />
+            </ui:VisualElement>
+        </city:CityPanel>
+        <city:CityPanel title="Instellingen" style="width: 340px;">
+            <ui:Label text="Grafisch" class="c-text--heading" style="margin-bottom: 8px;" />
+            <ui:Toggle label="Volledig scherm" value="true" />
+            <ui:Slider label="Kijkafstand" low-value="500" high-value="20000" value="8000" />
+            <ui:DropdownField label="Kwaliteit" choices="Laag,Middel,Hoog,Ultra" index="2" />
+            <ui:TextField label="Stadsnaam" value="Nieuwhaven" />
+            <ui:Label text="Wijzigingen gelden direct." class="c-text--caption" style="margin-top: 8px;" />
+        </city:CityPanel>
+    </ui:VisualElement>
+    <ui:VisualElement class="c-root" style="position: absolute; bottom: 16px; left: 0; right: 0; align-items: center;">
+        <ui:VisualElement class="c-toolbar">
+            <city:CityButton text="Weg" selected="true" />
+            <city:CityButton text="Zone" />
+            <city:CityButton text="Stroom" />
+            <ui:VisualElement class="c-toolbar__separator" />
+            <city:CityButton text="Slopen" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

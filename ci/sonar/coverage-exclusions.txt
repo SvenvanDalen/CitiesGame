@@ -15,3 +15,6 @@ Cities/Assets/Scripts/Core/Diagnostics/UnityLogSink.cs
 Cities/Assets/Scripts/Core/Diagnostics/LogConfiguration.cs
 Cities/Assets/Scripts/Gameplay/Cameras/PhysicsSurfaceHeight.cs
 Cities/Assets/Scripts/World/Terrain/WorldMapTerrain.cs
+Cities/Assets/Scripts/Presentation/UI/CityButton.cs
+Cities/Assets/Scripts/Presentation/UI/CityPanel.cs
+Cities/Assets/Scripts/Presentation/UI/CityMeter.cs

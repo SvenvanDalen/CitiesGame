@@ -41,6 +41,12 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 - Willekeur gaat via de deterministische RNG (E01-11), nooit via `UnityEngine.Random`.
 - Deterministische logica krijgt minstens één EditMode-test.
 
+## UI
+
+- Schermgebonden UI is UI Toolkit met het thema uit `Assets/UI` (zie besluit 0002). Gebruik de tokens (`var(--color-…)`, `var(--space-…)`) en componentklassen (`c-…`), en in code `UiClasses` en de `City…`-elementen.
+- Eén `PanelSettings`: `Assets/UI/CityPanelSettings.asset`.
+- Teksten in de UI zijn Nederlands.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
