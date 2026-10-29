@@ -1,3 +1,4 @@
+using System;
 using Cities.Core.Ids;
 using Cities.Core.Persistence;
 using NUnit.Framework;
@@ -31,7 +32,7 @@ namespace Cities.Tests.EditMode.Persistence
         [Test]
         public void SlotLimitIsEnforced()
         {
-            Assert.Throws<SaveFormatException>(() => IdAllocatorState.Read(Content(new[] { 1u, 1u, 1u }, new int[0]), 2));
+            Assert.Throws<SaveFormatException>(() => IdAllocatorState.Read(Content(new[] { 1u, 1u, 1u }, Array.Empty<int>()), 2));
         }
 
         private static SaveReader Content(uint[] generations, int[] free) => SaveBytes.ReaderFor(w =>

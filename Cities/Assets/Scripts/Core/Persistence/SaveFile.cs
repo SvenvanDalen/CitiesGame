@@ -89,26 +89,14 @@ namespace Cities.Core.Persistence
                 for (var block = 1; block < count; block++)
                 {
                     var entry = ReadBlock(reader);
-                    if (!byId.TryGetValue(entry.Id, out var index))
+                    if (byId.TryGetValue(entry.Id, out var index))
+                    {
+                        apply[index] = PrepareSection(sections[index], entry, apply[index]);
+                    }
+                    else
                     {
                         skipped.Add(entry.Id);
-                        continue;
                     }
-
-                    if (apply[index] != null)
-                    {
-                        throw new SaveFormatException($"Sectie {entry.Id} staat twee keer in de save.");
-                    }
-
-                    var section = sections[index];
-                    if (entry.Version > section.Version || entry.Version < 1)
-                    {
-                        throw new SaveFormatException(
-                            $"Sectie {entry.Id} heeft versie {entry.Version}; deze versie van het spel leest tot en met {section.Version}.");
-                    }
-
-                    apply[index] = section.Read(new SaveReader(entry.Data, entry.Id), entry.Version)
-                        ?? throw new InvalidOperationException($"Sectie {entry.Id} gaf geen toepassing terug.");
                 }
 
                 if (input.CanSeek && input.Position != input.Length)
@@ -131,6 +119,24 @@ namespace Cities.Core.Persistence
             }
 
             return new SaveLoadResult(metadata, missing, skipped);
+        }
+
+        /// <summary>Leest één sectie van de save; de teruggegeven toepassing wordt pas uitgevoerd als alles goed is.</summary>
+        private static Action PrepareSection(ISaveSection section, Block entry, Action alreadyRead)
+        {
+            if (alreadyRead != null)
+            {
+                throw new SaveFormatException($"Sectie {entry.Id} staat twee keer in de save.");
+            }
+
+            if (entry.Version > section.Version || entry.Version < 1)
+            {
+                throw new SaveFormatException(
+                    $"Sectie {entry.Id} heeft versie {entry.Version}; deze versie van het spel leest tot en met {section.Version}.");
+            }
+
+            return section.Read(new SaveReader(entry.Data, entry.Id), entry.Version)
+                ?? throw new InvalidOperationException($"Sectie {entry.Id} gaf geen toepassing terug.");
         }
 
         /// <summary>Leest alleen de kop en de metadata, voor lijsten van saves.</summary>

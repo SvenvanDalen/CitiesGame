@@ -57,6 +57,21 @@ namespace Cities.Core.Persistence
             Take(bytes.Length).CopyTo(bytes);
         }
 
+        /// <summary>Leest een array met de opgeslagen lengte, met een bovengrens tegen onzinnige groottes.</summary>
+        public T[] ReadArray<T>(int maxLength) where T : unmanaged
+        {
+            var count = ReadInt32();
+            if (count < 0 || count > maxLength)
+            {
+                throw Corrupt($"array met {count} elementen (maximaal {maxLength})");
+            }
+
+            var values = new T[count];
+            var bytes = MemoryMarshal.AsBytes(values.AsSpan());
+            Take(bytes.Length).CopyTo(bytes);
+            return values;
+        }
+
         /// <summary>Leest wat <see cref="SaveWriter.WriteShuffled{T}"/> schreef, met precies de lengte van <paramref name="destination"/>.</summary>
         public void ReadShuffled<T>(Span<T> destination) where T : unmanaged
         {
@@ -73,21 +88,6 @@ namespace Cities.Core.Persistence
 
             var bytes = MemoryMarshal.AsBytes(destination);
             ByteShuffle.Unshuffle(Take(bytes.Length), bytes, bytes.Length / count);
-        }
-
-        /// <summary>Leest een array met de opgeslagen lengte, met een bovengrens tegen onzinnige groottes.</summary>
-        public T[] ReadArray<T>(int maxLength) where T : unmanaged
-        {
-            var count = ReadInt32();
-            if (count < 0 || count > maxLength)
-            {
-                throw Corrupt($"array met {count} elementen (maximaal {maxLength})");
-            }
-
-            var values = new T[count];
-            var bytes = MemoryMarshal.AsBytes(values.AsSpan());
-            Take(bytes.Length).CopyTo(bytes);
-            return values;
         }
 
         /// <summary>Geeft een fout als de sectie meer bytes bevat dan gelezen; dat wijst op een verkeerde versie.</summary>

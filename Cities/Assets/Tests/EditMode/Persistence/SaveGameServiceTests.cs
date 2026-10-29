@@ -105,7 +105,7 @@ namespace Cities.Tests.EditMode.Persistence
         [Test]
         public void ArgumentsAreChecked()
         {
-            var sections = new ISaveSection[0];
+            var sections = Array.Empty<ISaveSection>();
             Assert.Throws<ArgumentNullException>(() => new SaveGameService(null, sections, _ => { }));
             Assert.Throws<ArgumentNullException>(() => new SaveGameService(_storage, null, _ => { }));
             Assert.Throws<ArgumentNullException>(() => new SaveGameService(_storage, sections, null));

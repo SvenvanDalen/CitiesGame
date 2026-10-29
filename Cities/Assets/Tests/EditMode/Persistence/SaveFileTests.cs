@@ -188,14 +188,14 @@ namespace Cities.Tests.EditMode.Persistence
         [TestCase(null)]
         public void InvalidOrReservedIdsAreRefused(string id)
         {
-            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection(id, new byte[0])));
+            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection(id, Array.Empty<byte>())));
         }
 
         [Test]
         public void ArgumentsAreChecked()
         {
-            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection("AAAA", new byte[0]), new TestSection("AAAA", new byte[0])));
-            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection("AAAA", new byte[0], version: 0)));
+            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection("AAAA", Array.Empty<byte>()), new TestSection("AAAA", Array.Empty<byte>())));
+            Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new TestSection("AAAA", Array.Empty<byte>(), version: 0)));
             Assert.Throws<ArgumentException>(() => SaveBytes.Write(Metadata(), new ISaveSection[] { null }));
             Assert.Throws<ArgumentNullException>(() => SaveFile.Write(null, Metadata(), Array.Empty<ISaveSection>()));
             Assert.Throws<ArgumentNullException>(() => SaveFile.Write(new MemoryStream(), null, Array.Empty<ISaveSection>()));
