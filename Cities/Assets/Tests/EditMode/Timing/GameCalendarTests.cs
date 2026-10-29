@@ -112,5 +112,51 @@ namespace Cities.Tests.EditMode.Timing
 
             Assert.Throws<ArgumentOutOfRangeException>(() => calendar.Update(-1));
         }
+
+        [Test]
+        public void DateEqualityAndHashing()
+        {
+            var a = new GameDate(2010, 5, 6);
+            var b = new GameDate(2010, 5, 6);
+            var c = new GameDate(2010, 5, 7);
+
+            Assert.That(a == b, Is.True);
+            Assert.That(a != c, Is.True);
+            Assert.That(a.Equals((object)b), Is.True);
+            Assert.That(a.Equals("2010-05-06"), Is.False);
+            Assert.That(a.GetHashCode(), Is.EqualTo(b.GetHashCode()));
+            Assert.That(a <= b && a >= b, Is.True);
+            Assert.That(a.ToString(), Is.EqualTo("2010-05-06"));
+        }
+
+        [Test]
+        public void AddDaysCrossesYearBoundary()
+        {
+            Assert.That(new GameDate(2000, 12, 30).AddDays(3), Is.EqualTo(new GameDate(2001, 1, 2)));
+        }
+
+        [Test]
+        public void RestoreJumpsWithoutEvents()
+        {
+            var calendar = new GameCalendar(new GameDate(2000, 1, 1), TicksPerDay);
+            var raised = 0;
+            calendar.DayStarted += _ => raised++;
+
+            calendar.Restore((40 * TicksPerDay) + 25);
+
+            Assert.That(raised, Is.EqualTo(0));
+            Assert.That(calendar.Date, Is.EqualTo(new GameDate(2000, 2, 10)));
+            Assert.That(calendar.DaysElapsed, Is.EqualTo(40));
+            Assert.That(calendar.TimeOfDay, Is.EqualTo(0.25f));
+        }
+
+        [Test]
+        public void InvalidArgumentsAreRejected()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GameCalendar(new GameDate(2000, 1, 1), 0));
+            var calendar = new GameCalendar(new GameDate(2000, 1, 1), TicksPerDay);
+            Assert.Throws<ArgumentOutOfRangeException>(() => calendar.Restore(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => calendar.FirstTickOf(new GameDate(1999, 12, 31)));
+        }
     }
 }

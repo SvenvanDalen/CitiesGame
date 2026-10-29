@@ -180,5 +180,27 @@ namespace Cities.Tests.EditMode.Timing
 
             Assert.That(a.Tick, Is.EqualTo(b.Tick));
         }
+
+        [Test]
+        public void InvalidArgumentsAreRejected()
+        {
+            var clock = CreateClock();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => clock.SetSpeed((SimulationSpeed)7));
+            Assert.Throws<ArgumentOutOfRangeException>(() => clock.Advance(-0.1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => clock.Advance(double.NaN));
+            Assert.Throws<ArgumentOutOfRangeException>(() => clock.Restore(-1, SimulationSpeed.Normal));
+        }
+
+        [Test]
+        public void RestoringPausedClockResumesAtNormalSpeed()
+        {
+            var clock = CreateClock();
+
+            clock.Restore(0, SimulationSpeed.Paused);
+            clock.TogglePause();
+
+            Assert.That(clock.Speed, Is.EqualTo(SimulationSpeed.Normal));
+        }
     }
 }

@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
     Testcode onder Cities/Assets/Tests als apart project, zodat SonarQube productie- en testcode
-    uit elkaar houdt. Unity levert zijn eigen NUnit 3.x mee; voor de analyse volstaat de NuGet-versie.
+    uit elkaar houdt. Unity levert zijn eigen NUnit 3.x mee; hier draait de NuGet-versie.
+    CI voert de EditMode-tests die geen Unity-runtime nodig hebben uit met dotnet test en meet de dekking.
   -->
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <RollForward>Major</RollForward>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -21,7 +24,10 @@
 
   <ItemGroup>
     <ProjectReference Include="../Cities.Sonar/Cities.Sonar.csproj" />
-    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="true" />
     <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
   </ItemGroup>
 </Project>
