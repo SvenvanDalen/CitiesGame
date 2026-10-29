@@ -23,5 +23,6 @@
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />
     <ProjectReference Include="../UnityPackages/Unity.Collections/Unity.Collections.csproj" />
+    <ProjectReference Include="../UnityPackages/Unity.InputSystem/Unity.InputSystem.csproj" />
   </ItemGroup>
 </Project>

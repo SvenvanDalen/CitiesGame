@@ -23,6 +23,7 @@
     <UnityManaged Condition="'$(UnityManaged)' == ''">/opt/unity/Editor/Data/Managed</UnityManaged>
     <UnityBuiltInPackages Condition="'$(UnityBuiltInPackages)' == ''">$(UnityManaged)/../Resources/PackageManager/BuiltInPackages</UnityBuiltInPackages>
     <BurstPackage Condition="'$(BurstPackage)' == ''">$(MSBuildThisFileDirectory)../.packages/com.unity.burst</BurstPackage>
+    <InputSystemPackage Condition="'$(InputSystemPackage)' == ''">$(MSBuildThisFileDirectory)../.packages/com.unity.inputsystem</InputSystemPackage>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" Private="false" />

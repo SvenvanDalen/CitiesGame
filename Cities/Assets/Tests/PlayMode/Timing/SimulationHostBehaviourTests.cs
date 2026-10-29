@@ -60,7 +60,13 @@ namespace Cities.Tests.PlayMode.Timing
             var counter = new CountingSystem();
             behaviour.Scheduler.Register(counter);
 
-            yield return new WaitForSecondsRealtime(0.5f);
+            // Wachten op een aantal ticks in plaats van een vaste tijd: de editor kan in tests traag lopen.
+            var deadline = UnityEngine.Time.realtimeSinceStartup + 5f;
+            while (behaviour.Runner.ScheduledTicks < 10 && UnityEngine.Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+            }
+
             var syncPointsWhileRunning = behaviour.Scheduler.SyncPointCount;
             behaviour.Scheduler.Complete();
 

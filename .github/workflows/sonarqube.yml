@@ -39,13 +39,16 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Burst-package ophalen
-        # Collections en Mathematics zitten in de editor; Burst komt uit de Unity-registry, in de versie van packages-lock.json
+      - name: Unity-packages uit de registry ophalen
+        # Collections, Mathematics en ugui zitten in de editor; deze komen uit de Unity-registry, in de versie van packages-lock.json
         run: |
-          version=$(grep -A1 '"com.unity.burst"' Cities/Packages/packages-lock.json | grep '"version"' | sed -E 's/.*"([0-9][^"]*)".*/\1/')
-          mkdir -p ci/sonar/.packages/com.unity.burst
-          curl --proto '=https' --tlsv1.2 -sSfL "https://download.packages.unity.com/com.unity.burst/-/com.unity.burst-${version}.tgz" \
-            | tar -xz -C ci/sonar/.packages/com.unity.burst --strip-components=1
+          for package in com.unity.burst com.unity.inputsystem; do
+            version=$(grep -A1 "\"${package}\"" Cities/Packages/packages-lock.json | grep '"version"' | sed -E 's/.*"([0-9][^"]*)".*/\1/')
+            mkdir -p "ci/sonar/.packages/${package}"
+            curl --proto '=https' --tlsv1.2 -sSfL "https://download.packages.unity.com/${package}/-/${package}-${version}.tgz" \
+              | tar -xz -C "ci/sonar/.packages/${package}" --strip-components=1
+            echo "${package} ${version}"
+          done
 
       - name: Analyse met SonarScanner for .NET
         env:

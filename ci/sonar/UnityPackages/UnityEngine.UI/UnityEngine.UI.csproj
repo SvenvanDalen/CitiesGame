@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="$(UnityBuiltInPackages)/com.unity.ugui/Runtime/UGUI/**/*.cs" />
+  </ItemGroup>
+</Project>

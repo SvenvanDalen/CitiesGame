@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- versionDefines uit Unity.InputSystem.asmdef die voor Unity 6000.5 met deze modules gelden -->
+    <DefineConstants>$(DefineConstants);UNITY_INPUT_SYSTEM_ENABLE_XR;UNITY_INPUT_SYSTEM_ENABLE_PHYSICS;UNITY_INPUT_SYSTEM_ENABLE_PHYSICS2D;UNITY_INPUT_SYSTEM_ENABLE_UI;UNITY_INPUT_SYSTEM_PLATFORM_SCROLL_DELTA;UNITY_INPUT_SYSTEM_INPUT_MODULE_SCROLL_DELTA;UNITY_INPUT_SYSTEM_INPUT_MODULE_NAVIGATION_DEVICE_TYPE;UNITY_INPUT_SYSTEM_SENDPOINTERHOVERTOPARENT;UNITY_INPUT_SYSTEM_ENABLE_ANALYTICS;UNITY_INPUT_SYSTEM_PLATFORM_POLLING_FREQUENCY;UNITY_INPUTSYSTEM_SUPPORTS_MOUSE_SCRIPT_EVENTS;UNITY_INPUTSYSTEM_SUPPORTS_FOCUS_EVENTS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(InputSystemPackage)/InputSystem/**/*.cs"
+             Exclude="$(InputSystemPackage)/InputSystem/Editor/Plugins/InputForUI/**;$(InputSystemPackage)/InputSystem/Runtime/Plugins/InputForUI/**" />
+    <ProjectReference Include="../UnityEngine.UI/UnityEngine.UI.csproj" />
+    <ProjectReference Include="../UnityEditor.UI/UnityEditor.UI.csproj" />
+  </ItemGroup>
+</Project>
