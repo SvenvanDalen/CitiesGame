@@ -20,3 +20,20 @@ namespace UnityEngine.TestTools
     {
     }
 }
+
+namespace UnityEngine.TestTools.Constraints
+{
+    using NUnit.Framework.Constraints;
+
+    /// <summary>Spiegel van Unity's <c>Is</c> met de allocatie-constraint; in CI draaien deze tests niet.</summary>
+    public abstract class Is : NUnit.Framework.Is
+    {
+        public static Constraint AllocatingGCMemory() => throw new NotSupportedException("Alleen beschikbaar in Unity.");
+    }
+
+    public static class ConstraintExtensions
+    {
+        public static Constraint AllocatingGCMemory(this ConstraintExpression chain) =>
+            throw new NotSupportedException("Alleen beschikbaar in Unity.");
+    }
+}
