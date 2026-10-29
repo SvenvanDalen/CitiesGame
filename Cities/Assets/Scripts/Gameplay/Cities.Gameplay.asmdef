@@ -1,7 +1,7 @@
 {
     "name": "Cities.Gameplay",
     "rootNamespace": "Cities.Gameplay",
-    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Unity.InputSystem"],
+    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Unity.InputSystem", "Unity.Mathematics"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

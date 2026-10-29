@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="$(UnityBuiltInPackages)/com.unity.ugui/Editor/UGUI/**/*.cs" />
+    <ProjectReference Include="../UnityEngine.UI/UnityEngine.UI.csproj" />
+  </ItemGroup>
+</Project>
