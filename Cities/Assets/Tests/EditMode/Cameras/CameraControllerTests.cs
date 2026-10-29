@@ -87,7 +87,8 @@ namespace Cities.Tests.EditMode.Cameras
             Assert.That(controller.Current.Distance, Is.EqualTo(CameraSettings.Default.MinDistance));
 
             controller.Update(new CameraInput { ScrollSteps = -200f }, Frame);
-            Assert.That(controller.Current.Distance, Is.EqualTo(CameraSettings.Default.MaxDistance));
+            Assert.That(controller.Current.Distance, Is.EqualTo(4000f / math.sin(math.radians(45f))).Within(0.01f),
+                "Bij 45° begrenst de maximale hoogte van 4000 m de afstand, nog voor de maximale afstand");
         }
 
         [Test]
