@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Gameplay.Controls
 {
@@ -55,23 +56,8 @@ namespace Cities.Gameplay.Controls
                 return false;
             }
 
-            foreach (var excluded in ExcludedControls)
-            {
-                if (path.StartsWith(excluded, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var device in AllowedDevices)
-            {
-                if (path.StartsWith(device + "/", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return !ExcludedControls.Any(excluded => path.StartsWith(excluded, StringComparison.OrdinalIgnoreCase))
+                && AllowedDevices.Any(device => path.StartsWith(device + "/", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>Vergelijkt controlpaden zoals het Input System: hoofdletters tellen niet; leeg is gelijk aan leeg.</summary>

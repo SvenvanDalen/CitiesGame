@@ -244,7 +244,7 @@ namespace Cities.Tests.EditMode.Controls
 
         private SlotRef Slot(string key, int slot) => Slot(_bindings, key, slot);
 
-        private static SlotRef Slot(IControlBindings bindings, string key, int slot) =>
+        private static SlotRef Slot(InputControlBindings bindings, string key, int slot) =>
             new SlotRef(ControlTestData.Row(bindings.Rows, key), slot);
     }
 

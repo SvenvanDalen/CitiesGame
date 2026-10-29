@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Gameplay.Controls
 {
@@ -54,16 +55,7 @@ namespace Cities.Gameplay.Controls
         /// <summary>Sleutels van getoonde regels zonder Nederlandse naam; hoort leeg te zijn.</summary>
         public static IReadOnlyList<string> FindUnlabeled(IReadOnlyList<ControlRow> rows)
         {
-            var missing = new List<string>();
-            foreach (var row in rows)
-            {
-                if (!ControlLabels.TryGet(row.Key, out _, out _))
-                {
-                    missing.Add(row.Key);
-                }
-            }
-
-            return missing;
+            return rows.Select(row => row.Key).Where(key => !ControlLabels.TryGet(key, out _, out _)).ToList();
         }
 
         private static bool IsShown(BindingInfo binding) =>
