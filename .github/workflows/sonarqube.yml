@@ -50,8 +50,11 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         run: |
-          mkdir -p "$HOME/.local/share/unity3d/Unity"
-          printf '%s' "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+          # De licensing client draait als root en kijkt niet in $HOME (/github/home) van de container
+          for dir in "$HOME" /root; do
+            mkdir -p "$dir/.local/share/unity3d/Unity"
+            printf '%s' "$UNITY_LICENSE" > "$dir/.local/share/unity3d/Unity/Unity_lic.ulf"
+          done
 
       - name: Solution genereren
         run: >
