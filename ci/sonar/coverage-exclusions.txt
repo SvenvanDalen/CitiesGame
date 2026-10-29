@@ -18,3 +18,5 @@ Cities/Assets/Scripts/World/Terrain/WorldMapTerrain.cs
 Cities/Assets/Scripts/Presentation/UI/CityButton.cs
 Cities/Assets/Scripts/Presentation/UI/CityPanel.cs
 Cities/Assets/Scripts/Presentation/UI/CityMeter.cs
+Cities/Assets/Scripts/Gameplay/Controls/InputControlBindings.cs
+Cities/Assets/Scripts/Presentation/Settings/ControlsSettingsPanel.cs

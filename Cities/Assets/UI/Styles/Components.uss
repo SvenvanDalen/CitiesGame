@@ -240,6 +240,113 @@
     white-space: normal;
 }
 
+/* Verduistert het spel achter een modaal paneel */
+.c-overlay {
+    background-color: var(--color-overlay);
+}
+
+/* ---------- Toetsen (besturingsinstellingen) ---------- */
+.c-keybind {
+    flex-direction: row;
+    align-items: center;
+    min-height: 36px;
+    padding: 2px 0;
+    border-bottom-width: 1px;
+    border-color: var(--color-border);
+}
+
+.c-keybind--header {
+    min-height: 24px;
+    padding-right: 12px; /* even breed als de schuifbalk, zodat de kolommen gelijk staan */
+    border-bottom-width: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-caption);
+}
+
+.c-keybind__label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-right: var(--space-3);
+    white-space: normal;
+}
+
+.c-keybind__column {
+    width: 148px;
+    min-width: 148px;
+    margin: 0 0 0 var(--space-2);
+    padding: 0;
+    -unity-text-align: middle-center;
+}
+
+.c-keybind__reset {
+    width: 72px;
+    min-width: 72px;
+    margin-left: var(--space-2);
+}
+
+/* Toets als knop: monospace-achtig vlak met de toetsnaam */
+.c-keycap {
+    height: 28px;
+    padding: 0 var(--space-2);
+    background-color: var(--color-surface-sunken);
+    border-color: var(--color-border-strong);
+    border-bottom-width: 2px;
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-Medium.asset");
+}
+
+.c-keycap--custom {
+    color: var(--color-accent);
+}
+
+.c-keycap--listening {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-hover);
+    color: var(--color-accent);
+}
+
+.c-keycap:disabled {
+    opacity: 0.55;
+}
+
+/* ---------- Instellingenpaneel ---------- */
+.c-settings {
+    width: 700px;
+    max-height: 90%;
+}
+
+.c-settings > .c-panel__body {
+    flex-shrink: 1;
+}
+
+.c-settings__hint {
+    margin-bottom: var(--space-3);
+    white-space: normal;
+}
+
+.c-settings__scroll {
+    flex-shrink: 1;
+    max-height: 560px;
+}
+
+/* Vaste breedte, zodat de koprij (padding-right) precies boven de kolommen staat */
+.c-settings__scroll .unity-scroller--vertical {
+    width: 12px;
+    min-width: 12px;
+}
+
+.c-settings__section {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-1);
+    color: var(--color-text);
+}
+
+.c-settings__status {
+    min-height: 32px;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    white-space: normal;
+}
+
 /* ---------- Ingebouwde besturingselementen in de huisstijl ---------- */
 .c-root .unity-base-field__label {
     color: var(--color-text-muted);

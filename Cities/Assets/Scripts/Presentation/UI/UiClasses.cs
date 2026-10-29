@@ -33,6 +33,22 @@ namespace Cities.Presentation.UI
         public const string Meter = "c-meter";
         public const string MeterFill = "c-meter__fill";
         public const string Tooltip = "c-tooltip";
+        public const string Overlay = "c-overlay";
+
+        public const string Keybind = "c-keybind";
+        public const string KeybindHeader = "c-keybind--header";
+        public const string KeybindLabel = "c-keybind__label";
+        public const string KeybindColumn = "c-keybind__column";
+        public const string KeybindReset = "c-keybind__reset";
+        public const string Keycap = "c-keycap";
+        public const string KeycapCustom = "c-keycap--custom";
+        public const string KeycapListening = "c-keycap--listening";
+
+        public const string SettingsPanel = "c-settings";
+        public const string SettingsHint = "c-settings__hint";
+        public const string SettingsScroll = "c-settings__scroll";
+        public const string SettingsSection = "c-settings__section";
+        public const string SettingsStatus = "c-settings__status";
 
         /// <summary>Klasse voor een knopvariant; secundair is de basisstijl en heeft geen extra klasse.</summary>
         public static string ForVariant(ButtonVariant variant)
