@@ -40,7 +40,7 @@ namespace Cities.Simulation.Scheduling
             }
 
             var predecessors = after?.ToList() ?? new List<T>();
-            if (predecessors.Any(p => p == null))
+            if (predecessors.Contains(null))
             {
                 throw new ArgumentException("Afhankelijkheden mogen niet null zijn.", nameof(after));
             }

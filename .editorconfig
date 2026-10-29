@@ -74,3 +74,7 @@ dotnet_naming_symbols.static_readonly.required_modifiers = static, readonly
 dotnet_naming_rule.static_readonly_pascal.symbols = static_readonly
 dotnet_naming_rule.static_readonly_pascal.style = pascal
 dotnet_naming_rule.static_readonly_pascal.severity = warning
+
+# Tests: leesbaarheid gaat voor micro-optimalisaties
+[Cities/Assets/Tests/**.cs]
+dotnet_diagnostic.CA1861.severity = none
