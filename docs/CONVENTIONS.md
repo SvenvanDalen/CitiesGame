@@ -41,6 +41,15 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 - Willekeur gaat via de deterministische RNG (E01-11), nooit via `UnityEngine.Random`.
 - Deterministische logica krijgt minstens één EditMode-test.
 
+## Definities (speldata)
+
+- Gebouwen, voertuigen, beleid en kosten zijn definities: een `GameDefinition`-asset onder `Cities/Assets/Data/<Soort>`, te bewerken in de inspector.
+- Het ID is stabiel en komt in opslagbestanden: `<soort>.<naam>` in kleine letters met koppeltekens, bijvoorbeeld `vehicle.city-bus`. Wijzig een ID niet meer na gebruik.
+- Waarden staan in een serialiseerbare spec-struct (`VehicleSpec`, `BuildingSpec`, `PolicySpec`) met een `Validate`-methode. De asset-klasse is een dunne laag eromheen. Zo zijn regels en berekeningen ook in CI getest.
+- `Assets/Data/DefinitionCatalog.asset` wordt automatisch bijgewerkt. **Cities > Definities > Catalogus bijwerken en valideren** meldt fouten.
+- Geldbedragen zijn `long` in hele munteenheden.
+- Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
+
 ## Tests en dekking
 
 - Logica staat waar mogelijk in gewone C#-klassen en structs. MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
