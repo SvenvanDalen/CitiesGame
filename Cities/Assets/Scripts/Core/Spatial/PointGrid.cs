@@ -95,47 +95,49 @@ namespace Cities.Core.Spatial
         /// </summary>
         public readonly int FindNearest(NativeArray<float2> positions, float2 center, float maxRadius, int excludeIndex = -1)
         {
-            var best = -1;
-            var bestSq = maxRadius * maxRadius;
+            var search = new NearestSearch(center, maxRadius, excludeIndex);
             var origin = _geometry.CellOf(center);
             var maxRing = (int)math.ceil(maxRadius / _geometry.CellSize) + 1;
-            var sorted = _sorted.AsArray();
             for (var ring = 0; ring <= maxRing; ring++)
             {
                 // De dichtstbijzijnde rand van deze ring ligt minstens (ring - 1) cellen ver.
                 var ringDistance = math.max(ring - 1, 0) * _geometry.CellSize;
-                if (best >= 0 && ringDistance * ringDistance > bestSq)
+                if (search.Best >= 0 && ringDistance * ringDistance > search.BestSq)
                 {
                     break;
                 }
 
-                for (var y = origin.y - ring; y <= origin.y + ring; y++)
-                {
-                    for (var x = origin.x - ring; x <= origin.x + ring; x++)
-                    {
-                        var onRing = math.abs(x - origin.x) == ring || math.abs(y - origin.y) == ring;
-                        if (!onRing || x < 0 || y < 0 || x >= _geometry.CellCount.x || y >= _geometry.CellCount.y)
-                        {
-                            continue;
-                        }
+                ScanRing(positions, origin, ring, ref search);
+            }
 
-                        var cell = _geometry.IndexUnchecked(new int2(x, y));
-                        var end = _cellStart[cell] + _cellCount[cell];
-                        for (var i = _cellStart[cell]; i < end; i++)
-                        {
-                            var point = sorted[i];
-                            var distanceSq = math.distancesq(positions[point], center);
-                            if (point != excludeIndex && (distanceSq < bestSq || (distanceSq <= bestSq && best < 0)))
-                            {
-                                best = point;
-                                bestSq = distanceSq;
-                            }
-                        }
+            return search.Best;
+        }
+
+        private readonly void ScanRing(NativeArray<float2> positions, int2 origin, int ring, ref NearestSearch search)
+        {
+            var min = math.max(origin - ring, 0);
+            var max = math.min(origin + ring, _geometry.CellCount - 1);
+            for (var y = min.y; y <= max.y; y++)
+            {
+                for (var x = min.x; x <= max.x; x++)
+                {
+                    if (math.abs(x - origin.x) == ring || math.abs(y - origin.y) == ring)
+                    {
+                        ScanCell(positions, _geometry.IndexUnchecked(new int2(x, y)), ref search);
                     }
                 }
             }
+        }
 
-            return best;
+        private readonly void ScanCell(NativeArray<float2> positions, int cell, ref NearestSearch search)
+        {
+            var sorted = _sorted.AsArray();
+            var end = _cellStart[cell] + _cellCount[cell];
+            for (var i = _cellStart[cell]; i < end; i++)
+            {
+                var point = sorted[i];
+                search.Consider(point, math.distancesq(positions[point], search.Center));
+            }
         }
 
         public void Dispose()
@@ -146,6 +148,34 @@ namespace Cities.Core.Spatial
                 _cellCount.Dispose();
                 _sorted.Dispose();
                 _cellOfPoint.Dispose();
+            }
+        }
+
+        private struct NearestSearch
+        {
+            public readonly float2 Center;
+            private readonly int _exclude;
+
+            public NearestSearch(float2 center, float maxRadius, int exclude)
+            {
+                Center = center;
+                _exclude = exclude;
+                Best = -1;
+                BestSq = maxRadius * maxRadius;
+            }
+
+            public int Best { get; private set; }
+
+            public float BestSq { get; private set; }
+
+            /// <summary>Strikt dichterbij wint; bij gelijke afstand blijft de eerst gevonden staan (deterministisch).</summary>
+            public void Consider(int point, float distanceSq)
+            {
+                if (point != _exclude && (distanceSq < BestSq || (distanceSq <= BestSq && Best < 0)))
+                {
+                    Best = point;
+                    BestSq = distanceSq;
+                }
             }
         }
 

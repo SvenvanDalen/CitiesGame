@@ -15,6 +15,7 @@ namespace Cities.Tests.EditMode.Spatial
     public class SpatialGridTests
     {
         private static readonly GridGeometry Geometry = GridGeometry.Covering(float2.zero, new float2(1000f, 1000f), 50f);
+        private static readonly int[] OnlyOne = { 1 };
 
         private SpatialGrid<int> _grid;
         private NativeList<int> _results;
@@ -40,7 +41,7 @@ namespace Cities.Tests.EditMode.Spatial
 
             _grid.QueryRect(new Aabb2(float2.zero, new float2(1000f, 1000f)), _results);
 
-            Assert.That(_results.AsArray().ToArray(), Is.EqualTo(new[] { 1 }));
+            Assert.That(_results.AsArray().ToArray(), Is.EqualTo(OnlyOne));
         }
 
         [Test]
