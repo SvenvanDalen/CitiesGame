@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Cities.Core.Diagnostics
@@ -23,12 +24,9 @@ namespace Cities.Core.Diagnostics
         public void Apply()
         {
             LogLevels.Default = _defaultLevel;
-            foreach (var entry in _categories)
+            foreach (var entry in _categories.Where(e => !string.IsNullOrWhiteSpace(e.Category)))
             {
-                if (!string.IsNullOrWhiteSpace(entry.Category))
-                {
-                    LogLevels.Set(entry.Category, entry.Level);
-                }
+                LogLevels.Set(entry.Category, entry.Level);
             }
         }
     }
