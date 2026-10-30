@@ -44,6 +44,13 @@ namespace Cities.Presentation.UI
         public const string KeycapCustom = "c-keycap--custom";
         public const string KeycapListening = "c-keycap--listening";
 
+        public const string DebugPanel = "c-debug";
+        public const string DebugRow = "c-debug__row";
+        public const string DebugRowName = "c-debug__name";
+        public const string DebugRowValue = "c-debug__value";
+        public const string DebugTiming = "c-debug__timing";
+        public const string DebugLabel = "c-debug__label";
+
         public const string SettingsPanel = "c-settings";
         public const string SettingsHint = "c-settings__hint";
         public const string SettingsScroll = "c-settings__scroll";
@@ -84,6 +91,9 @@ namespace Cities.Presentation.UI
                 case MeterColor.Commercial: return "c-meter--commercial";
                 case MeterColor.Industrial: return "c-meter--industrial";
                 case MeterColor.Office: return "c-meter--office";
+                case MeterColor.Success: return "c-meter--success";
+                case MeterColor.Warning: return "c-meter--warning";
+                case MeterColor.Danger: return "c-meter--danger";
                 default: return null;
             }
         }
@@ -113,5 +123,8 @@ namespace Cities.Presentation.UI
         Commercial,
         Industrial,
         Office,
+        Success,
+        Warning,
+        Danger,
     }
 }

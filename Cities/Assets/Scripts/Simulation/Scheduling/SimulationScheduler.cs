@@ -52,6 +52,16 @@ namespace Cities.Simulation.Scheduling
             }
         }
 
+        /// <summary>
+        /// Meetmodus voor het debugpaneel (E24-02): elk systeem wordt direct na het inplannen afgewacht en gemeten, zodat
+        /// <see cref="Timings"/> de echte tijd per systeem bevat. De systemen draaien dan na elkaar en de main thread wacht;
+        /// alleen voor diagnose, niet in normaal spel.
+        /// </summary>
+        public bool MeasureSystems { get; set; }
+
+        /// <summary>Gemeten tijden per systeem en per tick zolang <see cref="MeasureSystems"/> aan staat.</summary>
+        public SystemTimings Timings { get; } = new SystemTimings();
+
         /// <summary>Aantal keren dat de main thread op jobs moest wachten; voor diagnose (E24-02) en tests.</summary>
         public int SyncPointCount { get; private set; }
 
@@ -80,6 +90,13 @@ namespace Cities.Simulation.Scheduling
             EnsureOrder();
             using var tickScope = TickMarker.Auto();
             var tickStart = _lastTick;
+            var measure = MeasureSystems;
+            if (measure)
+            {
+                tickStart.Complete();
+            }
+
+            var tickWatch = measure ? System.Diagnostics.Stopwatch.StartNew() : null;
             for (var i = 0; i < _order.Length; i++)
             {
                 _combine.Clear();
@@ -90,10 +107,21 @@ namespace Cities.Simulation.Scheduling
                 }
 
                 var dependency = JobHandle.CombineDependencies(_combine.AsArray());
+                if (measure)
+                {
+                    _handles[i] = ScheduleMeasured(i, tick, dependency);
+                    continue;
+                }
+
                 using (_markers[i].Auto())
                 {
                     _handles[i] = ScheduleSystem(_order[i], tick, dependency);
                 }
+            }
+
+            if (measure)
+            {
+                Timings.Record(SystemTimings.TickName, tickWatch.Elapsed.TotalMilliseconds);
             }
 
             _combine.Clear();
@@ -106,6 +134,21 @@ namespace Cities.Simulation.Scheduling
             _lastTick = JobHandle.CombineDependencies(_combine.AsArray());
             JobHandle.ScheduleBatchedJobs();
             return _lastTick;
+        }
+
+        private JobHandle ScheduleMeasured(int slot, in SimulationTick tick, JobHandle dependency)
+        {
+            dependency.Complete();
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            JobHandle handle;
+            using (_markers[slot].Auto())
+            {
+                handle = ScheduleSystem(_order[slot], tick, dependency);
+            }
+
+            handle.Complete();
+            Timings.Record(_order[slot].Name, watch.Elapsed.TotalMilliseconds);
+            return handle;
         }
 
         /// <summary>Wacht tot alle ingeplande simulatiejobs klaar zijn. Telt als synchronisatiepunt als er nog werk liep.</summary>
