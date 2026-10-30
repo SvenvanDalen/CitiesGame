@@ -1,4 +1,6 @@
 using Cities.World.Grid;
+using Cities.World.Picking;
+using Cities.World.Terrain;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -27,7 +29,11 @@ namespace Cities.Gameplay.Cameras
         [Tooltip("Lagen waarmee de camera botst en waarop zoomen naar de cursor richt (terrein, water, gebouwen).")]
         [SerializeField] private LayerMask _surfaceLayers = ~0;
 
+        [Tooltip("Optioneel: volg de hoogtekaart van deze wereld in plaats van colliders.")]
+        [SerializeField] private WorldMapHostBehaviour _world;
+
         private PhysicsSurfaceHeight _surface;
+        private TerrainPickLayer _heightmap;
 
         private UnityEngine.Camera _camera;
         private InputAction _move;
@@ -48,12 +54,20 @@ namespace Cities.Gameplay.Cameras
             _camera = GetComponent<UnityEngine.Camera>();
             var world = WorldDimensions.Default;
             _surface = new PhysicsSurfaceHeight(_surfaceLayers);
+            ITerrainHeight terrain = _surface;
+            if (_world != null && _world.Map != null)
+            {
+                world = _world.Map.Dimensions;
+                terrain = new WorldMapTerrain(_world.Map);
+                _heightmap = new TerrainPickLayer(terrain, new float2(world.SizeX, world.SizeZ));
+            }
+
             Controller = new CameraController(
                 _settings,
                 new CameraRig(new float3(_startPivot.x, 0f, _startPivot.y), _startYaw, _startPitch, _startDistance),
                 float2.zero,
                 new float2(world.SizeX, world.SizeZ),
-                _surface);
+                terrain);
 
             var map = _controls.FindActionMap("Camera", throwIfNotFound: true);
             _move = map.FindAction("Move", true);
@@ -84,7 +98,7 @@ namespace Cities.Gameplay.Cameras
             if (math.abs(scroll) > 0f || math.abs(zoom) > 0f)
             {
                 // Alleen raycasten als er gezoomd wordt; dat scheelt een raycast per frame.
-                hasCursorPoint = _surface.TryGetCursorPoint(_camera.ScreenPointToRay(pointer), Controller.Current.Pivot.y, out cursorPoint);
+                hasCursorPoint = TryGetCursorPoint(_camera.ScreenPointToRay(pointer), out cursorPoint);
             }
 
             var input = new CameraInput
@@ -106,6 +120,18 @@ namespace Cities.Gameplay.Cameras
             Controller.Settings = _settings;
             Controller.Update(input, UnityEngine.Time.unscaledDeltaTime);
             Apply(Controller.Current);
+        }
+
+        /// <summary>Punt onder de muis op de hoogtekaart als die er is; anders tegen colliders of het vlak van de pivot.</summary>
+        private bool TryGetCursorPoint(Ray ray, out float3 point)
+        {
+            if (_heightmap != null && _heightmap.Raycast(new PickRay(ray.origin, ray.direction), 50_000f, out var hit))
+            {
+                point = hit.Point;
+                return true;
+            }
+
+            return _surface.TryGetCursorPoint(ray, Controller.Current.Pivot.y, out point);
         }
 
         private void Apply(CameraRig rig)

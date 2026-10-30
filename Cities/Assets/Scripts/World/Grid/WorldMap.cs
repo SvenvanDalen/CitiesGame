@@ -43,8 +43,16 @@ namespace Cities.World.Grid
 
         public WorldDimensions Dimensions { get; }
 
-        /// <summary>Terreinhoogte in meters op elk hoekpunt.</summary>
+        /// <summary>Terreinhoogte in meters op elk hoekpunt. Meld wijzigingen met <see cref="NotifyHeightChanged"/>.</summary>
         public ref CellLayer<float> Height => ref _height;
+
+        /// <summary>Hoekpunten (min inclusief, max exclusief) waarvan de hoogte veranderd is, bijvoorbeeld voor de terreinmesh.</summary>
+        public event Action<UnityEngine.RectInt> HeightChanged;
+
+        /// <summary>Alle hoekpunten van de hoogtelaag.</summary>
+        public UnityEngine.RectInt AllCorners => new UnityEngine.RectInt(0, 0, _height.Layout.Width, _height.Layout.Depth);
+
+        public void NotifyHeightChanged(UnityEngine.RectInt corners) => HeightChanged?.Invoke(corners);
 
         /// <summary>Waterdiepte boven het terrein in meters op elk hoekpunt; 0 is droog.</summary>
         public ref CellLayer<float> WaterDepth => ref _waterDepth;

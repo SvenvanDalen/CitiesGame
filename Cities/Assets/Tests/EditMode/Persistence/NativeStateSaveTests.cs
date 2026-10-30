@@ -71,6 +71,22 @@ namespace Cities.Tests.EditMode.Persistence
         }
 
         [Test]
+        public void LoadingReportsThatAllHeightsChanged()
+        {
+            using (var map = new WorldMap(Small, 12f))
+            using (var loaded = new WorldMap(Small))
+            {
+                var changes = new System.Collections.Generic.List<UnityEngine.RectInt>();
+                loaded.HeightChanged += changes.Add;
+
+                SaveBytes.Read(SaveBytes.Write(new SaveMetadata(), new WorldMapSection(map)), new WorldMapSection(loaded));
+
+                Assert.That(changes, Is.EqualTo(new[] { loaded.AllCorners }), "de terreinmesh moet na laden opnieuw gebouwd worden");
+                Assert.That(loaded.AllCorners.width, Is.EqualTo(Small.CellsX + 1));
+            }
+        }
+
+        [Test]
         public void OtherMapSizeIsRejectedWithoutChanges()
         {
             using (var map = new WorldMap(Small, 12f))
