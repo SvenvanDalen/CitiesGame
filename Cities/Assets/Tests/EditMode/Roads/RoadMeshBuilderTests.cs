@@ -32,7 +32,7 @@ namespace Cities.Tests.EditMode.Roads
         {
             var data = RoadMeshBuilder.Build(North(60f), LaneProfiles.Road(2, bikeLanes: true, sidewalks: true));
 
-            foreach (RoadSurface surface in Enum.GetValues(typeof(RoadSurface)))
+            foreach (var surface in Enum.GetValues<RoadSurface>())
             {
                 Assert.That(data.Triangles[(int)surface], Is.Not.Empty, surface.ToString());
                 Assert.That(data.Triangles[(int)surface].Count % 3, Is.EqualTo(0));

@@ -69,6 +69,15 @@ namespace Cities.World.Roads
                 return default;
             }
 
+            Blend(ref heights, samples, corners, core, reach, spacing);
+            map.NotifyHeightChanged(corners);
+            ClearCover(map, samples, halfWidth);
+            return corners;
+        }
+
+        private static void Blend(ref CellLayer<float> heights, float3[] samples, RectInt corners, float core, float reach, float spacing)
+        {
+            var layout = heights.Layout;
             var weight = new float[corners.width * corners.height];
             var target = new float[weight.Length];
             foreach (var sample in samples)
@@ -100,10 +109,6 @@ namespace Cities.World.Roads
                     }
                 }
             }
-
-            map.NotifyHeightChanged(corners);
-            ClearCover(map, samples, halfWidth);
-            return corners;
         }
 
         /// <summary>1 binnen <paramref name="core"/>, daarna zacht (smoothstep) naar 0 op <paramref name="reach"/>.</summary>
