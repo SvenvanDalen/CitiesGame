@@ -93,6 +93,27 @@ namespace Cities.Tests.EditMode.Scheduling
         }
 
         [Test]
+        public void MeasureModeTimesEverySystemAndTheTick()
+        {
+            _scheduler.Register(new LoggingSystem("Terrein", 1, _log));
+            _scheduler.Register(new LoggingSystem("Water", 2, _log));
+
+            _scheduler.ScheduleTick(Tick);
+            Assert.That(_scheduler.Timings.Systems, Is.Empty, "Zonder meetmodus wordt niets gemeten");
+
+            _scheduler.MeasureSystems = true;
+            _scheduler.ScheduleTick(Tick);
+            _scheduler.ScheduleTick(Tick);
+
+            Assert.That(_scheduler.Timings.Systems, Is.EquivalentTo(new[] { "Terrein", "Water" }));
+            Assert.That(_scheduler.Timings.Get("Water").Samples, Is.EqualTo(2));
+            Assert.That(_scheduler.Timings.Tick.Samples, Is.EqualTo(2));
+            Assert.That(_scheduler.Timings.Tick.AverageMs, Is.GreaterThanOrEqualTo(_scheduler.Timings.Get("Water").AverageMs));
+            Assert.That(_scheduler.LastTickHandle.IsCompleted, Is.True, "In meetmodus is elk systeem al klaar");
+            Assert.That(_log.Length, Is.EqualTo(6));
+        }
+
+        [Test]
         public void SystemsRunInDependencyOrder()
         {
             var terrain = new LoggingSystem("Terrein", 1, _log);
