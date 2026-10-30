@@ -20,6 +20,11 @@ namespace Cities.Core.Ids
     {
     }
 
+    /// <summary>Rijstroken, fietspaden en stoepen op een wegsegment.</summary>
+    public struct LaneKind : IEntityKind
+    {
+    }
+
     public struct CitizenKind : IEntityKind
     {
     }

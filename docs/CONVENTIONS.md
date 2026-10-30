@@ -94,6 +94,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `Read` verandert niets aan het spel: het leest, controleert en geeft een `Action` terug die de status toepast. Ongeldige inhoud geeft `reader.Corrupt(...)`.
 - Lagen en grote arrays gaan met `WriteShuffled`/`ReadShuffled`; losse waarden met `Write`/`Read…`. Bij een wijziging van de inhoud gaat `Version` omhoog en blijven oude versies leesbaar.
 
+## Wegennet
+
+- `RoadNetwork` (Simulation/Network) bevat knooppunten, segmenten (kubische Bézier) en lanes met stabiele ID's; hoogstens acht armen per knooppunt en vijftien lanes per segment. Rechtsrijdend: lane-offset is positief rechts van de segmentrichting.
+- Lanes en verbindingen worden afgeleid uit het profiel (`LaneProfiles`) en `LaneConnector`; alleen knooppunten, segmenten en lanes gaan in de save (sectie `NETW`), verbindingen worden bij het laden herbouwd.
+- Bij een wijziging van het net: gebruik `AddSegment`/`RemoveSegment` zodat verbindingen en losse knooppunten meegaan; luister op `SegmentChanged`. De overlay `Lanegraaf` toont het geheel, de testscene is `Scenes/Tests/Network`.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
