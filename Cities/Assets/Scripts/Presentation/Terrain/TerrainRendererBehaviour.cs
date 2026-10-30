@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Cities.World.Grid;
 using Cities.World.Terrain;
 using Unity.Collections;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -45,9 +44,7 @@ namespace Cities.Presentation.Terrain
         private bool[] _dirty;
         private bool _built;
         private float2[] _heightRanges;
-        private NativeArray<ushort> _indices;
-        private NativeArray<int2> _indexRanges;
-        private NativeArray<VertexAttributeDescriptor> _vertexLayout;
+        private TerrainMeshBuilder _builder;
 
         public TerrainChunkLayout Layout => _layout;
 
@@ -66,8 +63,7 @@ namespace Cities.Presentation.Terrain
 
             _map = _world.Map;
             _layout = new TerrainChunkLayout(_map.Dimensions);
-            CreateIndexTemplates();
-            _vertexLayout = TerrainVertex.CreateLayout(Allocator.Persistent);
+            _builder = new TerrainMeshBuilder(_skirtDepth);
 
             var count = _layout.ChunkCount;
             _meshes = new Mesh[count];
@@ -110,9 +106,7 @@ namespace Cities.Presentation.Terrain
                 }
             }
 
-            _indices.Dispose();
-            _indexRanges.Dispose();
-            _vertexLayout.Dispose();
+            _builder?.Dispose();
         }
 
         private void LateUpdate()
@@ -122,24 +116,7 @@ namespace Cities.Presentation.Terrain
                 return;
             }
 
-            var eye = _camera.transform.position;
-            _pending.Clear();
-            for (var i = 0; i < _lods.Length; i++)
-            {
-                // Ongebouwde chunks meten vanaf het maaiveld van de kaart; daarna vanaf hun echte hoogtebereik.
-                var range = _lods[i] < 0 ? new float2(0f, 0f) : _heightRanges[i];
-                _desired[i] = TerrainChunkLayout.ChooseLod(_layout.Distance(i, eye, range.x, range.y), _lodDistances);
-            }
-
-            for (var i = 0; i < _lods.Length; i++)
-            {
-                // Ook opnieuw als een buur van niveau wisselt: de randen worden tegen de grovere buur gelegd.
-                if (_dirty[i] || _desired[i] != _lods[i] || math.any(_layout.NeighbourSteps(i, _desired) != _builtNeighbours[i]))
-                {
-                    var range = _lods[i] < 0 ? new float2(0f, 0f) : _heightRanges[i];
-                    _pending.Add((_layout.Distance(i, eye, range.x, range.y), i, _desired[i]));
-                }
-            }
+            CollectPending(_camera.transform.position);
 
             // Bij de start alles in één keer, zodat er geen gaten zijn; daarna de dichtstbijzijnde eerst.
             var budget = _pending.Count;
@@ -161,6 +138,27 @@ namespace Cities.Presentation.Terrain
             _built = true;
         }
 
+        private void CollectPending(Vector3 eye)
+        {
+            _pending.Clear();
+            for (var i = 0; i < _lods.Length; i++)
+            {
+                // Ongebouwde chunks meten vanaf het maaiveld van de kaart; daarna vanaf hun echte hoogtebereik.
+                var range = _lods[i] < 0 ? new float2(0f, 0f) : _heightRanges[i];
+                _desired[i] = TerrainChunkLayout.ChooseLod(_layout.Distance(i, eye, range.x, range.y), _lodDistances);
+            }
+
+            for (var i = 0; i < _lods.Length; i++)
+            {
+                // Ook opnieuw als een buur van niveau wisselt: de randen worden tegen de grovere buur gelegd.
+                if (_dirty[i] || _desired[i] != _lods[i] || math.any(_layout.NeighbourSteps(i, _desired) != _builtNeighbours[i]))
+                {
+                    var range = _lods[i] < 0 ? new float2(0f, 0f) : _heightRanges[i];
+                    _pending.Add((_layout.Distance(i, eye, range.x, range.y), i, _desired[i]));
+                }
+            }
+        }
+
         private void Rebuild(int count)
         {
             var requests = new NativeArray<TerrainChunkRequest>(count, Allocator.TempJob);
@@ -174,24 +172,10 @@ namespace Cities.Presentation.Terrain
                     var (_, chunk, lod) = _pending[i];
                     var origin = _layout.OriginCorner(chunk);
                     _builtNeighbours[chunk] = _layout.NeighbourSteps(chunk, _desired);
-                    requests[i] = new TerrainChunkRequest { OriginCorner = new int2(origin.x, origin.y), Lod = lod, NeighbourSteps = _builtNeighbours[chunk] };
+                    requests[i] = new TerrainChunkRequest(new int2(origin.x, origin.y), lod, _builtNeighbours[chunk]);
                 }
 
-                var heights = _map.Height;
-                new TerrainChunkMeshJob
-                {
-                    Heights = heights.Values,
-                    HeightsWidth = heights.Layout.Width,
-                    HeightsDepth = heights.Layout.Depth,
-                    CellSize = _map.Dimensions.CellSize,
-                    SkirtDepth = _skirtDepth,
-                    Requests = requests,
-                    Indices = _indices,
-                    IndexRanges = _indexRanges,
-                    Layout = _vertexLayout,
-                    Meshes = data,
-                    HeightRanges = ranges,
-                }.Schedule(count, 4).Complete();
+                _builder.Build(_map, requests, data, ranges);
 
                 _batchMeshes.Clear();
                 for (var i = 0; i < count; i++)
@@ -230,27 +214,6 @@ namespace Cities.Presentation.Terrain
             foreach (var chunk in _touched)
             {
                 _dirty[chunk] = true;
-            }
-        }
-
-        private void CreateIndexTemplates()
-        {
-            var templates = new ushort[TerrainChunkLayout.LodCount][];
-            var total = 0;
-            for (var lod = 0; lod < templates.Length; lod++)
-            {
-                templates[lod] = TerrainChunkTopology.BuildIndices(TerrainChunkLayout.Resolution(lod));
-                total += templates[lod].Length;
-            }
-
-            _indices = new NativeArray<ushort>(total, Allocator.Persistent);
-            _indexRanges = new NativeArray<int2>(templates.Length, Allocator.Persistent);
-            var start = 0;
-            for (var lod = 0; lod < templates.Length; lod++)
-            {
-                NativeArray<ushort>.Copy(templates[lod], 0, _indices, start, templates[lod].Length);
-                _indexRanges[lod] = new int2(start, templates[lod].Length);
-                start += templates[lod].Length;
             }
         }
     }

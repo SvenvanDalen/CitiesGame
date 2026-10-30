@@ -3,7 +3,6 @@ using Cities.World.Grid;
 using Cities.World.Terrain;
 using NUnit.Framework;
 using Unity.Collections;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -23,8 +22,8 @@ namespace Cities.Tests.EditMode.Terrain
             using (var map = CreateHillyMap())
             {
                 // De fijne chunk weet dat zijn oosterbuur een stap van 4 hoekpunten heeft.
-                var fine = Build(map, new TerrainChunkRequest { OriginCorner = new int2(32, 0), Lod = 0, NeighbourSteps = new int4(0, 4, 1, 1) });
-                var coarse = Build(map, new TerrainChunkRequest { OriginCorner = new int2(64, 0), Lod = 2, NeighbourSteps = new int4(0, 0, 4, 1) });
+                var fine = Build(map, new TerrainChunkRequest(new int2(32, 0), 0, new int4(0, 4, 1, 1)));
+                var coarse = Build(map, new TerrainChunkRequest(new int2(64, 0), 2, new int4(0, 0, 4, 1)));
 
                 // De rand x = 64: in de fijne chunk lokaal x = 256 m, in de grove x = 0. Elk grof punt valt op een fijn punt.
                 var fineEdge = EdgeAt(fine, 256f);
@@ -48,7 +47,7 @@ namespace Cities.Tests.EditMode.Terrain
                 }
 
                 // Zonder grovere buur volgt de rand gewoon de hoogtekaart.
-                var unstitched = EdgeAt(Build(map, new TerrainChunkRequest { OriginCorner = new int2(32, 0), Lod = 0, NeighbourSteps = new int4(0, 1, 1, 1) }), 256f);
+                var unstitched = EdgeAt(Build(map, new TerrainChunkRequest(new int2(32, 0), 0, new int4(0, 1, 1, 1))), 256f);
                 Assert.That(unstitched[8f].Position.y, Is.EqualTo(map.Height[64, 1]));
             }
         }
@@ -58,7 +57,7 @@ namespace Cities.Tests.EditMode.Terrain
         {
             using (var map = CreateHillyMap())
             {
-                var mesh = BuildMesh(map, new TerrainChunkRequest { OriginCorner = new int2(0, 0), Lod = 1 }, out var range);
+                var mesh = BuildMesh(map, new TerrainChunkRequest(new int2(0, 0), 1, new int4(1, 1, 1, 1)), out var range);
                 try
                 {
                     Assert.That(mesh.vertexCount, Is.EqualTo(TerrainChunkTopology.VertexCount(16)));
@@ -81,8 +80,7 @@ namespace Cities.Tests.EditMode.Terrain
             var layout = map.Height.Layout;
             var settings = TerrainShapeSettings.Default;
             settings.RiverCenterX = -10000f;
-            new TerrainGenerateJob { Settings = settings, Width = layout.Width, Spacing = layout.Spacing, Heights = map.Height.Values }
-                .Schedule(layout.Depth, 8).Complete();
+            TerrainGenerator.Generate(map, settings);
 
             // Een steile heuvel op de tegelgrens, zodat de grove rand echt afwijkt.
             for (var z = 0; z < layout.Depth; z++)
@@ -119,32 +117,12 @@ namespace Cities.Tests.EditMode.Terrain
 
         private static Mesh BuildMesh(WorldMap map, TerrainChunkRequest request, out float2 range)
         {
-            var resolution = TerrainChunkLayout.Resolution(request.Lod);
-            var template = TerrainChunkTopology.BuildIndices(resolution);
-            using (var indices = new NativeArray<ushort>(template, Allocator.TempJob))
-            using (var ranges = new NativeArray<int2>(TerrainChunkLayout.LodCount, Allocator.TempJob))
+            using (var builder = new TerrainMeshBuilder(SkirtDepth))
             using (var requests = new NativeArray<TerrainChunkRequest>(new[] { request }, Allocator.TempJob))
             using (var heightRanges = new NativeArray<float2>(1, Allocator.TempJob))
-            using (var vertexLayout = TerrainVertex.CreateLayout(Allocator.TempJob))
             {
-                var r = ranges;
-                r[request.Lod] = new int2(0, template.Length);
                 var data = Mesh.AllocateWritableMeshData(1);
-                new TerrainChunkMeshJob
-                {
-                    Heights = map.Height.Values,
-                    HeightsWidth = map.Height.Layout.Width,
-                    HeightsDepth = map.Height.Layout.Depth,
-                    CellSize = Dimensions.CellSize,
-                    SkirtDepth = SkirtDepth,
-                    Requests = requests,
-                    Indices = indices,
-                    IndexRanges = ranges,
-                    Layout = vertexLayout,
-                    Meshes = data,
-                    HeightRanges = heightRanges,
-                }.Schedule(1, 1).Complete();
-
+                builder.Build(map, requests, data, heightRanges);
                 var mesh = new Mesh();
                 Mesh.ApplyAndDisposeWritableMeshData(data, mesh);
                 range = heightRanges[0];

@@ -25,18 +25,25 @@ namespace Cities.World.Terrain
     }
 
     /// <summary>Welke chunk op welk detailniveau gebouwd moet worden.</summary>
-    public struct TerrainChunkRequest
+    public readonly struct TerrainChunkRequest
     {
-        /// <summary>Hoekpunt linksonder in de hoogtelaag.</summary>
-        public int2 OriginCorner;
+        public TerrainChunkRequest(int2 originCorner, int lod, int4 neighbourSteps)
+        {
+            OriginCorner = originCorner;
+            Lod = lod;
+            NeighbourSteps = neighbourSteps;
+        }
 
-        public int Lod;
+        /// <summary>Hoekpunt linksonder in de hoogtelaag.</summary>
+        public int2 OriginCorner { get; }
+
+        public int Lod { get; }
 
         /// <summary>
         /// Stap (in hoekpunten) van de buren zuid, oost, noord en west. Is een buur grover, dan komen de randpunten van
         /// deze chunk op diens rechte rand te liggen, zodat er geen kier ontstaat.
         /// </summary>
-        public int4 NeighbourSteps;
+        public int4 NeighbourSteps { get; }
     }
 
     /// <summary>
@@ -44,7 +51,7 @@ namespace Cities.World.Terrain
     /// op gedeelde randen gelijk zijn, ook tussen chunks met een ander detailniveau.
     /// </summary>
     [BurstCompile]
-    public struct TerrainChunkMeshJob : IJobParallelFor
+    internal struct TerrainChunkMeshJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<float> Heights;
         public int HeightsWidth;
