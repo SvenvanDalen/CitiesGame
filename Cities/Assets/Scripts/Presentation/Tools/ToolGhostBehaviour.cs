@@ -46,9 +46,9 @@ namespace Cities.Presentation.Tools
             var controller = _tools.Controller;
             var preview = controller.Preview;
             UseModel(controller.Active?.Ghost);
-            var brush = controller.Active as TerraformTool;
-            Shader.SetGlobalVector(Brush, brush != null && preview.IsVisible
-                ? new Vector4(preview.Position.x, preview.Position.z, brush.Radius, preview.IsValid ? 1f : -1f)
+            var brushState = preview.IsValid ? 1f : -1f;
+            Shader.SetGlobalVector(Brush, controller.Active is TerraformTool brush && preview.IsVisible
+                ? new Vector4(preview.Position.x, preview.Position.z, brush.Radius, brushState)
                 : Vector4.zero);
             if (!preview.IsVisible)
             {

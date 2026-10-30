@@ -105,12 +105,12 @@ namespace Cities.Presentation.Tools
                 button.Selected = active != null && ReferenceEquals(active, placement.Tool);
             }
 
-            if (_terraform == null)
+            var brush = _terraform != null ? _terraform.Tool : null;
+            if (brush == null)
             {
                 return;
             }
 
-            var brush = _terraform.Tool;
             var brushActive = ReferenceEquals(active, brush);
             foreach (var (button, mode) in _brushButtons)
             {
@@ -159,7 +159,7 @@ namespace Cities.Presentation.Tools
         {
             var controller = _tools.Controller;
             var brush = _terraform.Tool;
-            if (ReferenceEquals(controller.Active, brush) && brush.Mode == mode)
+            if (brush.Mode == mode && ReferenceEquals(controller.Active, brush))
             {
                 controller.Deselect();
                 return;

@@ -50,7 +50,8 @@ namespace Cities.World.Terrain
                 return default;
             }
 
-            var source = mode == TerraformMode.Smooth ? Snapshot(map, corners) : null;
+            // Ook buiten gladstrijken: een kopie van hoogstens 67 × 67 hoekpunten kost niets.
+            var source = Snapshot(map, corners);
             ref var heights = ref map.Height;
             for (var z = corners.yMin; z < corners.yMax; z++)
             {
