@@ -212,12 +212,12 @@ namespace Cities.Tests.EditMode.Picking
                     rays[i] = new PickRay(origin, new float3(target.x, 20f, target.y) - origin);
                 }
 
-                service.Pick(rays[0], PickMask.All);
+                service.Pick(rays[0], PickKinds.All);
                 var hits = 0;
                 var watch = Stopwatch.StartNew();
                 foreach (var ray in rays)
                 {
-                    hits += service.Pick(ray, PickMask.All).Hit.IsHit ? 1 : 0;
+                    hits += service.Pick(ray, PickKinds.All).Hit.IsHit ? 1 : 0;
                 }
 
                 watch.Stop();

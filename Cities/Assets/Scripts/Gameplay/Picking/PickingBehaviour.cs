@@ -33,7 +33,7 @@ namespace Cities.Gameplay.Picking
         [Tooltip("UI-documenten die de muis afvangen: boven een element daarvan wordt niets aangewezen.")]
         [SerializeField] private UIDocument[] _blockingDocuments = Array.Empty<UIDocument>();
 
-        [SerializeField] private PickMask _mask = PickMask.All;
+        [SerializeField] private PickKinds _mask = PickKinds.All;
 
         [Tooltip("Zet de debug-overlay \"Picking\" aan bij het starten (testscenes).")]
         [SerializeField] private bool _showOverlay;
@@ -49,7 +49,7 @@ namespace Cities.Gameplay.Picking
         /// <summary>Wat er nu onder de muis ligt.</summary>
         public PickResult Current { get; private set; }
 
-        public PickMask Mask
+        public PickKinds Mask
         {
             get => _mask;
             set => _mask = value;

@@ -21,7 +21,7 @@ namespace Cities.World.Picking
 
     /// <summary>Welke soorten een tool wil kunnen aanwijzen.</summary>
     [Flags]
-    public enum PickMask
+    public enum PickKinds
     {
         None = 0,
         Terrain = 1 << (int)PickKind.Terrain,
@@ -35,11 +35,11 @@ namespace Cities.World.Picking
         All = Terrain | Building | Network | Agents,
     }
 
-    public static class PickMasks
+    public static class PickKindsExtensions
     {
-        public static PickMask Of(PickKind kind) => kind == PickKind.None ? PickMask.None : (PickMask)(1 << (int)kind);
+        public static PickKinds Of(PickKind kind) => kind == PickKind.None ? PickKinds.None : (PickKinds)(1 << (int)kind);
 
-        public static bool Includes(this PickMask mask, PickKind kind) => kind != PickKind.None && (mask & Of(kind)) != 0;
+        public static bool Includes(this PickKinds mask, PickKind kind) => kind != PickKind.None && (mask & Of(kind)) != 0;
     }
 
     /// <summary>Straal vanuit de camera in wereldcoördinaten.</summary>

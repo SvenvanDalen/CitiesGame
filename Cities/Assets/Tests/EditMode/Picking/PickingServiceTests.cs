@@ -47,7 +47,7 @@ namespace Cities.Tests.EditMode.Picking
             service.AddLayer(new FixedLayer(PickKind.Segment, 499.9f));
             service.AddLayer(new FixedLayer(PickKind.Citizen, 498.2f));
 
-            var result = service.Pick(Ray, PickMask.All);
+            var result = service.Pick(Ray, PickKinds.All);
 
             Assert.That(result.Hit.Kind, Is.EqualTo(PickKind.Citizen));
             Assert.That(result.Ground.Kind, Is.EqualTo(PickKind.Terrain));
@@ -62,10 +62,10 @@ namespace Cities.Tests.EditMode.Picking
             var road = new FixedLayer(PickKind.Segment, 500.5f);
             service.AddLayer(road);
 
-            Assert.That(service.Pick(Ray, PickMask.All).Hit.Kind, Is.EqualTo(PickKind.Segment));
+            Assert.That(service.Pick(Ray, PickKinds.All).Hit.Kind, Is.EqualTo(PickKind.Segment));
 
             road.Distance = 501f;
-            Assert.That(service.Pick(Ray, PickMask.All).Hit.Kind, Is.EqualTo(PickKind.Terrain), "Te ver onder het terrein");
+            Assert.That(service.Pick(Ray, PickKinds.All).Hit.Kind, Is.EqualTo(PickKind.Terrain), "Te ver onder het terrein");
         }
 
         [Test]
@@ -77,8 +77,8 @@ namespace Cities.Tests.EditMode.Picking
             var node = new FixedLayer(PickKind.Node, 499.9f);
             service.AddLayer(node);
 
-            var all = service.Pick(Ray, PickMask.All);
-            var nodesOnly = service.Pick(Ray, PickMask.Node);
+            var all = service.Pick(Ray, PickKinds.All);
+            var nodesOnly = service.Pick(Ray, PickKinds.Node);
 
             Assert.That(all.Hit.Kind, Is.EqualTo(PickKind.Building));
             Assert.That(all.Hit.Id, Is.EqualTo(9UL));
@@ -94,7 +94,7 @@ namespace Cities.Tests.EditMode.Picking
             service.AddLayer(new FixedLayer(PickKind.Building, 480f, solid: true));
             service.AddLayer(new FixedLayer(PickKind.Segment, 460f));
 
-            Assert.That(service.Pick(Ray, PickMask.All).Hit.Kind, Is.EqualTo(PickKind.Segment), "Brug voor een gebouw");
+            Assert.That(service.Pick(Ray, PickKinds.All).Hit.Kind, Is.EqualTo(PickKind.Segment), "Brug voor een gebouw");
         }
 
         [Test]
@@ -105,7 +105,7 @@ namespace Cities.Tests.EditMode.Picking
             service.AddLayer(new FixedLayer(PickKind.Vehicle, 200f, id: 2));
             service.AddLayer(new FixedLayer(PickKind.Vehicle, 400f, id: 3));
 
-            Assert.That(service.Pick(Ray, PickMask.All).Hit.Id, Is.EqualTo(2UL));
+            Assert.That(service.Pick(Ray, PickKinds.All).Hit.Id, Is.EqualTo(2UL));
         }
 
         [Test]
@@ -115,9 +115,9 @@ namespace Cities.Tests.EditMode.Picking
             service.AddLayer(new FixedLayer(PickKind.Terrain, 500f, solid: true));
             service.AddLayer(new FixedLayer(PickKind.Citizen, 499f));
 
-            Assert.That(service.Pick(Ray, PickMask.Terrain).Hit.Kind, Is.EqualTo(PickKind.Terrain));
-            Assert.That(service.Pick(Ray, PickMask.None).Hit.IsHit, Is.False);
-            Assert.That(service.Pick(Ray, PickMask.Agents).Hit.Kind, Is.EqualTo(PickKind.Citizen));
+            Assert.That(service.Pick(Ray, PickKinds.Terrain).Hit.Kind, Is.EqualTo(PickKind.Terrain));
+            Assert.That(service.Pick(Ray, PickKinds.None).Hit.IsHit, Is.False);
+            Assert.That(service.Pick(Ray, PickKinds.Agents).Hit.Kind, Is.EqualTo(PickKind.Citizen));
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace Cities.Tests.EditMode.Picking
             var service = new PickingService();
             service.AddLayer(new FixedLayer(PickKind.Terrain, float.NaN, solid: true));
 
-            var result = service.Pick(Ray, PickMask.All);
+            var result = service.Pick(Ray, PickKinds.All);
 
             Assert.That(result.Hit.IsHit, Is.False);
             Assert.That(result.HasGround, Is.False);
@@ -141,7 +141,7 @@ namespace Cities.Tests.EditMode.Picking
             service.AddLayer(new FixedLayer(PickKind.Terrain, 470f, solid: true));
             service.AddLayer(new FixedLayer(PickKind.Terrain, 490f, solid: true));
 
-            Assert.That(service.Pick(Ray, PickMask.None).Ground.Distance, Is.EqualTo(470f));
+            Assert.That(service.Pick(Ray, PickKinds.None).Ground.Distance, Is.EqualTo(470f));
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace Cities.Tests.EditMode.Picking
             token.Dispose();
             token.Dispose();
             Assert.That(service.Layers, Is.Empty);
-            Assert.That(service.Pick(Ray, PickMask.All).Hit.IsHit, Is.False);
+            Assert.That(service.Pick(Ray, PickKinds.All).Hit.IsHit, Is.False);
         }
 
         [Test]
@@ -183,11 +183,11 @@ namespace Cities.Tests.EditMode.Picking
             Assert.Throws<ArgumentException>(() => _ = new PickRay(float3.zero, new float3(float.NaN, 0f, 0f)));
             Assert.Throws<ArgumentOutOfRangeException>(() => _ = new PickRay(float3.zero, new float3(0f, 1f, 0f), 0f));
 
-            Assert.That(PickMasks.Of(PickKind.Node), Is.EqualTo(PickMask.Node));
-            Assert.That(PickMasks.Of(PickKind.None), Is.EqualTo(PickMask.None));
-            Assert.That(PickMask.Network.Includes(PickKind.Segment), Is.True);
-            Assert.That(PickMask.Network.Includes(PickKind.Building), Is.False);
-            Assert.That(PickMask.All.Includes(PickKind.None), Is.False);
+            Assert.That(PickKindsExtensions.Of(PickKind.Node), Is.EqualTo(PickKinds.Node));
+            Assert.That(PickKindsExtensions.Of(PickKind.None), Is.EqualTo(PickKinds.None));
+            Assert.That(PickKinds.Network.Includes(PickKind.Segment), Is.True);
+            Assert.That(PickKinds.Network.Includes(PickKind.Building), Is.False);
+            Assert.That(PickKinds.All.Includes(PickKind.None), Is.False);
 
             var building = new EntityId<BuildingKind>(42, 3);
             var hit = new PickHit(PickKind.Building, building.Packed, new float3(1f, 2f, 3f), 12.34f);

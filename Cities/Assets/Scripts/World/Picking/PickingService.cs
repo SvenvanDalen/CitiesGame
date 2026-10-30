@@ -63,13 +63,21 @@ namespace Cities.World.Picking
             return new Registration(this, layer);
         }
 
-        public PickResult Pick(in PickRay ray, PickMask mask)
+        public PickResult Pick(in PickRay ray, PickKinds mask)
         {
-            // Zicht: het eerste massieve oppervlak, ongeacht het masker.
-            // Eerst het terrein, daarna de andere massieve lagen alleen tot waar het zicht al reikt: zo zoekt een
-            // gebouwenlaag niet de hele kaart af als de straal vlak voor de camera de grond raakt.
+            var visible = FindVisibleDistance(ray, out var ground);
+            var limit = Math.Min(ray.Length, visible + Tolerance(visible));
+            return new PickResult(Choose(ray, mask, limit), ground);
+        }
+
+        /// <summary>
+        /// Eerst het terrein, daarna de andere massieve lagen alleen tot waar het zicht al reikt: zo zoekt een
+        /// gebouwenlaag niet de hele kaart af als de straal vlak voor de camera de grond raakt. Bewaart de treffers.
+        /// </summary>
+        private float FindVisibleDistance(in PickRay ray, out PickHit ground)
+        {
             var visible = ray.Length;
-            var ground = PickHit.None;
+            ground = PickHit.None;
             _solidHits.Clear();
             foreach (var layer in _layers)
             {
@@ -77,10 +85,7 @@ namespace Cities.World.Picking
                 if (layer.Kind == PickKind.Terrain && layer.IsSolid && layer.Raycast(ray, visible, out hit))
                 {
                     visible = Math.Min(visible, hit.Distance);
-                    if (!ground.IsHit || hit.Distance < ground.Distance)
-                    {
-                        ground = hit;
-                    }
+                    ground = hit;
                 }
 
                 _solidHits.Add(hit);
@@ -96,8 +101,12 @@ namespace Cities.World.Picking
                 }
             }
 
-            // Massieve lagen hebben hun dichtstbijzijnde treffer al; de rest zoekt alleen binnen het zicht.
-            var limit = Math.Min(ray.Length, visible + Tolerance(visible));
+            return visible;
+        }
+
+        /// <summary>Massieve lagen hebben hun dichtstbijzijnde treffer al; de rest zoekt alleen binnen het zicht.</summary>
+        private PickHit Choose(in PickRay ray, PickKinds mask, float limit)
+        {
             var best = PickHit.None;
             for (var i = 0; i < _layers.Count; i++)
             {
@@ -115,7 +124,7 @@ namespace Cities.World.Picking
                 }
             }
 
-            return new PickResult(best, ground);
+            return best;
         }
 
         private float Tolerance(float distance) => AbsoluteTolerance + (distance * RelativeTolerance);
