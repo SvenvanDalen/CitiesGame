@@ -32,7 +32,7 @@ namespace Cities.World.Roads
         public static RoadMeshData Build(RoadNetwork network, EntityId<NodeKind> node)
         {
             var plan = Plan(network, node);
-            if (plan == null)
+            if (plan.Count == 0)
             {
                 return null;
             }
@@ -48,27 +48,23 @@ namespace Cities.World.Roads
 
         private static float TrimParameter(RoadNetwork network, EntityId<NodeKind> node, EntityId<SegmentKind> segment)
         {
-            var plan = Plan(network, node);
-            if (plan != null)
+            foreach (var (id, parameter, _) in Plan(network, node))
             {
-                foreach (var (id, parameter, _) in plan)
+                if (id == segment)
                 {
-                    if (id == segment)
-                    {
-                        return parameter;
-                    }
+                    return parameter;
                 }
             }
 
             return 0f;
         }
 
-        /// <summary>Per arm het segment, de parameter (vanaf het knooppunt) waar het ophoudt, en de afsnijlijn; <c>null</c> zonder kruispunt.</summary>
+        /// <summary>Per arm het segment, de parameter (vanaf het knooppunt) waar het ophoudt, en de afsnijlijn; leeg zonder kruispunt.</summary>
         private static List<(EntityId<SegmentKind> Segment, float Parameter, JunctionMouth Mouth)> Plan(RoadNetwork network, EntityId<NodeKind> node)
         {
             if (!IsJunction(network, node))
             {
-                return null;
+                return new List<(EntityId<SegmentKind>, float, JunctionMouth)>();
             }
 
             var center = network.GetNode(node);

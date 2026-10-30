@@ -304,24 +304,30 @@ namespace Cities.World.Roads
                 return;
             }
 
+            float3 Point(float across, float along)
+            {
+                var point = mouth.Center + (Right(mouth.Direction) * across) + (mouth.Direction * along);
+                point.y = math.lerp(mouth.Center.y, middle.y, -along / reach) + CrossingLift;
+                return point;
+            }
+
             var bars = (int)math.floor((((2f * mouth.Carriageway) - BarWidth) / (BarWidth + BarGap)) + 1e-3f) + 1;
             var span = ((bars - 1) * (BarWidth + BarGap)) + BarWidth;
             for (var bar = 0; bar < bars; bar++)
             {
                 var left = -(span * 0.5f) + (bar * (BarWidth + BarGap));
                 var first = data.Vertices.Count;
-                AddCrossingCorner(data, mouth, middle, reach, left, -CrossingSetback, 0f, 0f);
-                AddCrossingCorner(data, mouth, middle, reach, left + BarWidth, -CrossingSetback, 1f, 0f);
-                AddCrossingCorner(data, mouth, middle, reach, left, -CrossingSetback - CrossingDepth, 0f, CrossingDepth / RoadMeshBuilder.TextureMeters);
-                AddCrossingCorner(data, mouth, middle, reach, left + BarWidth, -CrossingSetback - CrossingDepth, 1f, CrossingDepth / RoadMeshBuilder.TextureMeters);
+                var depth = CrossingDepth / RoadMeshBuilder.TextureMeters;
+                AddCrossingCorner(data, Point(left, -CrossingSetback), 0f, 0f);
+                AddCrossingCorner(data, Point(left + BarWidth, -CrossingSetback), 1f, 0f);
+                AddCrossingCorner(data, Point(left, -CrossingSetback - CrossingDepth), 0f, depth);
+                AddCrossingCorner(data, Point(left + BarWidth, -CrossingSetback - CrossingDepth), 1f, depth);
                 RoadMeshBuilder.Stitch(data, RoadSurface.MarkingSolid, first, 2, new float3(0f, 1f, 0f));
             }
         }
 
-        private static void AddCrossingCorner(RoadMeshData data, JunctionMouth mouth, float3 middle, float reach, float across, float along, float u, float v)
+        private static void AddCrossingCorner(RoadMeshData data, float3 point, float u, float v)
         {
-            var point = mouth.Center + (Right(mouth.Direction) * across) + (mouth.Direction * along);
-            point.y = math.lerp(mouth.Center.y, middle.y, -along / reach) + CrossingLift;
             data.Vertices.Add(point);
             data.Normals.Add(new float3(0f, 1f, 0f));
             data.Uvs.Add(new float2(u, v));
@@ -365,9 +371,9 @@ namespace Cities.World.Roads
         /// Snijpunt van twee randlijnen, elk gegeven door een punt (<paramref name="pointA"/>, relatief aan een gemeenschappelijke oorsprong)
         /// en een richting: afstanden <c>u</c> langs de eerste en <c>v</c> langs de tweede vanaf het punt.
         /// </summary>
-        private static (float U, float V) Corner(float3 pointA, float3 directionA, float3 pointB, float3 directionB, float3 shiftB = default)
+        private static (float U, float V) Corner(float3 pointA, float3 directionA, float3 pointB, float3 directionB)
         {
-            var w = (pointB + shiftB).xz - pointA.xz;
+            var w = pointB.xz - pointA.xz;
             var denominator = Cross(directionA.xz, directionB.xz);
             if (math.abs(denominator) < 1e-4f)
             {
