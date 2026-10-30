@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 114535557}
   - component: {fileID: 114535556}
   - component: {fileID: 114535558}
+  - component: {fileID: 114535559}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -188,6 +189,44 @@ MonoBehaviour:
     RiverDepth: 9
     ValleyWidth: 420
     RiverCenterX: 5200
+--- !u!114 &114535559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114535555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe5c1b0ea1c855f4199cbc3867bb84e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.World::Cities.World.Terrain.GroundCoverPainterBehaviour
+  _world: {fileID: 114535556}
+  _areas:
+  - Cells:
+      x: 722
+      y: 1075
+      width: 34
+      height: 22
+    Cover: 1
+  - Cells:
+      x: 760
+      y: 1080
+      width: 28
+      height: 38
+    Cover: 1
+  - Cells:
+      x: 722
+      y: 1100
+      width: 30
+      height: 26
+    Cover: 1
+  - Cells:
+      x: 698
+      y: 1118
+      width: 18
+      height: 14
+    Cover: 2
 --- !u!1 &618219826
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,6 +707,15 @@ MonoBehaviour:
   - 3200
   _maxRebuildsPerFrame: 64
   _skirtDepth: 12
+  _splat:
+    RockSlopeStart: 30
+    RockSlopeFull: 44
+    RockHeightStart: 240
+    RockHeightFull: 330
+    SandHeight: 2
+    SandFade: 3
+    SandMaxSlope: 14
+    ShoreWaterDepth: 0.05
 --- !u!4 &1707287996
 Transform:
   m_ObjectHideFlags: 0

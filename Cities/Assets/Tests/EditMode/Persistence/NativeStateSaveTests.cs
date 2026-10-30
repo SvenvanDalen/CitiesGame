@@ -71,6 +71,81 @@ namespace Cities.Tests.EditMode.Persistence
         }
 
         [Test]
+        public void GroundCoverRoundTripsAndIsReported()
+        {
+            using (var map = new WorldMap(Small))
+            using (var loaded = new WorldMap(Small))
+            {
+                map.GroundCover[4, 6] = GroundCover.Field;
+                map.GroundCover[5, 6] = GroundCover.Built;
+                var changes = new System.Collections.Generic.List<UnityEngine.RectInt>();
+                loaded.GroundCoverChanged += changes.Add;
+
+                SaveBytes.Read(SaveBytes.Write(new SaveMetadata(), new WorldMapSection(map)), new WorldMapSection(loaded));
+
+                Assert.That(loaded.GroundCover[4, 6], Is.EqualTo(GroundCover.Field));
+                Assert.That(loaded.GroundCover[5, 6], Is.EqualTo(GroundCover.Built));
+                Assert.That(changes, Is.EqualTo(new[] { loaded.AllCells }));
+            }
+        }
+
+        [Test]
+        public void VersionOneSavesLoadWithNaturalGround()
+        {
+            using (var map = new WorldMap(Small, 12f))
+            using (var loaded = new WorldMap(Small))
+            {
+                loaded.GroundCover[1, 1] = GroundCover.Built;
+                SaveBytes.Read(SaveBytes.Write(new SaveMetadata(), new VersionOneWorldMap(map)), new WorldMapSection(loaded));
+
+                Assert.That(loaded.Height[2, 2], Is.EqualTo(12f));
+                Assert.That(loaded.GroundCover[1, 1], Is.EqualTo(GroundCover.Natural));
+            }
+        }
+
+        [Test]
+        public void UnknownGroundCoverIsRejected()
+        {
+            using (var map = new WorldMap(Small))
+            using (var loaded = new WorldMap(Small))
+            {
+                map.GroundCover[0, 0] = (GroundCover)7;
+
+                var bytes = SaveBytes.Write(new SaveMetadata(), new WorldMapSection(map));
+
+                Assert.Throws<SaveFormatException>(() => SaveBytes.Read(bytes, new WorldMapSection(loaded)));
+            }
+        }
+
+        /// <summary>De sectie zoals versie 1 hem schreef: zonder grondbedekking.</summary>
+        private sealed class VersionOneWorldMap : ISaveSection
+        {
+            private readonly WorldMap _map;
+
+            public VersionOneWorldMap(WorldMap map) => _map = map;
+
+            public string Id => WorldMapSection.SectionId;
+
+            public int Version => 1;
+
+            public void Write(SaveWriter writer)
+            {
+                var dimensions = _map.Dimensions;
+                writer.Write(dimensions.TilesX);
+                writer.Write(dimensions.TilesZ);
+                writer.Write(dimensions.CellsPerTile);
+                writer.Write(dimensions.CellSize);
+                writer.WriteShuffled<float>(_map.Height.Values.AsReadOnlySpan());
+                writer.WriteShuffled<float>(_map.WaterDepth.Values.AsReadOnlySpan());
+                writer.WriteShuffled<ZoneCell>(_map.Zones.Values.AsReadOnlySpan());
+                writer.WriteShuffled<float>(_map.GroundPollution.Values.AsReadOnlySpan());
+                writer.WriteShuffled<float>(_map.LandValue.Values.AsReadOnlySpan());
+            }
+
+            public System.Action Read(SaveReader reader, int version) => throw new System.NotSupportedException();
+        }
+
+        [Test]
         public void LoadingReportsThatAllHeightsChanged()
         {
             using (var map = new WorldMap(Small, 12f))
