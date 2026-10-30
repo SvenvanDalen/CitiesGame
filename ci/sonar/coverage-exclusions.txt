@@ -24,5 +24,7 @@ Cities/Assets/Scripts/World/Grid/WorldMapSection.cs
 Cities/Assets/Scripts/Presentation/Debugging/DebugPanel.cs
 Cities/Assets/Scripts/World/Picking/SpatialPickLayer.cs
 Cities/Assets/Scripts/World/Picking/PickLayers.cs
+Cities/Assets/Scripts/World/Terrain/TerrainChunkMeshJob.cs
+Cities/Assets/Scripts/World/Terrain/TerrainGenerateJob.cs
 # Ontwikkelscripts (PowerShell); CI draait geen PowerShell-tests, ze worden lokaal gebruikt.
 tools/**

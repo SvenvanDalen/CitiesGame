@@ -57,6 +57,7 @@ namespace Cities.World.Grid
                 _map.Zones.Values.CopyFrom(zones);
                 _map.GroundPollution.Values.CopyFrom(pollution);
                 _map.LandValue.Values.CopyFrom(landValue);
+                _map.NotifyHeightChanged(_map.AllCorners);
             };
         }
 

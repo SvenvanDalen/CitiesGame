@@ -69,6 +69,13 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Snappen op het raster gaat via `GridSnap`; `PlacementTool` doet raster, kwartslagen, kaartrand en helling, en vraagt de rest (bezetting) aan een `IPlacementTarget`.
 - `ToolGhostBehaviour` tekent de preview: het model doorschijnend en de footprint op de grond, blauw als het mag en rood als het niet mag. `ToolbarBehaviour` toont de reden. Testscene: `Scenes/Tests/Tools.unity`.
 
+## Terrein
+
+- De hoogte staat in `WorldMap.Height`: één waarde per hoekpunt van het celraster (8 m). Tegels en chunks delen hun randhoekpunten, dus elke tegel heeft zijn eigen heightmap van 257 × 257 hoekpunten zonder naad met de buren.
+- Wie hoogtes wijzigt, meldt dat met `WorldMap.NotifyHeightChanged(rect)` (hoekpunten, max exclusief). `TerrainRendererBehaviour` bouwt dan alleen de geraakte chunks opnieuw; laden uit een save meldt de hele kaart.
+- De terreinmesh bestaat uit chunks van 32 × 32 cellen (256 m) met vier detailniveaus (32, 16, 8 en 4 vlakjes per zijde). Randen tegen een grovere buur worden op diens lijn gelegd; een rok onder elke rand vangt kieren op zolang een buur nog niet herbouwd is.
+- `TerrainShape` maakt het procedurele landschap (laagland, heuvels, bergrug, rivierdal) met vaste seed; `TerrainGeneratorBehaviour` vult er een nieuwe kaart mee. Testscene: `Scenes/Tests/Terrain.unity`.
+
 ## Modellen
 
 - Modellen zijn realistisch op ware grootte (meters, lokaal -Z is de straatkant, de oorsprong ligt midden op de kavel op maaiveld) en hebben geen colliders; picking gaat via de picklagen.
