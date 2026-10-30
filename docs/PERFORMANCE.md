@@ -91,6 +91,7 @@ Bij grotere steden groeien deze aandelen naar verhouding. Pathfinding en verkeer
 | Opstarten tot hoofdmenu | ≤ 15 s (SSD) |
 | Nieuwe stad tot speelbaar | ≤ 10 s |
 | Bouwtool-preview na muisbeweging | Binnen hetzelfde frame |
+| Picking (wat ligt onder de muis) | ≤ 0,5 ms per frame in een release-build, deel van "Gameplay en tools"; in de editor ≤ 1 ms (Mono en veiligheidscontroles) |
 | Reactie op een toets of klik | ≤ 2 frames |
 
 ## Huidige stand
@@ -100,6 +101,7 @@ Bij grotere steden groeien deze aandelen naar verhouding. Pathfinding en verkeer
 | Agents bewegen, 250.000 (besluit 0001, release-build) | 0,18 ms per tick | Deel van 10 ms | Ruim binnen |
 | Volle kaart opslaan (besluit 0003, editor) | 2,8 s, op de main thread | 0,5 s tot verder spelen | **Te traag**: E22-03 verplaatst comprimeren en schrijven naar de achtergrond |
 | Volle kaart laden (besluit 0003, editor) | 0,8 s | 5 s | Binnen |
+| Picking in een stad met 100.000 gebouwen, 60.000 wegstukken, 50.000 voertuigen en 100.000 burgers (E02-04, editor) | 0,48 ms per pick | 1 ms in de editor | Binnen; `SpatialPickLayerTests` bewaakt het |
 | Volle kaart save-grootte (heuvels, besluit 0003) | 11,2 MB | 20 MB | Binnen |
 
 ## Werkwijze

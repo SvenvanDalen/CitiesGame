@@ -22,7 +22,6 @@ namespace Cities.Core.Spatial
         {
             public T Value;
             public Aabb2 Bounds;
-            public uint Stamp;
             public bool InUse;
         }
 
@@ -46,6 +45,26 @@ namespace Cities.Core.Spatial
             public bool Matches(Aabb2 bounds) => bounds.OverlapsCircle(Center, Radius);
         }
 
+        private struct NearestBoundsVisitor : ISpatialRayVisitor<T>
+        {
+            public float2 Origin;
+            public float2 Direction;
+            public float MaxDistance;
+            public float Best;
+            public T Hit;
+
+            public float StopDistance => Best;
+
+            public void Visit(in T value, Aabb2 bounds)
+            {
+                if (bounds.Raycast(Origin, Direction, MaxDistance, out var t) && t < Best)
+                {
+                    Best = t;
+                    Hit = value;
+                }
+            }
+        }
+
         private struct Link
         {
             public int Entry;
@@ -55,6 +74,9 @@ namespace Cities.Core.Spatial
         private readonly GridGeometry _geometry;
         private NativeArray<int> _cellHeads;
         private NativeList<Entry> _entries;
+
+        // Zoekstempels apart van de objecten: een al bezocht object overslaan kost zo één getal lezen.
+        private NativeList<uint> _stamps;
         private NativeList<Link> _links;
         private NativeList<int> _freeEntries;
         private int _freeLinkHead;
@@ -75,6 +97,7 @@ namespace Cities.Core.Spatial
             }
 
             _entries = new NativeList<Entry>(initialCapacity, allocator);
+            _stamps = new NativeList<uint>(initialCapacity, allocator);
             _links = new NativeList<Link>(initialCapacity * 2, allocator);
             _freeEntries = new NativeList<int>(allocator);
             _freeLinkHead = None;
@@ -103,6 +126,7 @@ namespace Cities.Core.Spatial
             {
                 handle = _entries.Length;
                 _entries.Add(new Entry { Value = value, Bounds = bounds, InUse = true });
+                _stamps.Add(0);
             }
 
             LinkEntry(handle, bounds);
@@ -142,6 +166,14 @@ namespace Cities.Core.Spatial
 
         public Aabb2 GetBounds(int handle) => GetEntry(handle).Bounds;
 
+        /// <summary>Vervangt de waarde zonder de cellen te wijzigen, bijvoorbeeld de positie in een pickvorm.</summary>
+        public void SetValue(int handle, T value)
+        {
+            var entry = GetEntry(handle);
+            entry.Value = value;
+            _entries[handle] = entry;
+        }
+
         /// <summary>Alle objecten waarvan de rechthoek het gebied raakt.</summary>
         public void QueryRect(Aabb2 area, NativeList<T> results) =>
             Query(area, new RectFilter { Area = area }, results);
@@ -151,14 +183,27 @@ namespace Cities.Core.Spatial
             Query(Aabb2.FromCircle(center, radius), new CircleFilter { Center = center, Radius = radius }, results);
 
         /// <summary>
-        /// Het dichtstbijzijnde object langs een straal in het grondvlak; voor picking. Stopt zodra de volgende cel
-        /// verder ligt dan de beste treffer.
+        /// Het dichtstbijzijnde object langs een straal in het grondvlak, getest tegen de omhullende rechthoeken.
         /// </summary>
         /// <param name="direction">Genormaliseerde richting.</param>
         public bool Raycast(float2 origin, float2 direction, float maxDistance, out T hit, out float distance)
         {
-            hit = default;
-            distance = float.PositiveInfinity;
+            var visitor = new NearestBoundsVisitor { Origin = origin, Direction = direction, MaxDistance = maxDistance, Best = float.PositiveInfinity };
+            Raycast(origin, direction, maxDistance, ref visitor);
+            hit = visitor.Hit;
+            distance = visitor.Best;
+            return !float.IsPositiveInfinity(distance);
+        }
+
+        /// <summary>
+        /// Bezoekt elk object in de cellen langs een straal in het grondvlak, in de volgorde waarin de straal de cellen
+        /// raakt, en elk object hoogstens één keer. Stopt zodra de volgende cel verder ligt dan
+        /// <see cref="ISpatialRayVisitor{T}.StopDistance"/>; zo test picking eigen 3D-vormen zonder allocaties.
+        /// </summary>
+        /// <param name="direction">Genormaliseerde richting, of nul voor een verticale straal (alleen de cel van de oorsprong).</param>
+        public void Raycast<TVisitor>(float2 origin, float2 direction, float maxDistance, ref TVisitor visitor)
+            where TVisitor : struct, ISpatialRayVisitor<T>
+        {
             var stamp = NextStamp();
 
             // Loop over een raster dat de uitstekende objecten mee omvat; cellen daarbuiten vallen op de randcellen.
@@ -166,29 +211,22 @@ namespace Cities.Core.Spatial
             var walkGeometry = margin == 0 ? _geometry : new GridGeometry(
                 _geometry.Origin - (margin * _geometry.CellSize), _geometry.CellSize, _geometry.CellCount + (2 * margin));
             var walker = new GridRayWalker(walkGeometry, origin, direction, maxDistance);
-            while (walker.MoveNext() && walker.EntryDistance <= distance)
+            while (walker.MoveNext() && walker.EntryDistance <= visitor.StopDistance)
             {
                 var cell = math.clamp(walker.Cell - margin, 0, _geometry.CellCount - 1);
                 for (var link = _cellHeads[_geometry.IndexUnchecked(cell)]; link != None; link = _links[link].Next)
                 {
                     var index = _links[link].Entry;
-                    var entry = _entries[index];
-                    if (entry.Stamp == stamp)
+                    if (_stamps[index] == stamp)
                     {
                         continue;
                     }
 
-                    entry.Stamp = stamp;
-                    _entries[index] = entry;
-                    if (entry.Bounds.Raycast(origin, direction, maxDistance, out var t) && t < distance)
-                    {
-                        distance = t;
-                        hit = entry.Value;
-                    }
+                    _stamps[index] = stamp;
+                    var entry = _entries[index];
+                    visitor.Visit(entry.Value, entry.Bounds);
                 }
             }
-
-            return !float.IsPositiveInfinity(distance);
         }
 
         public void Clear()
@@ -199,6 +237,7 @@ namespace Cities.Core.Spatial
             }
 
             _entries.Clear();
+            _stamps.Clear();
             _links.Clear();
             _freeEntries.Clear();
             _freeLinkHead = None;
@@ -212,6 +251,7 @@ namespace Cities.Core.Spatial
             {
                 _cellHeads.Dispose();
                 _entries.Dispose();
+                _stamps.Dispose();
                 _links.Dispose();
                 _freeEntries.Dispose();
             }
@@ -228,14 +268,13 @@ namespace Cities.Core.Spatial
                     for (var link = _cellHeads[_geometry.IndexUnchecked(new int2(x, y))]; link != None; link = _links[link].Next)
                     {
                         var index = _links[link].Entry;
-                        var entry = _entries[index];
-                        if (entry.Stamp == stamp)
+                        if (_stamps[index] == stamp)
                         {
                             continue;
                         }
 
-                        entry.Stamp = stamp;
-                        _entries[index] = entry;
+                        _stamps[index] = stamp;
+                        var entry = _entries[index];
                         if (filter.Matches(entry.Bounds))
                         {
                             results.Add(entry.Value);
@@ -268,11 +307,9 @@ namespace Cities.Core.Spatial
             if (_stamp == 0)
             {
                 // Na 4 miljard zoekopdrachten opnieuw beginnen, zodat oude stempels niet als "al gezien" tellen.
-                for (var i = 0; i < _entries.Length; i++)
+                for (var i = 0; i < _stamps.Length; i++)
                 {
-                    var entry = _entries[i];
-                    entry.Stamp = 0;
-                    _entries[i] = entry;
+                    _stamps[i] = 0;
                 }
 
                 _stamp = 1;
