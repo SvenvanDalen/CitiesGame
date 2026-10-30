@@ -13,6 +13,14 @@ MonoBehaviour:
   m_Name: DefinitionCatalog
   m_EditorClassIdentifier: Cities.Core::Cities.Core.Configuration.DefinitionCatalog
   _definitions:
+  - {fileID: 11400000, guid: 0ad062a5a2ee72e4984fab165baeadd7, type: 2}
+  - {fileID: 11400000, guid: 352da60cced5ed64692a5a50867f77ac, type: 2}
+  - {fileID: 11400000, guid: 0464b26afa6a780408e3dde81be7e6d4, type: 2}
+  - {fileID: 11400000, guid: 77e8474af0e66f241a7273e1e6026b12, type: 2}
+  - {fileID: 11400000, guid: 2ba4c17083d3a514e90e7392cdd8a129, type: 2}
+  - {fileID: 11400000, guid: 799764cacb4314c42bd93b7c14063830, type: 2}
+  - {fileID: 11400000, guid: 6e551cb9776c1414e9bf0e38d0790fd1, type: 2}
+  - {fileID: 11400000, guid: 87358295529790f408f1e672dc7eda73, type: 2}
   - {fileID: 11400000, guid: 748a87a9105808c4787bb1edeab2a231, type: 2}
   - {fileID: 11400000, guid: 0545480d4f638cb44acf69e670a04a77, type: 2}
   - {fileID: 11400000, guid: 72f906dd9d2374744a9a8059fb6fafa1, type: 2}

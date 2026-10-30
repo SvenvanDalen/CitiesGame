@@ -57,10 +57,21 @@ namespace Cities.Gameplay.Tools
         /// <summary>Lengtestap in meters; 0 zet het snappen uit.</summary>
         public float LengthStep { get; set; } = 5f;
 
-        /// <summary>De lanes van nieuwe wegen, tot de wegtypes er zijn (E04-05).</summary>
+        /// <summary>De lanes van nieuwe wegen; <see cref="Use"/> zet ze volgens een wegtype.</summary>
         public IReadOnlyList<LaneSpec> Profile { get; set; } = LaneProfiles.Road(1, bikeLanes: false, sidewalks: true);
 
         public float SpeedLimit { get; set; } = DefaultSpeedLimit;
+
+        /// <summary>Het gekozen wegtype (<c>road.…</c>), of <c>null</c> zolang er geen is gekozen.</summary>
+        public string TypeId { get; private set; }
+
+        /// <summary>Legt voortaan wegen van dit type aan.</summary>
+        public void Use(string id, RoadTypeSpec type)
+        {
+            TypeId = id;
+            Profile = type.Profile();
+            SpeedLimit = type.SpeedLimitMetersPerSecond;
+        }
 
         /// <summary><c>true</c> als er al een beginpunt is en de volgende klik de weg verder legt.</summary>
         public bool IsDrawing => _stage != Stage.Idle;
