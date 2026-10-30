@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Cities.Core.Configuration;
 using Cities.Core.Diagnostics;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
@@ -14,11 +16,16 @@ namespace Cities.Gameplay.Tools
         [SerializeField] private ToolsBehaviour _tools;
         [SerializeField] private RoadNetworkHostBehaviour _network;
         [SerializeField] private WorldMapHostBehaviour _world;
+        [SerializeField] private DefinitionCatalog _catalog;
+        [SerializeField] private string _defaultType = "road.two-lane";
         [SerializeField] private bool _selectOnStart;
 
         private readonly List<IDisposable> _debug = new List<IDisposable>();
 
         public RoadTool Tool { get; private set; }
+
+        /// <summary>De wegtypes uit de catalogus, op ID gesorteerd.</summary>
+        public IReadOnlyList<RoadTypeDefinition> Types { get; private set; } = new List<RoadTypeDefinition>();
 
         /// <summary>Na de <see cref="RoadNetworkHostBehaviour"/> en de <see cref="WorldMapHostBehaviour"/> en vóór de UI.</summary>
         private void Awake()
@@ -27,6 +34,15 @@ namespace Cities.Gameplay.Tools
             Tool = new RoadTool(_network.Network, _world.Map, overlay);
             _debug.Add(DebugRegistry.Shared.AddOverlay(overlay));
             _tools.Controller.ActiveChanged += OnActiveChanged;
+            if (_catalog != null)
+            {
+                Types = _catalog.Definitions.OfType<RoadTypeDefinition>().ToList();
+                var start = Types.FirstOrDefault(t => t.Id == _defaultType) ?? Types.FirstOrDefault();
+                if (start != null)
+                {
+                    Tool.Use(start.Id, start.Spec);
+                }
+            }
         }
 
         private void Start()

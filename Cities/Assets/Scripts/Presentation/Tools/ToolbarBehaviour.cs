@@ -164,6 +164,12 @@ namespace Cities.Presentation.Tools
             AddBrush(toolbar, "Weg recht", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
             AddBrush(toolbar, "Weg bocht", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
             AddBrush(toolbar, "Weg vrij", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
+            foreach (var type in _roads.Types)
+            {
+                var chosen = type;
+                AddBrush(toolbar, chosen.DisplayName, road, () => road.Use(chosen.Id, chosen.Spec), () => road.TypeId == chosen.Id);
+            }
+
             AddSettings(road,
                 BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
                 BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)));
