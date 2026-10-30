@@ -103,6 +103,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Het wegdek: `RoadMeshBuilder` (World/Roads) maakt per segment een mesh met een submesh per `RoadSurface` (asfalt, fietspad, stoep, stoeprand, strepen); `RoadRendererBehaviour` herbouwt gewijzigde segmenten binnen een tijdbudget (een segment kost ca. 1 ms). `RoadTerrainShaper` legt het terrein vlak en kapt bomen bij het aanleggen. Materialen en texturen: **Cities > Modellen > Wegen bouwen**.
 - Kruispunten (knooppunt met 3 tot 8 armen): `RoadJunctionBuilder` rekent uit hoever elke weg van het midden ophoudt (afgeronde hoeken van 6 m) en maakt het mesh met stoep, stoeprand en zebrapaden; `RoadJunctions` koppelt dat aan het netwerk en `RoadRendererBehaviour` tekent het per knooppunt. De afsnijding volgt altijd uit het net, er wordt niets van opgeslagen.
 - Wegtypes zijn definities (`road.<naam>`, `RoadTypeDefinition` onder `Assets/Data/RoadTypes`): rijstroken per richting, eenrichting, fietspad, stoep, snelheidslimiet en kosten per meter. `RoadTypeSpec.Profile()` maakt er het dwarsprofiel van; de `RoadTool` legt wegen aan met `Use(id, spec)` en de werkbalk toont een knop per type uit de catalogus.
+- Wegen slopen doet de `DemolishTool` (Gameplay/Tools): een klik kiest een weg of kruispunt, een tweede klik bevestigt. De economie (E11) betaalt terug door te luisteren op `Demolished` (aantal segmenten en gesloopte lengte).
 
 ## Logging en profiling
 

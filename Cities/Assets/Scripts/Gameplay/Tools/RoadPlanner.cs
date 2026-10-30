@@ -67,6 +67,23 @@ namespace Cities.Gameplay.Tools
         public static Bezier3 Quadratic(float3 start, float3 control, float3 end) =>
             new Bezier3(start, start + (2f / 3f * (control - start)), end + (2f / 3f * (control - end)), end);
 
+        /// <summary>Horizontale afstand van <paramref name="point"/> tot de hartlijn, benaderd met <paramref name="steps"/> rechte stukjes.</summary>
+        public static float DistanceTo(Bezier3 curve, float3 point, int steps = 32)
+        {
+            var best = float.MaxValue;
+            var previous = curve.P0.xz;
+            for (var i = 1; i <= steps; i++)
+            {
+                var next = curve.Position(i / (float)steps).xz;
+                var edge = next - previous;
+                var along = math.lengthsq(edge) > 1e-8f ? math.saturate(math.dot(point.xz - previous, edge) / math.lengthsq(edge)) : 0f;
+                best = math.min(best, math.distance(point.xz, previous + (edge * along)));
+                previous = next;
+            }
+
+            return best;
+        }
+
         /// <summary>Waarom een weg met deze hartlijn niet mag, of <c>null</c>.</summary>
         public static string Check(Bezier3 curve)
         {

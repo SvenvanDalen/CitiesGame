@@ -170,6 +170,7 @@ namespace Cities.Presentation.Tools
                 AddBrush(toolbar, chosen.DisplayName, road, () => road.Use(chosen.Id, chosen.Spec), () => road.TypeId == chosen.Id);
             }
 
+            AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
             AddSettings(road,
                 BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
                 BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)));
