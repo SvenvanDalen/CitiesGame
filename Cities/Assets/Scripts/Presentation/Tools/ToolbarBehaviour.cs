@@ -22,10 +22,14 @@ namespace Cities.Presentation.Tools
         [FormerlySerializedAs("_terraform")]
         [SerializeField] private BrushToolsBehaviour _brushes;
 
+        [Tooltip("Optioneel: voegt de wegtool toe.")]
+        [SerializeField] private RoadToolBehaviour _roads;
+
         private readonly List<(CityButton Button, PrefabPlacementBehaviour Placement)> _buttons = new List<(CityButton, PrefabPlacementBehaviour)>();
         private readonly List<BrushButton> _brushButtons = new List<BrushButton>();
-        private readonly List<(IBrushTool Tool, VisualElement Row)> _brushSettings = new List<(IBrushTool, VisualElement)>();
+        private readonly List<(ITool Tool, VisualElement Row)> _brushSettings = new List<(ITool, VisualElement)>();
         private Label _status;
+        private Label _info;
         private VisualElement _bar;
         private Slider _targetHeight;
 
@@ -48,6 +52,11 @@ namespace Cities.Presentation.Tools
             _status.style.marginBottom = 8;
             _bar.Add(_status);
 
+            _info = new Label { name = "tool-info" };
+            _info.AddToClassList(UiClasses.Badge);
+            _info.style.marginBottom = 8;
+            _bar.Add(_info);
+
             var toolbar = new VisualElement();
             toolbar.AddToClassList(UiClasses.Toolbar);
             foreach (var placement in _placements)
@@ -61,6 +70,11 @@ namespace Cities.Presentation.Tools
             if (_brushes != null)
             {
                 AddBrushes(toolbar);
+            }
+
+            if (_roads != null)
+            {
+                AddRoads(toolbar);
             }
 
             _bar.Add(toolbar);
@@ -84,6 +98,9 @@ namespace Cities.Presentation.Tools
             var reason = _tools.Controller.Preview.InvalidReason;
             _status.text = reason ?? string.Empty;
             _status.style.visibility = reason != null ? Visibility.Visible : Visibility.Hidden;
+            var info = _tools.Controller.Preview.Info;
+            _info.text = info ?? string.Empty;
+            _info.style.visibility = info != null ? Visibility.Visible : Visibility.Hidden;
         }
 
         private void Toggle(PrefabPlacementBehaviour placement)
@@ -140,6 +157,18 @@ namespace Cities.Presentation.Tools
                 BrushSlider("Sterkte (bos/s)", TreeTool.MinStrength, TreeTool.MaxStrength, trees.Strength, v => trees.Strength = v));
         }
 
+        private void AddRoads(VisualElement toolbar)
+        {
+            var road = _roads.Tool;
+            AddSeparator(toolbar);
+            AddBrush(toolbar, "Weg recht", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
+            AddBrush(toolbar, "Weg bocht", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
+            AddBrush(toolbar, "Weg vrij", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
+            AddSettings(road,
+                BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
+                BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)));
+        }
+
         private static void AddSeparator(VisualElement toolbar)
         {
             var separator = new VisualElement();
@@ -147,7 +176,7 @@ namespace Cities.Presentation.Tools
             toolbar.Add(separator);
         }
 
-        private void AddBrush(VisualElement toolbar, string label, IBrushTool tool, System.Action choose, System.Func<bool> isChosen)
+        private void AddBrush(VisualElement toolbar, string label, ITool tool, System.Action choose, System.Func<bool> isChosen)
         {
             var brush = new BrushButton(new CityButton(label), tool, choose, isChosen);
             brush.Button.clicked += () => ToggleBrush(brush);
@@ -155,7 +184,7 @@ namespace Cities.Presentation.Tools
             _brushButtons.Add(brush);
         }
 
-        private void AddSettings(IBrushTool tool, params Slider[] sliders)
+        private void AddSettings(ITool tool, params Slider[] sliders)
         {
             var row = new VisualElement { name = "brush-settings" };
             row.AddToClassList(UiClasses.Toolbar);
@@ -196,7 +225,7 @@ namespace Cities.Presentation.Tools
         /// <summary>Knop voor een penseel in een bepaalde stand.</summary>
         private sealed class BrushButton
         {
-            public BrushButton(CityButton button, IBrushTool tool, System.Action choose, System.Func<bool> isChosen)
+            public BrushButton(CityButton button, ITool tool, System.Action choose, System.Func<bool> isChosen)
             {
                 Button = button;
                 Tool = tool;
@@ -206,7 +235,7 @@ namespace Cities.Presentation.Tools
 
             public CityButton Button { get; }
 
-            public IBrushTool Tool { get; }
+            public ITool Tool { get; }
 
             public System.Action Choose { get; }
 
