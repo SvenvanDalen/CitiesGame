@@ -11,8 +11,10 @@ namespace Cities.Gameplay.Tools
         /// <param name="yawDegrees">Draaiing om de Y-as.</param>
         /// <param name="size">Breedte (lokaal X) en diepte (lokaal Z) in meters.</param>
         /// <param name="invalidReason">Waarom het niet mag, of <c>null</c> als het mag.</param>
-        public ToolPreview(float3 position, float yawDegrees, float2 size, string invalidReason = null)
+        /// <param name="info">Korte uitleg bij de preview (zoals de lengte van een weg), of <c>null</c>.</param>
+        public ToolPreview(float3 position, float yawDegrees, float2 size, string invalidReason = null, string info = null)
         {
+            Info = info;
             IsVisible = true;
             Position = position;
             YawDegrees = yawDegrees;
@@ -29,6 +31,8 @@ namespace Cities.Gameplay.Tools
         public float2 Size { get; }
 
         public string InvalidReason { get; }
+
+        public string Info { get; }
 
         public bool IsValid => IsVisible && InvalidReason == null;
     }
