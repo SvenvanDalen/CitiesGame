@@ -114,7 +114,7 @@ namespace Cities.Tests.EditMode
             return false;
         }
 
-        private static string FindScriptsFolder()
+        internal static string FindScriptsFolder()
         {
             // Unity draait met de projectmap als werkmap; dotnet test vanuit de repository of de bin-map.
             foreach (var start in new[] { Environment.CurrentDirectory, AppContext.BaseDirectory })
