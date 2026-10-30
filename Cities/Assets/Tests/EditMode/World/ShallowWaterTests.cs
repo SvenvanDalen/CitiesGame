@@ -35,6 +35,8 @@ namespace Cities.Tests.EditMode.World
 
             public WaterSettings Settings { get; }
 
+            private WaterStep Step => new WaterStep(Width, Depth, Cell, Dt);
+
             public float[] Ground { get; }
 
             public float[] Water { get; }
@@ -60,12 +62,12 @@ namespace Cities.Tests.EditMode.World
                 {
                     for (var row = 0; row < Depth; row++)
                     {
-                        ShallowWater.UpdateFlux(row, Width, Depth, Cell, Dt, Settings, Ground, Water, Flux);
+                        ShallowWater.UpdateFlux(row, Step, Settings, Ground, Water, Flux);
                     }
 
                     for (var row = 0; row < Depth; row++)
                     {
-                        ShallowWater.UpdateDepth(row, Width, Depth, Cell, Dt, Settings, Ground, Flux, Source, Water);
+                        ShallowWater.UpdateDepth(row, Step, Settings, Ground, Flux, Source, Water);
                     }
                 }
             }
@@ -172,7 +174,7 @@ namespace Cities.Tests.EditMode.World
             var coarse = new float[3 * 3];
             for (var row = 0; row < 3; row++)
             {
-                ShallowWater.DownsampleRow(row, fine, 9, 4, 3, coarse);
+                ShallowWater.DownsampleRow(row, new WaterResample(3, 3, 4, 9), fine, coarse);
             }
 
             Assert.That(coarse, Is.EqualTo(new float[] { 0, 4, 8, 36, 40, 44, 72, 76, 80 }));
@@ -193,7 +195,7 @@ namespace Cities.Tests.EditMode.World
             var fine = new float[5 * 5];
             for (var row = 0; row < 5; row++)
             {
-                ShallowWater.UpsampleRow(row, coarseGround, coarseWater, 2, 2, 4, fineGround, 5, fine);
+                ShallowWater.UpsampleRow(row, new WaterResample(2, 2, 4, 5), coarseGround, coarseWater, fineGround, fine);
             }
 
             Assert.That(fine[0], Is.EqualTo(1f).Within(1e-4f), "diep water links");
@@ -207,7 +209,7 @@ namespace Cities.Tests.EditMode.World
             var fine = new float[5 * 5];
             for (var row = 0; row < 5; row++)
             {
-                ShallowWater.UpsampleRow(row, new float[4], new float[4], 2, 2, 4, new float[5 * 5], 5, fine);
+                ShallowWater.UpsampleRow(row, new WaterResample(2, 2, 4, 5), new float[4], new float[4], new float[5 * 5], fine);
             }
 
             Assert.That(fine, Has.All.EqualTo(0f));

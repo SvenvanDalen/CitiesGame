@@ -17,20 +17,20 @@ namespace Cities.World.Water
     public struct WaterSettings
     {
         /// <summary>Vaste stap in seconden; groter dan dit wordt in meerdere stappen gerekend (stabiliteit).</summary>
-        public float StepSeconds;
+        public float StepSeconds { get; set; }
 
-        public float Gravity;
+        public float Gravity { get; set; }
 
         /// <summary>Fractie van de stroom die een stap overleeft; houdt golven onder controle.</summary>
-        public float Damping;
+        public float Damping { get; set; }
 
         /// <summary>Hoogte van de zee in meters.</summary>
-        public float SeaLevel;
+        public float SeaLevel { get; set; }
 
-        public SeaEdges Sea;
+        public SeaEdges Sea { get; set; }
 
         /// <summary>Hoe snel de zee een randcel naar zeeniveau trekt, per seconde.</summary>
-        public float SeaRelaxation;
+        public float SeaRelaxation { get; set; }
 
         public static WaterSettings Default => new WaterSettings
         {
@@ -43,6 +43,49 @@ namespace Cities.World.Water
         };
     }
 
+    /// <summary>Afmetingen van het grove raster en de lengte van één stap.</summary>
+    public readonly struct WaterStep
+    {
+        public WaterStep(int width, int depth, float cellSize, float dt)
+        {
+            Width = width;
+            Depth = depth;
+            CellSize = cellSize;
+            Dt = dt;
+        }
+
+        public int Width { get; }
+
+        public int Depth { get; }
+
+        /// <summary>Zijde van een cel in meters.</summary>
+        public float CellSize { get; }
+
+        /// <summary>Stap in seconden.</summary>
+        public float Dt { get; }
+    }
+
+    /// <summary>Verhouding tussen het grove watergrid en het fijne terreinraster, dat op dezelfde hoekpunten begint.</summary>
+    public readonly struct WaterResample
+    {
+        public WaterResample(int coarseWidth, int coarseDepth, int ratio, int fineWidth)
+        {
+            CoarseWidth = coarseWidth;
+            CoarseDepth = coarseDepth;
+            Ratio = ratio;
+            FineWidth = fineWidth;
+        }
+
+        public int CoarseWidth { get; }
+
+        public int CoarseDepth { get; }
+
+        /// <summary>Fijne cellen per grove cel in elke richting.</summary>
+        public int Ratio { get; }
+
+        public int FineWidth { get; }
+    }
+
     /// <summary>
     /// Ondiepwatermodel met virtuele pijpen (Mei e.a.): elke cel heeft vier stromen naar zijn buren, aangedreven door het
     /// verschil in waterspiegel. Pure rekenkern op rijen, zodat dezelfde code in Burst-jobs draait en in CI te testen is.
@@ -52,10 +95,14 @@ namespace Cities.World.Water
     {
         public const int Directions = 4;
 
+        /// <summary>Diepte in meters vanaf waar een grof hoekpunt als nat telt.</summary>
+        private const float WetThreshold = 0.01f;
+
         /// <summary>Werkt de stromen van één rij bij uit de waterspiegels.</summary>
-        public static void UpdateFlux(int row, int width, int depth, float cellSize, float dt, in WaterSettings settings,
+        public static void UpdateFlux(int row, in WaterStep step, in WaterSettings settings,
             ReadOnlySpan<float> ground, ReadOnlySpan<float> water, Span<float> flux)
         {
+            var (width, depth, cellSize, dt) = (step.Width, step.Depth, step.CellSize, step.Dt);
             var area = cellSize * cellSize;
             for (var x = 0; x < width; x++)
             {
@@ -78,9 +125,10 @@ namespace Cities.World.Water
         }
 
         /// <summary>Werkt de waterdiepte van één rij bij uit de stromen van de cel en zijn buren, plus de bronnen (m³/s).</summary>
-        public static void UpdateDepth(int row, int width, int depth, float cellSize, float dt, in WaterSettings settings,
+        public static void UpdateDepth(int row, in WaterStep step, in WaterSettings settings,
             ReadOnlySpan<float> ground, ReadOnlySpan<float> flux, ReadOnlySpan<float> source, Span<float> water)
         {
+            var (width, depth, cellSize, dt) = (step.Width, step.Depth, step.CellSize, step.Dt);
             var area = cellSize * cellSize;
             for (var x = 0; x < width; x++)
             {
@@ -139,11 +187,11 @@ namespace Cities.World.Water
         }
 
         /// <summary>Neemt elke <paramref name="ratio"/>-de waarde van een fijn raster over naar één rij van een grof raster dat op dezelfde hoekpunten begint.</summary>
-        public static void DownsampleRow(int row, ReadOnlySpan<float> fine, int fineWidth, int ratio, int coarseWidth, Span<float> coarse)
+        public static void DownsampleRow(int row, in WaterResample grid, ReadOnlySpan<float> fine, Span<float> coarse)
         {
-            for (var x = 0; x < coarseWidth; x++)
+            for (var x = 0; x < grid.CoarseWidth; x++)
             {
-                coarse[(row * coarseWidth) + x] = fine[(row * ratio * fineWidth) + (x * ratio)];
+                coarse[(row * grid.CoarseWidth) + x] = fine[(row * grid.Ratio * grid.FineWidth) + (x * grid.Ratio)];
             }
         }
 
@@ -152,9 +200,10 @@ namespace Cities.World.Water
         /// het fijne terrein. Zo volgt de oever het terrein op 8 m, ook al rekent de simulatie op 32 m. Waar alle vier de
         /// grove hoekpunten droog zijn, blijft het droog.
         /// </summary>
-        public static void UpsampleRow(int z, ReadOnlySpan<float> coarseGround, ReadOnlySpan<float> coarseWater, int coarseWidth, int coarseDepth,
-            int ratio, ReadOnlySpan<float> fineGround, int fineWidth, Span<float> fineWater, float wetThreshold = 0.01f)
+        public static void UpsampleRow(int z, in WaterResample grid, ReadOnlySpan<float> coarseGround, ReadOnlySpan<float> coarseWater,
+            ReadOnlySpan<float> fineGround, Span<float> fineWater)
         {
+            var (coarseWidth, coarseDepth, ratio, fineWidth) = (grid.CoarseWidth, grid.CoarseDepth, grid.Ratio, grid.FineWidth);
             var cz = Math.Min(z / ratio, coarseDepth - 2);
             var tz = (z - (cz * ratio)) / (float)ratio;
             for (var x = 0; x < fineWidth; x++)
@@ -165,8 +214,8 @@ namespace Cities.World.Water
                 var i10 = i00 + 1;
                 var i01 = i00 + coarseWidth;
                 var i11 = i01 + 1;
-                var wet = coarseWater[i00] > wetThreshold || coarseWater[i10] > wetThreshold ||
-                          coarseWater[i01] > wetThreshold || coarseWater[i11] > wetThreshold;
+                var wet = coarseWater[i00] > WetThreshold || coarseWater[i10] > WetThreshold ||
+                          coarseWater[i01] > WetThreshold || coarseWater[i11] > WetThreshold;
                 var surface = Lerp(
                     Lerp(coarseGround[i00] + coarseWater[i00], coarseGround[i10] + coarseWater[i10], tx),
                     Lerp(coarseGround[i01] + coarseWater[i01], coarseGround[i11] + coarseWater[i11], tx), tz);

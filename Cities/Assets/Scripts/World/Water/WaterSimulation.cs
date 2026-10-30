@@ -45,8 +45,11 @@ namespace Cities.World.Water
             _water = new NativeArray<float>(Width * Depth, Allocator.Persistent);
             _flux = new NativeArray<float>(Width * Depth * ShallowWater.Directions, Allocator.Persistent);
             _source = new NativeArray<float>(Width * Depth, Allocator.Persistent);
+            Grid = new WaterResample(Width, Depth, Ratio, fine.Width);
             map.HeightChanged += OnHeightChanged;
         }
+
+        private WaterResample Grid { get; }
 
         public WaterSettings Settings { get; set; }
 
@@ -102,17 +105,17 @@ namespace Cities.World.Water
             if (_groundDirty)
             {
                 _groundDirty = false;
-                handle = new DownsampleJob { Fine = _map.Height.Values, FineWidth = _map.Height.Layout.Width, Coarse = _ground, Width = Width }
+                handle = new DownsampleJob { Fine = _map.Height.Values, Grid = Grid, Coarse = _ground }
                     .Schedule(Depth, 8, handle);
             }
 
             var count = Mathf.Clamp(Mathf.CeilToInt(seconds / settings.StepSeconds), 1, 4);
-            var dt = seconds / count;
+            var step = new WaterStep(Width, Depth, cell, seconds / count);
             for (var i = 0; i < count; i++)
             {
-                handle = new FluxJob { Settings = settings, Width = Width, Depth = Depth, CellSize = cell, Dt = dt, Ground = _ground, Water = _water, Flux = _flux }
+                handle = new FluxJob { Settings = settings, Step = step, Ground = _ground, Water = _water, Flux = _flux }
                     .Schedule(Depth, 8, handle);
-                handle = new DepthJob { Settings = settings, Width = Width, Depth = Depth, CellSize = cell, Dt = dt, Ground = _ground, Flux = _flux, Source = _source, Water = _water }
+                handle = new DepthJob { Settings = settings, Step = step, Ground = _ground, Flux = _flux, Source = _source, Water = _water }
                     .Schedule(Depth, 8, handle);
             }
 
@@ -121,8 +124,8 @@ namespace Cities.World.Water
                 var fine = _map.WaterDepth.Layout;
                 handle = new UpsampleJob
                 {
-                    CoarseGround = _ground, CoarseWater = _water, Width = Width, Depth = Depth,
-                    FineGround = _map.Height.Values, FineWidth = fine.Width, FineWater = _map.WaterDepth.Values,
+                    Grid = Grid, CoarseGround = _ground, CoarseWater = _water,
+                    FineGround = _map.Height.Values, FineWater = _map.WaterDepth.Values,
                 }.Schedule(fine.Depth, 8, handle);
             }
 
@@ -144,65 +147,56 @@ namespace Cities.World.Water
         private struct DownsampleJob : IJobParallelFor
         {
             [ReadOnly] public NativeArray<float> Fine;
-            public int FineWidth;
-            public int Width;
+            public WaterResample Grid;
 
             [NativeDisableParallelForRestriction] public NativeArray<float> Coarse;
 
-            public void Execute(int row) =>
-                ShallowWater.DownsampleRow(row, Fine.AsReadOnlySpan(), FineWidth, Ratio, Width, Coarse.AsSpan());
+            public void Execute(int index) =>
+                ShallowWater.DownsampleRow(index, Grid, Fine.AsReadOnlySpan(), Coarse.AsSpan());
         }
 
         [BurstCompile]
         private struct FluxJob : IJobParallelFor
         {
             public WaterSettings Settings;
-            public int Width;
-            public int Depth;
-            public float CellSize;
-            public float Dt;
+            public WaterStep Step;
             [ReadOnly] public NativeArray<float> Ground;
             [ReadOnly] public NativeArray<float> Water;
 
             [NativeDisableParallelForRestriction] public NativeArray<float> Flux;
 
-            public void Execute(int row) =>
-                ShallowWater.UpdateFlux(row, Width, Depth, CellSize, Dt, Settings, Ground.AsReadOnlySpan(), Water.AsReadOnlySpan(), Flux.AsSpan());
+            public void Execute(int index) =>
+                ShallowWater.UpdateFlux(index, Step, Settings, Ground.AsReadOnlySpan(), Water.AsReadOnlySpan(), Flux.AsSpan());
         }
 
         [BurstCompile]
         private struct DepthJob : IJobParallelFor
         {
             public WaterSettings Settings;
-            public int Width;
-            public int Depth;
-            public float CellSize;
-            public float Dt;
+            public WaterStep Step;
             [ReadOnly] public NativeArray<float> Ground;
             [ReadOnly] public NativeArray<float> Flux;
             [ReadOnly] public NativeArray<float> Source;
 
             [NativeDisableParallelForRestriction] public NativeArray<float> Water;
 
-            public void Execute(int row) =>
-                ShallowWater.UpdateDepth(row, Width, Depth, CellSize, Dt, Settings, Ground.AsReadOnlySpan(), Flux.AsReadOnlySpan(), Source.AsReadOnlySpan(), Water.AsSpan());
+            public void Execute(int index) =>
+                ShallowWater.UpdateDepth(index, Step, Settings, Ground.AsReadOnlySpan(), Flux.AsReadOnlySpan(), Source.AsReadOnlySpan(), Water.AsSpan());
         }
 
         [BurstCompile]
         private struct UpsampleJob : IJobParallelFor
         {
-            public int Width;
-            public int Depth;
-            public int FineWidth;
+            public WaterResample Grid;
             [ReadOnly] public NativeArray<float> CoarseGround;
             [ReadOnly] public NativeArray<float> CoarseWater;
             [ReadOnly] public NativeArray<float> FineGround;
 
             [NativeDisableParallelForRestriction] public NativeArray<float> FineWater;
 
-            public void Execute(int row) =>
-                ShallowWater.UpsampleRow(row, CoarseGround.AsReadOnlySpan(), CoarseWater.AsReadOnlySpan(), Width, Depth, Ratio,
-                    FineGround.AsReadOnlySpan(), FineWidth, FineWater.AsSpan());
+            public void Execute(int index) =>
+                ShallowWater.UpsampleRow(index, Grid, CoarseGround.AsReadOnlySpan(), CoarseWater.AsReadOnlySpan(),
+                    FineGround.AsReadOnlySpan(), FineWater.AsSpan());
         }
     }
 

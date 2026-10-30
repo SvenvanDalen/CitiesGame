@@ -50,12 +50,10 @@ namespace Cities.World.Water
 
         private static void Validate(SaveReader reader, float[] values, string what)
         {
-            foreach (var value in values)
+            var bad = Array.FindIndex(values, value => !float.IsFinite(value) || value < 0f);
+            if (bad >= 0)
             {
-                if (!float.IsFinite(value) || value < 0f)
-                {
-                    throw reader.Corrupt($"ongeldige {what} {value}");
-                }
+                throw reader.Corrupt($"ongeldige {what} {values[bad]}");
             }
         }
     }
