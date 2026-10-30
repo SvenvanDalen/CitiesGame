@@ -110,7 +110,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `Cities.World.Water.ShallowWater` is de pure rekenkern (virtuele pijpen, per rij); de Burst-jobs in `WaterSimulation` roepen dezelfde code aan. Pas de fysica alleen daar aan, zodat CI-tests haar dekken.
 - De simulatie rekent op een grof raster van 32 m (vier cellen per waarde) met een vaste stap van 0,1 s; `WorldMap.WaterDepth` (8 m) is daarvan afgeleid en wordt om de vijf stappen ververst. De echte toestand (diepte en stromen) staat in sectie `WATR`.
-- De zee is een vast waterpeil langs de randen in `SeaEdges`; bronnen (rivieren, later E03-06) zijn debieten in m³/s via `WaterSimulation.SetSource`.
+- De zee is een vast waterpeil langs de randen in `SeaEdges`; bronnen en afvoerpunten (E03-06) zijn debieten in m³/s in `WaterSources` (negatief is afvoer), geplaatst met `WaterSourceTool` en opgeslagen in `WATR`.
 - Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
 
 ## Logging en profiling

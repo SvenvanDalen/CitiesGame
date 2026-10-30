@@ -151,6 +151,15 @@ namespace Cities.Presentation.Tools
             AddBrush(toolbar, "Bomen kappen", trees, () => trees.Plant = false, () => !trees.Plant);
 
             _targetHeight = BrushSlider("Hoogte (m)", TerrainBrush.MinHeight, 600f, terraform.TargetHeight, v => terraform.TargetHeight = v);
+            var water = _brushes.WaterSources;
+            if (water != null)
+            {
+                AddSeparator(toolbar);
+                AddBrush(toolbar, "Waterbron", water, () => water.Drain = false, () => !water.Drain);
+                AddBrush(toolbar, "Afvoer", water, () => water.Drain = true, () => water.Drain);
+                AddSettings(water, BrushSlider("Debiet (m³/s)", WaterSourceTool.MinDischarge, WaterSourceTool.MaxDischarge, water.Discharge, v => water.Discharge = Mathf.Round(v)));
+            }
+
             AddSettings(terraform,
                 BrushSlider("Penseel (m)", TerraformTool.MinRadius, TerraformTool.MaxRadius, terraform.Radius, v => terraform.Radius = v),
                 BrushSlider("Sterkte (m/s)", TerraformTool.MinStrength, TerraformTool.MaxStrength, terraform.Strength, v => terraform.Strength = v),

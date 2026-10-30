@@ -27,6 +27,7 @@ namespace Cities.World.Water
         private NativeArray<float> _flux;
         private NativeArray<float> _source;
         private bool _groundDirty = true;
+        private int _appliedSources = -1;
         private int _steps;
 
         public WaterSimulation(WorldMap map, WaterSettings settings)
@@ -79,20 +80,15 @@ namespace Cities.World.Water
             }
         }
 
-        /// <summary>Laat <paramref name="cubicMetersPerSecond"/> toestromen op het grove hoekpunt bij wereldpositie (x, z); 0 stopt de bron.</summary>
-        public void SetSource(float x, float z, float cubicMetersPerSecond)
-        {
-            var cell = _map.Dimensions.CellSize * Ratio;
-            var cx = Mathf.Clamp(Mathf.RoundToInt(x / cell), 0, Width - 1);
-            var cz = Mathf.Clamp(Mathf.RoundToInt(z / cell), 0, Depth - 1);
-            _source[(cz * Width) + cx] = Mathf.Max(0f, cubicMetersPerSecond);
-        }
+        /// <summary>De bronnen en afvoerpunten; wijzigingen gaan bij de volgende stap in de simulatie.</summary>
+        public WaterSources Sources { get; } = new WaterSources();
 
         /// <summary>Zet de grove toestand (uit een save); de fijne waterdiepte volgt bij de volgende stap.</summary>
-        public void Restore(float[] water, float[] flux)
+        public void Restore(float[] water, float[] flux, WaterSource[] sources)
         {
             _water.CopyFrom(water);
             _flux.CopyFrom(flux);
+            Sources.Replace(sources);
             _steps = 0;
         }
 
@@ -102,6 +98,13 @@ namespace Cities.World.Water
             var settings = Settings;
             var cell = _map.Dimensions.CellSize * Ratio;
             var handle = dependency;
+            if (_appliedSources != Sources.Version)
+            {
+                // Synchronisatiepunt: de debietlaag wordt op de main thread herschreven, dus de vorige stap moet klaar zijn.
+                handle.Complete();
+                ApplySources();
+            }
+
             if (_groundDirty)
             {
                 _groundDirty = false;
@@ -130,6 +133,24 @@ namespace Cities.World.Water
             }
 
             return handle;
+        }
+
+        /// <summary>Zet de lijst bronnen om in debiet per grof hoekpunt; bronnen op dezelfde plek tellen op.</summary>
+        private void ApplySources()
+        {
+            _appliedSources = Sources.Version;
+            for (var i = 0; i < _source.Length; i++)
+            {
+                _source[i] = 0f;
+            }
+
+            var cell = _map.Dimensions.CellSize * Ratio;
+            foreach (var source in Sources.Items)
+            {
+                var cx = Mathf.Clamp(Mathf.RoundToInt(source.X / cell), 0, Width - 1);
+                var cz = Mathf.Clamp(Mathf.RoundToInt(source.Z / cell), 0, Depth - 1);
+                _source[(cz * Width) + cx] += source.Discharge;
+            }
         }
 
         public void Dispose()
