@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8864dd8ff7caac742800cf0c9f05c99d, type: 3}
+  m_Name: Roads
+  m_EditorClassIdentifier: Cities.Presentation::Cities.Presentation.Roads.RoadMaterialSet
+  _materials:
+  - {fileID: 2100000, guid: f3533f69870f26b4ea39108368daf257, type: 2}
+  - {fileID: 2100000, guid: 3426a070197087e48b464567c790b74c, type: 2}
+  - {fileID: 2100000, guid: 05bfdcab9ea5dfd46bfdcbce13cfd270, type: 2}
+  - {fileID: 2100000, guid: dbc6cc3f5efef084a90dcaff0e25d35e, type: 2}
+  - {fileID: 2100000, guid: a6294377b636edd46ba674fd37780398, type: 2}
+  - {fileID: 2100000, guid: 8a712b2db0620e345b512b6a80fb7363, type: 2}

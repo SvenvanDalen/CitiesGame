@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cities.Core.Ids;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
+using Cities.World.Roads;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace Cities.Gameplay.Tools
     /// <summary>
     /// Legt wegen aan in het <see cref="RoadNetwork"/>: recht, met een buigpunt of als aaneengesloten lijn (zie
     /// <see cref="RoadDrawMode"/>). Het begin en eind snappen aan bestaande knooppunten; anders aan een hoek- en lengtestap
-    /// (de hoek ten opzichte van de bestaande weg waar je aan begint). Midden op een bestaand segment aansluiten kan pas met E04-09.
+    /// (de hoek ten opzichte van de bestaande weg waar je aan begint). Een nieuwe weg vlakt het terrein eronder af (<see cref="RoadTerrainShaper"/>). Midden op een bestaand segment aansluiten kan pas met E04-09.
     /// </summary>
     public sealed class RoadTool : ITool
     {
@@ -141,6 +142,7 @@ namespace Cities.Gameplay.Tools
             var startNode = _startNode ?? _network.AddNode(_start);
             var endNode = _plan.Node ?? _network.AddNode(_plan.End);
             _network.AddSegment(startNode, endNode, _plan.Curve, Profile, SpeedLimit);
+            RoadTerrainShaper.Apply(_map, _plan.Curve, RoadTerrainShaper.HalfWidth(Profile));
             if (Mode == RoadDrawMode.Free)
             {
                 var heading = RoadPlanner.Yaw(_plan.Curve.Direction(1f));
