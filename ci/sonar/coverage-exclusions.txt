@@ -34,5 +34,9 @@ Cities/Assets/Scripts/World/Trees/ForestGenerator.cs
 Cities/Assets/Scripts/World/Trees/TreeBrush.cs
 Cities/Assets/Scripts/Gameplay/Tools/TreeTool.cs
 Cities/Assets/Scripts/Presentation/Trees/TreeModelSet.cs
+Cities/Assets/Scripts/Simulation/Network/RoadNetwork.cs
+Cities/Assets/Scripts/Simulation/Network/RoadNetworkTypes.cs
+Cities/Assets/Scripts/Simulation/Network/RoadNetworkSection.cs
+Cities/Assets/Scripts/Simulation/Network/LaneGraphOverlay.cs
 # Ontwikkelscripts (PowerShell); CI draait geen PowerShell-tests, ze worden lokaal gebruikt.
 tools/**

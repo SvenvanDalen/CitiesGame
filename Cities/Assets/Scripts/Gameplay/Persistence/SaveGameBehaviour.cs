@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Cities.Core.Persistence;
 using Cities.Core.Randomness;
+using Cities.Simulation.Network;
 using Cities.Simulation.Scheduling;
 using Cities.Simulation.Timing;
 using Cities.World.Grid;
@@ -19,6 +20,9 @@ namespace Cities.Gameplay.Persistence
     {
         [SerializeField] private SimulationHostBehaviour _simulation;
         [SerializeField] private WorldMapHostBehaviour _world;
+
+        [Tooltip("Optioneel: het wegennet.")]
+        [SerializeField] private RoadNetworkHostBehaviour _network;
         [SerializeField] private string _cityName = "Nieuwe stad";
 
         [Tooltip("Naam van de save voor de contextmenu-opdrachten in de inspector.")]
@@ -41,12 +45,17 @@ namespace Cities.Gameplay.Persistence
         private void Start()
         {
             var clock = _simulation.Clock;
-            var sections = new ISaveSection[]
+            var sections = new System.Collections.Generic.List<ISaveSection>
             {
                 new SimulationClockSection(clock, _simulation.Commands),
                 new RandomSection(_simulation.Random),
                 new WorldMapSection(_world.Map),
             };
+            if (_network != null)
+            {
+                sections.Add(new RoadNetworkSection(_network.Network));
+            }
+
             Saves = new SaveGameService(new SaveStorage(_directory ?? SavesDirectory), sections, metadata => Describe(clock, metadata), _simulation.Scheduler.Complete)
             {
                 CityName = _cityName,
