@@ -45,5 +45,7 @@ Cities/Assets/Scripts/Simulation/Network/RoadNetwork.cs
 Cities/Assets/Scripts/Simulation/Network/RoadNetworkTypes.cs
 Cities/Assets/Scripts/Simulation/Network/RoadNetworkSection.cs
 Cities/Assets/Scripts/Simulation/Network/LaneGraphOverlay.cs
+Cities/Assets/Scripts/World/Water/WaterSimulation.cs
+Cities/Assets/Scripts/World/Water/WaterSection.cs
 # Ontwikkelscripts (PowerShell); CI draait geen PowerShell-tests, ze worden lokaal gebruikt.
 tools/**
