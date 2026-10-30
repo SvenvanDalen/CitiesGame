@@ -1,4 +1,5 @@
 using System;
+using Cities.Core.Randomness;
 using Cities.Simulation.Commands;
 using Cities.Simulation.Timing;
 
@@ -30,14 +31,18 @@ namespace Cities.Simulation.Scheduling
         private readonly ITickScheduler _scheduler;
         private readonly float _stepSeconds;
 
-        public SimulationRunner(SimulationClock clock, CommandBus commands, ITickScheduler scheduler)
+        /// <param name="random">Wereldseed; zonder wordt seed 0 gebruikt (tests).</param>
+        public SimulationRunner(SimulationClock clock, CommandBus commands, ITickScheduler scheduler, SimulationRandom random = null)
         {
             _clock = clock ?? throw new ArgumentNullException(nameof(clock));
             _commands = commands ?? throw new ArgumentNullException(nameof(commands));
             _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             _stepSeconds = (float)clock.Settings.TickSeconds;
+            Random = random ?? new SimulationRandom(0);
             _clock.Ticked += OnTicked;
         }
+
+        public SimulationRandom Random { get; }
 
         /// <summary>Aantal ticks dat is ingepland.</summary>
         public long ScheduledTicks { get; private set; }
@@ -67,7 +72,7 @@ namespace Cities.Simulation.Scheduling
             }
 
             var calendar = _clock.Calendar;
-            _scheduler.ScheduleTick(new SimulationTick(tick, _stepSeconds, calendar.Date, calendar.TimeOfDay));
+            _scheduler.ScheduleTick(new SimulationTick(tick, _stepSeconds, calendar.Date, calendar.TimeOfDay, Random.Seed));
             ScheduledTicks++;
         }
 

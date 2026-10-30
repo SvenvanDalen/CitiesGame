@@ -1,3 +1,4 @@
+using Cities.Core.Randomness;
 using Cities.Simulation.Timing;
 using Unity.Jobs;
 
@@ -6,12 +7,13 @@ namespace Cities.Simulation.Scheduling
     /// <summary>Wat een systeem per tick over de tijd weet.</summary>
     public readonly struct SimulationTick
     {
-        public SimulationTick(long tick, float stepSeconds, GameDate date, float timeOfDay)
+        public SimulationTick(long tick, float stepSeconds, GameDate date, float timeOfDay, ulong randomSeed = 0)
         {
             Tick = tick;
             StepSeconds = stepSeconds;
             Date = date;
             TimeOfDay = timeOfDay;
+            RandomSeed = randomSeed;
         }
 
         public long Tick { get; }
@@ -23,6 +25,12 @@ namespace Cities.Simulation.Scheduling
 
         /// <summary>Tijd van de dag als fractie (0 = middernacht).</summary>
         public float TimeOfDay { get; }
+
+        /// <summary>Wereldseed; alle willekeur in deze tick volgt hieruit (zie <see cref="Random"/>).</summary>
+        public ulong RandomSeed { get; }
+
+        /// <summary>Bron voor <paramref name="stream"/>; haal er met <c>At(Tick)</c> of <c>At(Tick, index)</c> een generator uit.</summary>
+        public RandomSource Random(RandomStreamKey stream) => new RandomSource(RandomSeed, stream);
     }
 
     /// <summary>

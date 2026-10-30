@@ -38,8 +38,17 @@ De namespace volgt de map: `Cities.<Laag>[.<Submap>]`, bijvoorbeeld `Cities.Worl
 
 - Simulatiedata zijn blittable structs in `NativeArray`/`NativeList` en worden verwerkt door Burst-jobs; geen managed allocaties in de hot path.
 - Simulatielogica hangt niet af van `Time.deltaTime` maar van de vaste simulatiestap.
-- Willekeur gaat via de deterministische RNG (E01-11), nooit via `UnityEngine.Random`.
 - Deterministische logica krijgt minstens één EditMode-test.
+
+### Determinisme
+
+Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en laden.
+
+- Willekeur gaat via `Cities.Core.Randomness`, nooit via `UnityEngine.Random`, `System.Random`, `Guid` of de klok. `DeterminismSourceTests` controleert dat voor `Simulation` en `World` (MonoBehaviours uitgezonderd).
+- Een systeem meldt zijn stroom eenmalig aan met `random.Register("Systeem.Doel")` en haalt elke tick een generator op met `tick.Random(stroom).At(tick.Tick)`. In parallelle jobs gebruik je `At(tick.Tick, index)` per object, zodat de volgorde van de werkthreads niet uitmaakt. Geef de `RandomSource` mee aan de job; bewaar geen generator over ticks heen.
+- Itereer in simulatiecode niet over `Dictionary`/`HashSet` als de volgorde de uitkomst bepaalt; gebruik een gesorteerde of geïndexeerde lijst.
+- Gehele getallen zijn op elk platform gelijk. Zwevendekommagetallen zijn gelijk binnen een build en platform; voor een uitkomst die tussen platforms gelijk moet zijn (zoals een gedeelde seed) gebruik je gehele getallen.
+- De seed staat in de save (sectie `RAND`), komt anders uit `-seed <getal>` of de inspector van `SimulationHostBehaviour` en wordt bij de start gelogd. `StateChecksum` vergelijkt twee runs per sectie en wijst de eerste die uiteenloopt aan.
 
 ## UI
 

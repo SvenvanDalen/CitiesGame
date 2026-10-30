@@ -460,7 +460,7 @@ Debugtools zijn geen luxe maar een voorwaarde: zonder zicht op lanes, agents en 
 | --- | --- | --- | --- | --- |
 | E24-01 | Testframework en CI | EditMode- en PlayMode-tests draaien lokaal met een script en bij elke commit | M0 | M |
 | E24-02 | Debug-overlays | Lanegraaf, ID's, cellenraster, agent-aantallen en tick-tijden per systeem | M0 | M |
-| E24-03 | Console en cheats | Geld, ontgrendelen, tijd versnellen, spawnen en teleporteren via een console | M0 | S |
+| E24-03 | Console en cheats | Geld, ontgrendelen, tijd versnellen, spawnen en teleporteren via een console (na het geldmodel E11-01 en ontgrendelen E03-09) | M3 | S |
 | E24-04 | Sim-inspector | Live data van elk object (burger, voertuig, gebouw) in een paneel | M1 | M |
 | E24-05 | Crash- en corruptiecontrole | Logbestanden en checksum bij laden om kapotte saves te herkennen | M3 | S |
 | E24-06 | Stresstest-generator | Genereert automatisch een grote stad voor benchmarks en regressietests | M4 | L |

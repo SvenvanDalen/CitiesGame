@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Cities.Core.Persistence;
+using Cities.Core.Randomness;
 using Cities.Simulation.Scheduling;
 using Cities.Simulation.Timing;
 using Cities.World.Grid;
@@ -43,6 +44,7 @@ namespace Cities.Gameplay.Persistence
             var sections = new ISaveSection[]
             {
                 new SimulationClockSection(clock, _simulation.Commands),
+                new RandomSection(_simulation.Random),
                 new WorldMapSection(_world.Map),
             };
             Saves = new SaveGameService(new SaveStorage(_directory ?? SavesDirectory), sections, metadata => Describe(clock, metadata), _simulation.Scheduler.Complete)
