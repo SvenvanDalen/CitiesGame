@@ -68,6 +68,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Escape breekt eerst een lopende stap af (`CancelStep`), en zet anders de tool uit. Pas zonder actieve tool opent Escape het menu.
 - Snappen op het raster gaat via `GridSnap`; `PlacementTool` doet raster, kwartslagen, kaartrand en helling, en vraagt de rest (bezetting) aan een `IPlacementTarget`.
 - `ToolGhostBehaviour` tekent de preview: het model doorschijnend en de footprint op de grond, blauw als het mag en rood als het niet mag. `ToolbarBehaviour` toont de reden. Testscene: `Scenes/Tests/Tools.unity`.
+- Een tool met `RepeatsWhileHeld` (zoals een penseel) werkt elk frame zolang de knop ingedrukt is; `ToolInput.DeltaTime` geeft de frametijd.
+- Terraformen gaat met `TerraformTool` (omhoog, omlaag, vlak, glad, naar hoogte) via `TerrainBrush`. Het penseel meldt de gewijzigde hoekpunten met `NotifyHeightChanged`, en de terreinshader tekent de rand via `_CityBrush`. Testscene: `Scenes/Tests/Terrain.unity`.
 
 ## Terrein
 

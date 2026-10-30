@@ -4,6 +4,7 @@ using Cities.World.Terrain;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace Cities.Presentation.Terrain
@@ -51,7 +52,9 @@ namespace Cities.Presentation.Terrain
         private bool _built;
         private float2[] _heightRanges;
         private TerrainMeshBuilder _builder;
-        private Texture2D _splatMap;
+        private NativeArray<Color32> _splatPixels;
+        private RenderTexture _splatMap;
+        private Texture2D _splatUpload;
         private RectInt _splatDirty;
 
         public TerrainChunkLayout Layout => _layout;
@@ -59,7 +62,10 @@ namespace Cities.Presentation.Terrain
         /// <summary>Huidig detailniveau per chunk, of -1 als hij nog niet gebouwd is.</summary>
         public IReadOnlyList<int> Lods => _lods;
 
-        public Texture2D SplatMap => _splatMap;
+        /// <summary>De splatmap op de GPU; <see cref="SplatPixels"/> is de kopie in het geheugen.</summary>
+        public Texture SplatMap => _splatMap;
+
+        public NativeArray<Color32> SplatPixels => _splatPixels;
 
         /// <summary>Chunks die in het laatste frame opnieuw gebouwd zijn.</summary>
         public int LastRebuildCount { get; private set; }
@@ -99,13 +105,19 @@ namespace Cities.Presentation.Terrain
             }
 
             var dimensions = _map.Dimensions;
-            _splatMap = new Texture2D(dimensions.CellsX, dimensions.CellsZ, TextureFormat.RGBA32, true, true)
+            _splatPixels = new NativeArray<Color32>(dimensions.CellCount, Allocator.Persistent);
+            _splatMap = new RenderTexture(new RenderTextureDescriptor(dimensions.CellsX, dimensions.CellsZ, GraphicsFormat.R8G8B8A8_UNorm, 0)
+            {
+                useMipMap = true,
+                autoGenerateMips = false,
+            })
             {
                 name = "Terrain splatmap",
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Trilinear,
                 anisoLevel = 4,
             };
+            _splatMap.Create();
             _splatDirty = _map.AllCells;
             Shader.SetGlobalTexture(SplatMapId, _splatMap);
             Shader.SetGlobalVector(WorldSizeId, new Vector4(dimensions.SizeX, dimensions.SizeZ, 1f / dimensions.SizeX, 1f / dimensions.SizeZ));
@@ -123,6 +135,11 @@ namespace Cities.Presentation.Terrain
             }
 
             Destroy(_splatMap);
+            Destroy(_splatUpload);
+            if (_splatPixels.IsCreated)
+            {
+                _splatPixels.Dispose();
+            }
 
             if (_meshes != null)
             {
@@ -235,19 +252,38 @@ namespace Cities.Presentation.Terrain
             }
         }
 
-        /// <summary>Werkt het vuile deel van de splatmap bij en stuurt hem (met mipmaps) naar de GPU.</summary>
+        /// <summary>
+        /// Werkt het vuile deel van de splatmap bij en stuurt alleen dat deel naar de GPU, die de mipmaps maakt;
+        /// de hele map met mipmaps op de CPU kost tientallen milliseconden, te veel voor een penseel dat elk frame werkt.
+        /// </summary>
         private void UpdateSplatMap()
         {
-            if (_splatDirty.width <= 0 || _splatDirty.height <= 0)
+            var size = new Vector2Int(_map.Dimensions.CellsX, _map.Dimensions.CellsZ);
+            var min = Vector2Int.Max(_splatDirty.min, Vector2Int.zero);
+            var max = Vector2Int.Min(_splatDirty.max, size);
+            _splatDirty = default;
+            if (max.x <= min.x || max.y <= min.y)
             {
                 return;
             }
 
-            TerrainSplatBuilder.Build(_map, _splat, _splatDirty, _splatMap.GetPixelData<Color32>(0));
+            var area = new RectInt(min, max - min);
+            TerrainSplatBuilder.Build(_map, _splat, area, _splatPixels);
+            if (_splatUpload == null || _splatUpload.width != area.width || _splatUpload.height != area.height)
+            {
+                Destroy(_splatUpload);
+                _splatUpload = new Texture2D(area.width, area.height, GraphicsFormat.R8G8B8A8_UNorm, TextureCreationFlags.None) { name = "Terrain splat upload" };
+            }
 
-            // shortcut: Apply stuurt de hele texture (21 MB met mipmaps) bij elke wijziging; voor penselen die elk frame terraformen (E03-03) alleen de regio uploaden.
-            _splatMap.Apply(true);
-            _splatDirty = default;
+            var upload = _splatUpload.GetPixelData<Color32>(0);
+            for (var row = 0; row < area.height; row++)
+            {
+                NativeArray<Color32>.Copy(_splatPixels, ((area.yMin + row) * size.x) + area.xMin, upload, row * area.width, area.width);
+            }
+
+            _splatUpload.Apply(false);
+            Graphics.CopyTexture(_splatUpload, 0, 0, 0, 0, area.width, area.height, _splatMap, 0, 0, area.xMin, area.yMin);
+            _splatMap.GenerateMips();
         }
 
         private void MarkSplatDirty(RectInt cells)

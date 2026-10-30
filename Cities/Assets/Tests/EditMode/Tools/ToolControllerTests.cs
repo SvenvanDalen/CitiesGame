@@ -20,6 +20,8 @@ namespace Cities.Tests.EditMode.Tools
 
             public GameObject Ghost => null;
 
+            public bool RepeatsWhileHeld => false;
+
             public void Activate() => Calls.Add("activate");
 
             public void Deactivate() => Calls.Add("deactivate");

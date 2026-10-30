@@ -52,6 +52,8 @@ namespace Cities.Gameplay.Tools
         /// <summary>Model voor de preview; <c>null</c> toont alleen de footprint.</summary>
         public GameObject Ghost { get; set; }
 
+        public bool RepeatsWhileHeld => false;
+
         public int Width { get; }
 
         public int Depth { get; }

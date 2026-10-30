@@ -7,12 +7,13 @@ namespace Cities.Presentation.Tools
 {
     /// <summary>
     /// Tekent de preview van de actieve tool: het model doorschijnend en de footprint op de grond, blauw als het mag
-    /// en rood als het niet mag.
+    /// en rood als het niet mag. Voor de <see cref="TerraformTool"/> tekent de terreinshader de penseelrand.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ToolGhostBehaviour : MonoBehaviour
     {
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+        private static readonly int Brush = Shader.PropertyToID("_CityBrush");
 
         [SerializeField] private ToolsBehaviour _tools;
 
@@ -45,6 +46,10 @@ namespace Cities.Presentation.Tools
             var controller = _tools.Controller;
             var preview = controller.Preview;
             UseModel(controller.Active?.Ghost);
+            var brushState = preview.IsValid ? 1f : -1f;
+            Shader.SetGlobalVector(Brush, controller.Active is TerraformTool brush && preview.IsVisible
+                ? new Vector4(preview.Position.x, preview.Position.z, brush.Radius, brushState)
+                : Vector4.zero);
             if (!preview.IsVisible)
             {
                 SetGhostVisible(false);
@@ -65,7 +70,7 @@ namespace Cities.Presentation.Tools
                 SetGhostVisible(true);
             }
 
-            if (_footprintMaterial != null)
+            if (_footprintMaterial != null && preview.Size.x > 0f)
             {
                 var matrix = Matrix4x4.TRS(position + (Vector3.up * _footprintLift), rotation, new Vector3(preview.Size.x, 1f, preview.Size.y));
                 Graphics.RenderMesh(new RenderParams(_footprintMaterial) { matProps = _block, shadowCastingMode = ShadowCastingMode.Off }, _quad, 0, matrix);
@@ -74,6 +79,7 @@ namespace Cities.Presentation.Tools
 
         private void OnDestroy()
         {
+            Shader.SetGlobalVector(Brush, Vector4.zero);
             if (_ghost != null)
             {
                 Destroy(_ghost);
