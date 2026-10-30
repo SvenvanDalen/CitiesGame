@@ -100,5 +100,17 @@ namespace Cities.Tests.EditMode.Tools
             Assert.That(controller.Preview.IsVisible, Is.False);
             Assert.That(controller.Preview.IsValid, Is.False);
         }
+
+        [Test]
+        public void APreviewCarriesWhatTheActionCostsAndIsFreeByDefault()
+        {
+            var free = new ToolPreview(float3.zero, 0f, float2.zero);
+            var paid = new ToolPreview(float3.zero, 0f, float2.zero, "Te steil", "40 m", 20_000);
+
+            Assert.That(free.Cost, Is.EqualTo(0));
+            Assert.That(paid.Cost, Is.EqualTo(20_000));
+            Assert.That(paid.Info, Is.EqualTo("40 m"));
+            Assert.That(paid.IsValid, Is.False, "de reden blijft los van de kosten");
+        }
     }
 }

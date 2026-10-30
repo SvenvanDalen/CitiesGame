@@ -50,6 +50,19 @@ namespace Cities.Tests.EditMode.Tools
         }
 
         [Test]
+        public void ThePreviewShowsWhatTheChosenTypeCostsForTheLength()
+        {
+            _tool.Use("road.test", new RoadTypeSpec { CarLanes = 1, Sidewalks = true, SpeedLimitKmh = 50f, CostPerMeter = 500 });
+            Click(100f, 100f);
+
+            var preview = _tool.UpdatePreview(At(100f, 150f));
+
+            Assert.That(preview.Cost, Is.EqualTo(25_000));
+            Assert.That(_tool.TypeId, Is.EqualTo("road.test"));
+            Assert.That(_tool.UpdatePreview(At(100f, 100f)).Cost, Is.EqualTo(0), "een marker kost niets");
+        }
+
+        [Test]
         public void TwoClicksLayAStraightRoadWithLengthAndAngleInTheInfo()
         {
             Click(100f, 100f);
