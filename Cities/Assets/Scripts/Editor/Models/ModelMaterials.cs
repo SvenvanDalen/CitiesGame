@@ -85,16 +85,6 @@ namespace Cities.Editor.Models
             const int courseHeight = Size / courses;
             const int brickLength = Size / perCourse;
             const int joint = 4;
-            var random = new System.Random(seed);
-            var shades = new float[courses, perCourse];
-            for (var row = 0; row < courses; row++)
-            {
-                for (var i = 0; i < perCourse; i++)
-                {
-                    shades[row, i] = 0.82f + ((float)random.NextDouble() * 0.36f);
-                }
-            }
-
             var pixels = new Color[Size * Size];
             for (var y = 0; y < Size; y++)
             {
@@ -106,11 +96,16 @@ namespace Cities.Editor.Models
                     var shifted = (x + offset) % Size;
                     var index = shifted / brickLength;
                     var inBrick = shifted % brickLength;
-                    var isJoint = inRow < joint || inBrick < joint;
                     var grain = Noise(x, y, seed) * 0.08f;
-                    pixels[(y * Size) + x] = isJoint
-                        ? Shade(mortar, 1f + grain)
-                        : Shade(brick, shades[row, index] + grain - (inRow == joint ? 0.12f : 0f));
+                    if (inRow < joint || inBrick < joint)
+                    {
+                        pixels[(y * Size) + x] = Shade(mortar, 1f + grain);
+                        continue;
+                    }
+
+                    // Elke steen een eigen tint; de bovenste pixelrij ligt in de schaduw van de voeg.
+                    var shadow = inRow == joint ? 0.12f : 0f;
+                    pixels[(y * Size) + x] = Shade(brick, Variation(index % perCourse, row, seed, 0.82f, 0.36f) + grain - shadow);
                 }
             }
 
@@ -122,16 +117,6 @@ namespace Cities.Editor.Models
         {
             const int rows = 3;
             const int perRow = 3;
-            var random = new System.Random(seed);
-            var shades = new float[rows, perRow];
-            for (var row = 0; row < rows; row++)
-            {
-                for (var i = 0; i < perRow; i++)
-                {
-                    shades[row, i] = 0.88f + ((float)random.NextDouble() * 0.22f);
-                }
-            }
-
             var pixels = new Color[Size * Size];
             for (var y = 0; y < Size; y++)
             {
@@ -144,7 +129,7 @@ namespace Cities.Editor.Models
                     var wave = 0.85f + (0.15f * Mathf.Cos(across * Mathf.PI * 2f));
                     var overlap = along > 0.9f ? 0.55f : 1f - (along * 0.18f);
                     var edge = across < 0.015f ? 0.6f : 1f;
-                    pixels[(y * Size) + x] = Shade(tile, shades[row, index] * wave * overlap * edge * (1f + (Noise(x, y, seed) * 0.06f)));
+                    pixels[(y * Size) + x] = Shade(tile, Variation(index, row, seed, 0.88f, 0.22f) * wave * overlap * edge * (1f + (Noise(x, y, seed) * 0.06f)));
                 }
             }
 
@@ -155,20 +140,13 @@ namespace Cities.Editor.Models
         private static Color[] Paving(Color stone, int seed)
         {
             const int tiles = 3;
-            var random = new System.Random(seed);
-            var shades = new float[tiles * tiles];
-            for (var i = 0; i < shades.Length; i++)
-            {
-                shades[i] = 0.9f + ((float)random.NextDouble() * 0.16f);
-            }
-
             var pixels = new Color[Size * Size];
             for (var y = 0; y < Size; y++)
             {
                 for (var x = 0; x < Size; x++)
                 {
                     var joint = x * tiles % Size < 3 * tiles || y * tiles % Size < 3 * tiles;
-                    var shade = joint ? 0.55f : shades[(y * tiles / Size * tiles) + (x * tiles / Size)];
+                    var shade = joint ? 0.55f : Variation(x * tiles / Size, y * tiles / Size, seed, 0.9f, 0.16f);
                     pixels[(y * Size) + x] = Shade(stone, shade * (1f + (Noise(x, y, seed) * 0.1f)));
                 }
             }
@@ -197,6 +175,10 @@ namespace Cities.Editor.Models
 
         private static Color Shade(Color color, float factor) =>
             new Color(Mathf.Clamp01(color.r * factor), Mathf.Clamp01(color.g * factor), Mathf.Clamp01(color.b * factor), 1f);
+
+        /// <summary>Vaste tint per steen of tegel: tussen <paramref name="min"/> en <paramref name="min"/> + <paramref name="range"/>.</summary>
+        private static float Variation(int column, int row, int seed, float min, float range) =>
+            min + ((Noise(column, row, seed + 7919) + 1f) * 0.5f * range);
 
         /// <summary>Vaste ruis tussen -1 en 1 per pixel.</summary>
         private static float Noise(int x, int y, int seed)

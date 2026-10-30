@@ -36,7 +36,7 @@ namespace Cities.Gameplay.Tools
         private void Awake()
         {
             var picking = _tools.Picking;
-            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise, _prefab);
+            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise) { Ghost = _prefab };
         }
 
         private void Start()

@@ -26,8 +26,7 @@ namespace Cities.Gameplay.Tools
             WorldDimensions dimensions,
             ITerrainHeight terrain,
             IPlacementTarget target,
-            float maxRise = 1.5f,
-            GameObject ghost = null)
+            float maxRise = 1.5f)
         {
             if (width < 1 || depth < 1)
             {
@@ -43,7 +42,6 @@ namespace Cities.Gameplay.Tools
             Width = width;
             Depth = depth;
             MaxRise = maxRise;
-            Ghost = ghost;
             _dimensions = dimensions;
             _terrain = terrain ?? throw new ArgumentNullException(nameof(terrain));
             _target = target ?? throw new ArgumentNullException(nameof(target));
@@ -51,7 +49,8 @@ namespace Cities.Gameplay.Tools
 
         public string Name { get; }
 
-        public GameObject Ghost { get; }
+        /// <summary>Model voor de preview; <c>null</c> toont alleen de footprint.</summary>
+        public GameObject Ghost { get; set; }
 
         public int Width { get; }
 

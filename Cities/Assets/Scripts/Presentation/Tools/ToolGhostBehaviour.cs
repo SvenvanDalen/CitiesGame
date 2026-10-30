@@ -1,3 +1,4 @@
+using System.Linq;
 using Cities.Gameplay.Tools;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -104,12 +105,9 @@ namespace Cities.Presentation.Tools
 
             _ghost = Instantiate(model, transform);
             _ghost.name = $"Ghost {model.name}";
-            foreach (var component in _ghost.GetComponentsInChildren<Component>(true))
+            foreach (var component in _ghost.GetComponentsInChildren<Component>(true).Where(c => c is Collider || c is MonoBehaviour))
             {
-                if (component is Collider || component is MonoBehaviour)
-                {
-                    Destroy(component);
-                }
+                Destroy(component);
             }
 
             _renderers = _ghost.GetComponentsInChildren<Renderer>(true);

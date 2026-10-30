@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Gameplay.Tools
 {
@@ -16,15 +17,8 @@ namespace Cities.Gameplay.Tools
 
         public string Check(in Footprint footprint)
         {
-            foreach (var placed in _placed)
-            {
-                if (placed.Overlaps(footprint))
-                {
-                    return Occupied;
-                }
-            }
-
-            return null;
+            var candidate = footprint;
+            return _placed.Any(placed => placed.Overlaps(candidate)) ? Occupied : null;
         }
 
         public void Add(in Footprint footprint) => _placed.Add(footprint);
