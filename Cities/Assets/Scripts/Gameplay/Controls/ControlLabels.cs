@@ -7,6 +7,7 @@ namespace Cities.Gameplay.Controls
     {
         public const string CategoryCamera = "Camera";
         public const string CategorySimulation = "Simulatie";
+        public const string CategoryTools = "Bouwen";
         public const string CategoryGeneral = "Algemeen";
         public const string CategoryDebug = "Debug";
 
@@ -29,7 +30,9 @@ namespace Cities.Gameplay.Controls
             new ControlLabel("Game/SpeedNormal", CategorySimulation, "Normale snelheid"),
             new ControlLabel("Game/SpeedFast", CategorySimulation, "Snelheid 2×"),
             new ControlLabel("Game/SpeedFastest", CategorySimulation, "Snelheid 3×"),
-            new ControlLabel("Game/Menu", CategoryGeneral, "Menu openen of sluiten"),
+            new ControlLabel("Tools/Apply", CategoryTools, "Plaatsen"),
+            new ControlLabel("Tools/Rotate", CategoryTools, "Draaien (kwartslag)"),
+            new ControlLabel("Game/Menu", CategoryGeneral, "Tool annuleren, anders menu openen of sluiten"),
             new ControlLabel("Debug/TogglePanel", CategoryDebug, "Debugpaneel tonen of verbergen"),
             new ControlLabel("Debug/ToggleCells", CategoryDebug, "Cellenraster tonen of verbergen"),
         };

@@ -30,6 +30,7 @@ namespace Cities.Presentation.UI
         public const string ToolbarSeparator = "c-toolbar__separator";
 
         public const string Badge = "c-badge";
+        public const string BadgeDanger = "c-badge--danger";
         public const string Meter = "c-meter";
         public const string MeterFill = "c-meter__fill";
         public const string Tooltip = "c-tooltip";
