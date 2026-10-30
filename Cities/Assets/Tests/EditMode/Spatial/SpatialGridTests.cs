@@ -201,6 +201,63 @@ namespace Cities.Tests.EditMode.Spatial
             Assert.That(distance, Is.EqualTo(400f).Within(1e-3f));
         }
 
+        /// <summary>Verzamelt bezochte waarden; vanaf waarde 10 stopt de straal achter dat object.</summary>
+        private struct RecordingVisitor : ISpatialRayVisitor<int>
+        {
+            public List<int> Visited;
+            public float Stop;
+
+            public float StopDistance => Stop;
+
+            public void Visit(in int value, Aabb2 bounds)
+            {
+                Visited.Add(value);
+                if (value >= 10)
+                {
+                    Stop = bounds.Min.x;
+                }
+            }
+        }
+
+        [Test]
+        public void VisitorSeesEachObjectOnceInRayOrderAndCanStop()
+        {
+            _grid.Insert(1, new Aabb2(new float2(120f, 90f), new float2(260f, 110f)));
+            _grid.Insert(10, new Aabb2(new float2(400f, 95f), new float2(410f, 105f)));
+            _grid.Insert(2, new Aabb2(new float2(700f, 95f), new float2(710f, 105f)));
+            _grid.Insert(3, new Aabb2(new float2(100f, 600f), new float2(110f, 610f)));
+            var visitor = new RecordingVisitor { Visited = new List<int>(), Stop = float.PositiveInfinity };
+
+            _grid.Raycast(new float2(0f, 100f), new float2(1f, 0f), 1000f, ref visitor);
+
+            Assert.That(visitor.Visited, Is.EqualTo(new[] { 1, 10 }), "Eén keer, op volgorde, en niet voorbij de stopafstand");
+        }
+
+        [Test]
+        public void VerticalRayVisitsOnlyItsOwnCell()
+        {
+            _grid.Insert(1, Aabb2.FromCircle(new float2(120f, 120f), 5f));
+            _grid.Insert(2, Aabb2.FromCircle(new float2(180f, 120f), 5f));
+            var visitor = new RecordingVisitor { Visited = new List<int>(), Stop = float.PositiveInfinity };
+
+            _grid.Raycast(new float2(121f, 121f), float2.zero, 0f, ref visitor);
+
+            Assert.That(visitor.Visited, Is.EqualTo(OnlyOne));
+        }
+
+        [Test]
+        public void SetValueReplacesTheValueOnly()
+        {
+            var handle = _grid.Insert(1, Aabb2.FromCircle(new float2(10f, 10f), 1f));
+
+            _grid.SetValue(handle, 42);
+            _grid.QueryRadius(new float2(10f, 10f), 2f, _results);
+
+            Assert.That(_results.AsArray().ToArray(), Is.EqualTo(new[] { 42 }));
+            Assert.That(_grid.GetBounds(handle), Is.EqualTo(Aabb2.FromCircle(new float2(10f, 10f), 1f)));
+            Assert.Throws<ArgumentException>(() => _grid.SetValue(99, 1));
+        }
+
         [Test]
         public void ClearEmptiesGrid()
         {

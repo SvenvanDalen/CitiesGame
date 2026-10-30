@@ -22,5 +22,7 @@ Cities/Assets/Scripts/Gameplay/Controls/InputControlBindings.cs
 Cities/Assets/Scripts/Presentation/Settings/ControlsSettingsPanel.cs
 Cities/Assets/Scripts/World/Grid/WorldMapSection.cs
 Cities/Assets/Scripts/Presentation/Debugging/DebugPanel.cs
+Cities/Assets/Scripts/World/Picking/SpatialPickLayer.cs
+Cities/Assets/Scripts/World/Picking/PickLayers.cs
 # Ontwikkelscripts (PowerShell); CI draait geen PowerShell-tests, ze worden lokaal gebruikt.
 tools/**
