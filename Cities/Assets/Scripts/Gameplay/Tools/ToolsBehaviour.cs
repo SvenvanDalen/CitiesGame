@@ -6,7 +6,7 @@ namespace Cities.Gameplay.Tools
 {
     /// <summary>
     /// Stuurt de <see cref="ToolController"/> met de muis en het toetsenbord: <c>Tools/Apply</c> plaatst,
-    /// <c>Tools/Rotate</c> draait en <c>Game/Menu</c> (Escape) annuleert. Draait na de <see cref="PickingBehaviour"/>,
+    /// <c>Tools/Rotate</c> draait (een penseel werkt door zolang <c>Tools/Apply</c> ingedrukt is) en <c>Game/Menu</c> (Escape) annuleert. Draait na de <see cref="PickingBehaviour"/>,
     /// zodat de preview de muis van dit frame volgt.
     /// </summary>
     [DisallowMultipleComponent]
@@ -54,8 +54,8 @@ namespace Cities.Gameplay.Tools
                 return;
             }
 
-            Controller.Update(new ToolInput(_picking.Current, _rotate.WasPressedThisFrame() ? 1 : 0));
-            if (_apply.WasPressedThisFrame())
+            Controller.Update(new ToolInput(_picking.Current, _rotate.WasPressedThisFrame() ? 1 : 0, Time.deltaTime));
+            if (_apply.WasPressedThisFrame() || (Controller.Active.RepeatsWhileHeld && _apply.IsPressed()))
             {
                 Controller.Apply();
             }

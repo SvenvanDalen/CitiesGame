@@ -43,6 +43,8 @@ Shader "Cities/Terrain"
         TEXTURE2D(_CitySplatMap);
         SAMPLER(sampler_CitySplatMap);
         float4 _CityWorldSize;
+        // Terreinpenseel (E03-03): x, z en straal in meters; w > 0 geldig, w < 0 ongeldig, 0 = geen penseel.
+        float4 _CityBrush;
         ENDHLSL
 
         Pass
@@ -119,6 +121,24 @@ Shader "Cities/Terrain"
             float3 TopNormal(float3 n, float3 geometric)
             {
                 return normalize(float3(n.x + geometric.x, n.z * geometric.y, n.y + geometric.z));
+            }
+
+            // Rand van het penseel als lijn die het reliëf volgt, met een zachte waas naar het midden toe.
+            half3 BrushOverlay(half3 color, float2 xz)
+            {
+                if (_CityBrush.w == 0)
+                {
+                    return color;
+                }
+
+                float radius = _CityBrush.z;
+                float distance = length(xz - _CityBrush.xy);
+                float width = max(max(0.5, radius * 0.025), fwidth(distance) * 1.5);
+                float ring = 1.0 - smoothstep(0.0, width, abs(distance - radius));
+                float t = saturate(distance / radius);
+                float inner = (1.0 - t * t) * (1.0 - t * t) * 0.18;
+                half3 tint = _CityBrush.w > 0 ? half3(0.35, 0.72, 1.0) : half3(1.0, 0.22, 0.18);
+                return lerp(color, tint, saturate(ring * 0.85 + inner));
             }
 
             void Rock(float3 positionWS, float3 geometric, out float4 albedo, out float3 normalWS)
@@ -220,6 +240,7 @@ Shader "Cities/Terrain"
                 surface.alpha = 1;
 
                 half4 result = UniversalFragmentPBR(inputData, surface);
+                result.rgb = BrushOverlay(result.rgb, input.positionWS.xz);
                 result.rgb = MixFog(result.rgb, inputData.fogCoord);
                 return result;
             }

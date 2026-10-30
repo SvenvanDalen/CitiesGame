@@ -11,6 +11,9 @@ namespace Cities.Gameplay.Tools
         /// <summary>Model voor de ghost, of <c>null</c> voor alleen de footprint.</summary>
         GameObject Ghost { get; }
 
+        /// <summary><c>true</c> als de tool elk frame werkt zolang de knop ingedrukt is (zoals een penseel).</summary>
+        bool RepeatsWhileHeld { get; }
+
         void Activate();
 
         void Deactivate();
