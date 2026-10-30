@@ -46,6 +46,11 @@ namespace Cities.Gameplay.Picking
 
         public PickingService Service { get; private set; }
 
+        /// <summary>Het oppervlak waarop wordt aangewezen; tools meten er ook hellingen mee.</summary>
+        public ITerrainHeight Terrain { get; private set; }
+
+        public WorldDimensions Dimensions => _dimensions;
+
         /// <summary>Wat er nu onder de muis ligt.</summary>
         public PickResult Current { get; private set; }
 
@@ -97,6 +102,7 @@ namespace Cities.Gameplay.Picking
                 terrain = FlatTerrain.Zero;
             }
 
+            Terrain = terrain;
             Service = new PickingService();
             var terrainLayer = new TerrainPickLayer(terrain, new float2(_dimensions.SizeX, _dimensions.SizeZ));
             _layers.Add(PickKind.Terrain, terrainLayer);

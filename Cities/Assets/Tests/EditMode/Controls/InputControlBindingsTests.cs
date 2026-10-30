@@ -44,7 +44,7 @@ namespace Cities.Tests.EditMode.Controls
             Assert.That(ControlCatalog.FindUnlabeled(_bindings.Rows), Is.Empty);
             Assert.That(_bindings.Rows.Select(r => r.Key), Is.EquivalentTo(ControlLabels.All.Select(l => l.Key)));
             Assert.That(_bindings.Rows, Has.All.Matches<ControlRow>(r => r.Slots.Count == 2));
-            Assert.That(_bindings.Rows.SelectMany(r => r.Slots).Count(s => !s.Rebindable), Is.EqualTo(1), "Alleen Escape voor het menu is vast");
+            Assert.That(_bindings.Rows.SelectMany(r => r.Slots).Count(s => !s.Rebindable), Is.EqualTo(2), "Alleen Escape (menu, annuleren) en de linkermuisknop (plaatsen) zijn vast");
         }
 
         [Test]

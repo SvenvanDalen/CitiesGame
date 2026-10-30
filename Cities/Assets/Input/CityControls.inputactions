@@ -671,6 +671,76 @@
             ]
         },
         {
+            "name": "Tools",
+            "id": "41498de1-892a-4efa-83a5-a80f75327d58",
+            "actions": [
+                {
+                    "name": "Apply",
+                    "type": "Button",
+                    "id": "b500b608-bf0e-4db4-b7ea-0f0279482a68",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Rotate",
+                    "type": "Button",
+                    "id": "e101bb20-db51-41dc-842a-c083f563c11a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "5fd867c4-a642-4457-91bb-303bfbe8877c",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Apply",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "77fb2e5c-6368-41f5-9001-169a077975ab",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Apply",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9189a3a7-fcc9-4b65-be8d-8b384d116199",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Rotate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9da54be6-d460-463e-8efc-60dfc3e483b7",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Rotate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "Debug",
             "id": "63bf79ac-e24e-46e8-a525-5bf57d0fb19b",
             "actions": [

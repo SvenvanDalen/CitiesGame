@@ -13,6 +13,7 @@ namespace Cities.Tests.EditMode.Controls
         [TestCase(BindingKind.Simple, "<Mouse>/scroll/y", false, false)]
         [TestCase(BindingKind.Simple, "<Keyboard>/escape", true, false)]
         [TestCase(BindingKind.CompositePart, "<Keyboard>/Escape", false, false)]
+        [TestCase(BindingKind.Simple, "<Mouse>/leftButton", true, false)]
         public void Rebindable(BindingKind kind, string path, bool button, bool expected)
         {
             var binding = new BindingInfo("Camera", "Action", 0, "part", path, kind, button);

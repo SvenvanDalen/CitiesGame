@@ -60,7 +60,19 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - Alle acties staan in `Assets/Input/CityControls.inputactions`, per map (`Camera`, `Game`, ...). Lees acties via dat asset; geen `Keyboard.current` of hardgecodeerde toetsen in spelcode.
 - Elke knopactie en elk deel van een composite heeft twee slots (primair en alternatief); een leeg slot krijgt pad `""`. Een nieuwe actie krijgt een Nederlandse naam in `ControlLabels`; een test controleert dat.
-- `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape is vast: het annuleert herbinden en opent het menu.
+- `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape en de linkermuisknop zijn vast. Escape annuleert herbinden, breekt een tool af en opent anders het menu; links klikken plaatst.
+
+## Tools
+
+- Een bouw- of bewerkingstool implementeert `ITool` (`Cities.Gameplay.Tools`): elk frame maakt hij uit de muis (`ToolInput`) een `ToolPreview` met positie, draaiing, maat en eventueel de reden waarom het niet mag. De `ToolController` voert alleen een geldige preview uit.
+- Escape breekt eerst een lopende stap af (`CancelStep`), en zet anders de tool uit. Pas zonder actieve tool opent Escape het menu.
+- Snappen op het raster gaat via `GridSnap`; `PlacementTool` doet raster, kwartslagen, kaartrand en helling, en vraagt de rest (bezetting) aan een `IPlacementTarget`.
+- `ToolGhostBehaviour` tekent de preview: het model doorschijnend en de footprint op de grond, blauw als het mag en rood als het niet mag. `ToolbarBehaviour` toont de reden. Testscene: `Scenes/Tests/Tools.unity`.
+
+## Modellen
+
+- Modellen zijn realistisch op ware grootte (meters, lokaal -Z is de straatkant, de oorsprong ligt midden op de kavel op maaiveld) en hebben geen colliders; picking gaat via de picklagen.
+- Procedurele modellen worden gebouwd door editor-code onder `Scripts/Editor/Models` (menu **Cities > Modellen**). Pas de bouwcode aan en bouw opnieuw; bewerk de gegenereerde assets onder `Assets/Art` niet met de hand.
 
 ## Opslaan
 

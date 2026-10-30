@@ -10,6 +10,9 @@ namespace Cities.Gameplay.Controls
         /// <summary>Annuleert het wachten op een nieuwe toets; daarom zelf nooit toe te wijzen.</summary>
         public const string CancelPath = "<Keyboard>/escape";
 
+        /// <summary>Selecteren en bouwen (<c>Tools/Apply</c>); blijft altijd op de linkermuisknop.</summary>
+        public const string ApplyPath = "<Mouse>/leftButton";
+
         /// <summary>Apparaten waarvan toetsen en knoppen gekozen kunnen worden.</summary>
         public static readonly IReadOnlyList<string> AllowedDevices = new[] { "<Keyboard>", "<Mouse>" };
 
@@ -46,7 +49,7 @@ namespace Cities.Gameplay.Controls
         }
 
         /// <summary>Paden die altijd hun standaardfunctie houden.</summary>
-        public static bool IsReserved(string path) => SamePath(path, CancelPath);
+        public static bool IsReserved(string path) => SamePath(path, CancelPath) || SamePath(path, ApplyPath);
 
         /// <summary>Of een pad als nieuwe toets gekozen mag worden.</summary>
         public static bool IsAssignable(string path)

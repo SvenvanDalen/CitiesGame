@@ -1,4 +1,5 @@
 using Cities.Gameplay.Controls;
+using Cities.Gameplay.Tools;
 using Cities.Presentation.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,13 +9,17 @@ namespace Cities.Presentation.Settings
 {
     /// <summary>
     /// Toont het besturingsscherm in een <see cref="UIDocument"/>. De actie <c>Game/Menu</c> (standaard Escape of F10)
-    /// opent en sluit het; tot het pauzemenu er is (E18-05) is dit de plek waar de speler zijn toetsen instelt.
+    /// opent en sluit het, behalve als er een tool actief is: dan annuleert de toets eerst die tool. Tot het pauzemenu
+    /// er is (E18-05) is dit de plek waar de speler zijn toetsen instelt.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class ControlsSettingsBehaviour : MonoBehaviour
     {
         [SerializeField] private ControlBindingsBehaviour _bindings;
         [SerializeField] private bool _openOnStart;
+
+        [Tooltip("Optioneel: Escape annuleert eerst de actieve tool voordat het menu opent.")]
+        [SerializeField] private ToolsBehaviour _tools;
 
         private UIDocument _document;
         private VisualElement _overlay;
@@ -24,7 +29,16 @@ namespace Cities.Presentation.Settings
 
         public bool IsOpen => _overlay != null && _overlay.style.display == DisplayStyle.Flex;
 
-        public void Open() => SetOpen(true);
+        public void Open()
+        {
+            // Een open menu en een actieve tool zouden allebei op dezelfde Escape reageren.
+            if (_tools != null)
+            {
+                _tools.Controller.Deselect();
+            }
+
+            SetOpen(true);
+        }
 
         public void Close()
         {
@@ -88,7 +102,16 @@ namespace Cities.Presentation.Settings
             Panel = null;
         }
 
-        private void OnMenu(InputAction.CallbackContext context) => Toggle();
+        private void OnMenu(InputAction.CallbackContext context)
+        {
+            // De ToolsBehaviour annuleert de tool later in dit frame.
+            if (!IsOpen && _tools != null && _tools.Controller.Active != null)
+            {
+                return;
+            }
+
+            Toggle();
+        }
 
         private void SetOpen(bool open)
         {
