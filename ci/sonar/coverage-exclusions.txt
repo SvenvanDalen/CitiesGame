@@ -38,6 +38,7 @@ Cities/Assets/Scripts/World/Roads/RoadTerrainShaper.cs
 Cities/Assets/Scripts/World/Roads/RoadMeshExtensions.cs
 Cities/Assets/Scripts/Presentation/Roads/RoadMaterialSet.cs
 Cities/Assets/Scripts/Gameplay/Tools/RoadTool.cs
+Cities/Assets/Scripts/Gameplay/Tools/DemolishTool.cs
 Cities/Assets/Scripts/Gameplay/Tools/RoadToolBehaviour.cs
 Cities/Assets/Scripts/Presentation/Trees/TreeModelSet.cs
 Cities/Assets/Scripts/Simulation/Network/RoadNetwork.cs

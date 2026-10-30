@@ -24,6 +24,8 @@ namespace Cities.Gameplay.Tools
 
         public RoadTool Tool { get; private set; }
 
+        public DemolishTool Demolish { get; private set; }
+
         /// <summary>De wegtypes uit de catalogus, op ID gesorteerd.</summary>
         public IReadOnlyList<RoadTypeDefinition> Types { get; private set; } = new List<RoadTypeDefinition>();
 
@@ -32,6 +34,7 @@ namespace Cities.Gameplay.Tools
         {
             var overlay = new RoadPreviewOverlay();
             Tool = new RoadTool(_network.Network, _world.Map, overlay);
+            Demolish = new DemolishTool(_network.Network, overlay);
             _debug.Add(DebugRegistry.Shared.AddOverlay(overlay));
             _tools.Controller.ActiveChanged += OnActiveChanged;
             if (_catalog != null)
@@ -66,6 +69,6 @@ namespace Cities.Gameplay.Tools
 
         /// <summary>Het voorbeeld hoort alleen te staan zolang de wegtool actief is.</summary>
         private void OnActiveChanged(ITool active) =>
-            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool));
+            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool) || ReferenceEquals(active, Demolish));
     }
 }

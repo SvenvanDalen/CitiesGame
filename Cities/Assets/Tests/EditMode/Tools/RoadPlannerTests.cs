@@ -89,6 +89,17 @@ namespace Cities.Tests.EditMode.Tools
             Assert.Throws<System.ArgumentNullException>(() => overlay.Collect(null, view));
         }
 
+        [Test]
+        public void DistanceToACurveIsMeasuredToTheNearestPointOnIt()
+        {
+            var straight = Bezier3.Straight(new float3(0f, 5f, 0f), new float3(100f, 9f, 0f));
+
+            Assert.That(RoadPlanner.DistanceTo(straight, new float3(50f, 0f, 7f)), Is.EqualTo(7f).Within(1e-3f), "zijdelings, hoogte telt niet mee");
+            Assert.That(RoadPlanner.DistanceTo(straight, new float3(-10f, 0f, 0f)), Is.EqualTo(10f).Within(1e-3f), "voor het begin");
+            Assert.That(RoadPlanner.DistanceTo(straight, new float3(130f, 0f, 40f)), Is.EqualTo(50f).Within(1e-3f), "voorbij het eind");
+            Assert.That(RoadPlanner.DistanceTo(Bezier3.Straight(float3.zero, float3.zero), new float3(3f, 0f, 4f)), Is.EqualTo(5f).Within(1e-3f), "een punt");
+        }
+
         private sealed class Float3Comparer : System.Collections.Generic.IEqualityComparer<float3>
         {
             public bool Equals(float3 x, float3 y) => math.distance(x, y) < 1e-3f;
