@@ -83,6 +83,15 @@ namespace Cities.Tests.EditMode.Tools
         }
 
         [Test]
+        public void PlacesOncePerClickAndCarriesTheFrameTime()
+        {
+            var tool = Tool(new Target());
+
+            Assert.That(tool.RepeatsWhileHeld, Is.False);
+            Assert.That(new ToolInput(default, 0, 0.25f).DeltaTime, Is.EqualTo(0.25f));
+        }
+
+        [Test]
         public void OutsideTheMapIsInvalid()
         {
             var tool = Tool(new Target());
