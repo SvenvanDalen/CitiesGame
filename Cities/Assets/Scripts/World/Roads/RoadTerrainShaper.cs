@@ -98,6 +98,11 @@ namespace Cities.World.Roads
                 }
             }
 
+            Lerp(ref heights, corners, weight, target);
+        }
+
+        private static void Lerp(ref CellLayer<float> heights, RectInt corners, float[] weight, float[] target)
+        {
             for (var z = corners.yMin; z < corners.yMax; z++)
             {
                 for (var x = corners.xMin; x < corners.xMax; x++)
