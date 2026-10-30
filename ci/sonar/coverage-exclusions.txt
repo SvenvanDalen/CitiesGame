@@ -33,6 +33,7 @@ Cities/Assets/Scripts/Gameplay/Tools/TerraformTool.cs
 Cities/Assets/Scripts/World/Trees/ForestGenerator.cs
 Cities/Assets/Scripts/World/Trees/TreeBrush.cs
 Cities/Assets/Scripts/Gameplay/Tools/TreeTool.cs
+Cities/Assets/Scripts/World/Roads/RoadJunctions.cs
 Cities/Assets/Scripts/World/Roads/RoadTerrainShaper.cs
 Cities/Assets/Scripts/World/Roads/RoadMeshExtensions.cs
 Cities/Assets/Scripts/Presentation/Roads/RoadMaterialSet.cs

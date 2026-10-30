@@ -50,5 +50,20 @@ namespace Cities.Tests.EditMode.Network
             Assert.That(curve.Direction(0f), Is.EqualTo(new float3(0f, 0f, 1f)));
             Assert.That(curve.Derivative(0.5f).z, Is.GreaterThan(0f));
         }
+
+        [Test]
+        public void SliceIsTheSamePartOfTheCurve()
+        {
+            var curve = Bezier3.FromTangents(float3.zero, new float3(0f, 0f, 1f), new float3(30f, 4f, 30f), new float3(1f, 0f, 0f));
+
+            var slice = curve.Slice(0.25f, 0.75f);
+
+            Assert.That(math.distance(slice.P0, curve.Position(0.25f)), Is.LessThan(1e-3f));
+            Assert.That(math.distance(slice.P3, curve.Position(0.75f)), Is.LessThan(1e-3f));
+            Assert.That(math.distance(slice.Position(0.5f), curve.Position(0.5f)), Is.LessThan(1e-3f));
+            Assert.That(math.distance(slice.Position(0.25f), curve.Position(0.375f)), Is.LessThan(1e-3f));
+            Assert.That(slice.Length(), Is.LessThan(curve.Length()));
+        }
+
     }
 }

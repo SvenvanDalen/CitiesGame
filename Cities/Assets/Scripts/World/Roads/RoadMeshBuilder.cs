@@ -227,7 +227,7 @@ namespace Cities.World.Roads
         }
 
         /// <summary>Verbindt de paren punten (twee per stap) tot vlakken die naar <paramref name="facing"/> kijken.</summary>
-        private static void Stitch(RoadMeshData data, RoadSurface surface, int first, int count, float3 facing)
+        internal static void Stitch(RoadMeshData data, RoadSurface surface, int first, int count, float3 facing)
         {
             var triangles = data.Triangles[(int)surface];
             var a = data.Vertices[first];
