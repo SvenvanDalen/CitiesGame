@@ -1,3 +1,5 @@
+using Cities.World.Grid;
+using Cities.World.Trees;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -5,7 +7,8 @@ namespace Cities.Gameplay.Tools
 {
     /// <summary>
     /// Een <see cref="PlacementTool"/> die een prefab neerzet, tot de echte gebouwen er zijn (E05-07). Het model
-    /// staat met de onderkant op de oorsprong en is <see cref="_width"/> × <see cref="_depth"/> cellen groot.
+    /// staat met de onderkant op de oorsprong en is <see cref="_width"/> × <see cref="_depth"/> cellen groot. Met een
+    /// kaart erbij wordt de grond onder het gebouw bebouwd en verdwijnen de bomen daar.
     /// </summary>
     [DefaultExecutionOrder(-300)]
     public sealed class PrefabPlacementBehaviour : MonoBehaviour, IPlacementTarget
@@ -18,6 +21,9 @@ namespace Cities.Gameplay.Tools
         [SerializeField, Min(0f)] private float _maxRise = 1.5f;
         [SerializeField] private bool _selectOnStart;
 
+        [Tooltip("Optioneel: de kaart waarop de grond bebouwd wordt en de bomen gekapt.")]
+        [SerializeField] private WorldMapHostBehaviour _world;
+
         private readonly FootprintOccupancy _occupancy = new FootprintOccupancy();
 
         public PlacementTool Tool { get; private set; }
@@ -29,6 +35,11 @@ namespace Cities.Gameplay.Tools
         public void Place(in Footprint footprint, float3 position)
         {
             _occupancy.Add(footprint);
+            if (_world != null)
+            {
+                TreeBrush.ClearForBuilding(_world.Map, new RectInt(footprint.Origin.X, footprint.Origin.Z, footprint.SizeX, footprint.SizeZ));
+            }
+
             Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
         }
 

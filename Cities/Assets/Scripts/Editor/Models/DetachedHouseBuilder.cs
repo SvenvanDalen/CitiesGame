@@ -44,19 +44,7 @@ namespace Cities.Editor.Models
         public static void BuildAsset()
         {
             Directory.CreateDirectory(Folder);
-            var mesh = BuildMesh();
-            var meshPath = $"{Folder}/DetachedHouseMesh.asset";
-            var existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
-            if (existing != null)
-            {
-                EditorUtility.CopySerialized(mesh, existing);
-                Object.DestroyImmediate(mesh);
-                mesh = existing;
-            }
-            else
-            {
-                AssetDatabase.CreateAsset(mesh, meshPath);
-            }
+            var mesh = ModelMesh.Save(BuildMesh(), $"{Folder}/DetachedHouseMesh.asset");
 
             var materials = ModelMaterials.CreateHouseMaterials(Folder);
             var root = new GameObject("DetachedHouse");
