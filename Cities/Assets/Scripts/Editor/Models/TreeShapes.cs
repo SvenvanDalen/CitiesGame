@@ -31,23 +31,7 @@ namespace Cities.Editor.Models
                 var limb = Branch(TrunkAt(trunk, height), outward, length, TrunkRadius(height) * 0.6f, 0.035f, 6, 0.16f);
                 mesh.Tube(detail ? limb.Points : Every(limb.Points, 2), detail ? limb.Radii : Every(limb.Radii, 2), detail ? 6 : 4, 1.2f);
                 clusters.Add((limb.Points[^1], 2.4f));
-
-                for (var t = 0; t < 4; t++)
-                {
-                    var along = Mathf.Lerp(0.35f, 0.92f, t / 3f) + random.Range(-0.05f, 0.05f);
-                    var origin = Along(limb.Points, along);
-                    var direction = (outward + (random.OnSphere() * 0.9f) + (Vector3.up * 0.35f)).normalized;
-                    var twig = Branch(origin, direction, random.Range(2f, 3.3f), 0.06f, 0.012f, 3, 0.1f);
-                    if (detail)
-                    {
-                        mesh.Tube(twig.Points, twig.Radii, 3, 0.8f);
-                    }
-
-                    for (var c = 0; c < 6; c++)
-                    {
-                        clusters.Add((Along(twig.Points, 0.2f + (c * 0.16f)) + (random.OnSphere() * 0.6f), random.Range(1.9f, 2.6f)));
-                    }
-                }
+                Twigs(mesh, random, limb.Points, outward, clusters, detail);
             }
 
             for (var c = 0; c < 3; c++)
@@ -56,6 +40,26 @@ namespace Cities.Editor.Models
             }
 
             Foliage(mesh, random, clusters, detail);
+        }
+
+        /// <summary>Vier twijgen langs een gesteltak, elk met zes bladtrossen.</summary>
+        private static void Twigs(TreeMesh mesh, ShapeRandom random, List<Vector3> limb, Vector3 outward, List<(Vector3 Center, float Size)> clusters, bool detail)
+        {
+            for (var t = 0; t < 4; t++)
+            {
+                var along = Mathf.Lerp(0.35f, 0.92f, t / 3f) + random.Range(-0.05f, 0.05f);
+                var direction = (outward + (random.OnSphere() * 0.9f) + (Vector3.up * 0.35f)).normalized;
+                var twig = Branch(Along(limb, along), direction, random.Range(2f, 3.3f), 0.06f, 0.012f, 3, 0.1f);
+                if (detail)
+                {
+                    mesh.Tube(twig.Points, twig.Radii, 3, 0.8f);
+                }
+
+                for (var c = 0; c < 6; c++)
+                {
+                    clusters.Add((Along(twig.Points, 0.2f + (c * 0.16f)) + (random.OnSphere() * 0.6f), random.Range(1.9f, 2.6f)));
+                }
+            }
         }
 
         private static void Foliage(TreeMesh mesh, ShapeRandom random, List<(Vector3 Center, float Size)> clusters, bool detail)

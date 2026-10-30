@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cities.World.Grid;
 using Cities.World.Trees;
@@ -98,8 +99,8 @@ namespace Cities.Presentation.Trees
                 }
             }
 
-            Dispose(_detail);
-            Dispose(_simple);
+            Release(_detail);
+            Release(_simple);
         }
 
         private void LateUpdate()
@@ -335,7 +336,7 @@ namespace Cities.Presentation.Trees
             return lists;
         }
 
-        private static void Dispose(NativeList<Matrix4x4>[] lists)
+        private static void Release(NativeList<Matrix4x4>[] lists)
         {
             if (lists == null)
             {
@@ -352,7 +353,7 @@ namespace Cities.Presentation.Trees
         }
 
         /// <summary>De bomen van één regio per soort: plek (x, y, z) en geschaalde draaiing (w), in het geheugen en op de GPU.</summary>
-        private sealed class Region
+        private sealed class Region : IDisposable
         {
             private readonly GraphicsBuffer[] _buffers;
 

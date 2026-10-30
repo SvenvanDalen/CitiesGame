@@ -136,7 +136,7 @@ namespace Cities.Editor.Models
         {
             var length = Vector2.Distance(from, to);
             var direction = (to - from) / Mathf.Max(length, 1f);
-            var normal = new Vector2(-direction.y, direction.x);
+            var normal = Vector2.Perpendicular(direction);
             for (var d = 0f; d < length; d += 2.2f)
             {
                 var root = from + (direction * d);
@@ -280,7 +280,7 @@ namespace Cities.Editor.Models
             public void Leaf(Vector2 center, float angle, float length, float width, Color color)
             {
                 var axis = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                var side = new Vector2(-axis.y, axis.x);
+                var side = Vector2.Perpendicular(axis);
                 var reach = Vector2.one * (length + 2f);
                 Shape(center - reach, center + reach, color, p =>
                 {

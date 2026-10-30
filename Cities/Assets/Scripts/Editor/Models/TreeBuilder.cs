@@ -18,6 +18,7 @@ namespace Cities.Editor.Models
         private const string Folder = "Assets/Art/Trees";
         private const int CaptureLayer = 31;
         private const int CaptureSize = 512;
+        private const string BaseMap = "_BaseMap";
 
         [MenuItem("Cities/Modellen/Bomen bouwen")]
         public static void Build()
@@ -68,8 +69,8 @@ namespace Cities.Editor.Models
             shape(detail, true);
             var simple = new TreeMesh();
             shape(simple, false);
-            var detailMesh = SaveMesh(detail.Build($"{name}Detail"));
-            var simpleMesh = SaveMesh(simple.Build($"{name}Simple"));
+            var detailMesh = SaveMesh(detail.ToMesh($"{name}Detail"));
+            var simpleMesh = SaveMesh(simple.ToMesh($"{name}Simple"));
 
             var bounds = detailMesh.bounds;
             var side = Mathf.Max(bounds.size.y, bounds.size.x, bounds.size.z);
@@ -106,7 +107,7 @@ namespace Cities.Editor.Models
             }
 
             mesh.Card(0, new Vector3(0f, crownHeight, 0f), Vector3.right * crown, Vector3.forward * crown, Vector3.up, new Rect(0.5f, 0f, 0.5f, 1f));
-            return mesh.Build(name, 1);
+            return mesh.ToMesh(name, 1);
         }
 
         /// <summary>Hoogte (in stappen van 1 m) waarop het blad het verst van de stam reikt.</summary>
@@ -144,8 +145,8 @@ namespace Cities.Editor.Models
             for (var i = 0; i < materials.Length; i++)
             {
                 unlit[i] = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-                unlit[i].SetTexture("_BaseMap", materials[i].GetTexture("_BaseMap"));
-                unlit[i].SetTextureScale("_BaseMap", materials[i].GetTextureScale("_BaseMap"));
+                unlit[i].SetTexture(BaseMap, materials[i].GetTexture(BaseMap));
+                unlit[i].SetTextureScale(BaseMap, materials[i].GetTextureScale(BaseMap));
                 unlit[i].SetColor("_BaseColor", new Color(0.78f, 0.78f, 0.78f, 1f));
                 unlit[i].SetFloat("_AlphaClip", 1f);
                 unlit[i].SetFloat("_Cutoff", 0.5f);
@@ -238,7 +239,7 @@ namespace Cities.Editor.Models
             }
 
             material.shader = Shader.Find("Cities/TreeImpostor");
-            material.SetTexture("_BaseMap", atlas);
+            material.SetTexture(BaseMap, atlas);
             material.SetFloat("_Cutoff", 0.5f);
             EditorUtility.SetDirty(material);
             return material;
@@ -254,8 +255,8 @@ namespace Cities.Editor.Models
                 AssetDatabase.CreateAsset(material, path);
             }
 
-            material.SetTexture("_BaseMap", texture);
-            material.SetTextureScale("_BaseMap", tiling);
+            material.SetTexture(BaseMap, texture);
+            material.SetTextureScale(BaseMap, tiling);
             material.SetColor("_BaseColor", Color.white);
             material.SetFloat("_Smoothness", smoothness);
             material.SetFloat("_Metallic", 0f);
@@ -346,7 +347,7 @@ namespace Cities.Editor.Models
                 _triangles[submesh].AddRange(new[] { start, start + 2, start + 1, start, start + 3, start + 2 });
             }
 
-            public Mesh Build(string name, int submeshes = 2)
+            public Mesh ToMesh(string name, int submeshes = 2)
             {
                 var mesh = new Mesh { name = name, subMeshCount = submeshes };
                 mesh.SetVertices(_vertices);
