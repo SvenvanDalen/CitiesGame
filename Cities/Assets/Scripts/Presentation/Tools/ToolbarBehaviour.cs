@@ -91,6 +91,8 @@ namespace Cities.Presentation.Tools
             _brushSettings.Clear();
         }
 
+        private static readonly System.Globalization.CultureInfo Dutch = new System.Globalization.CultureInfo("nl-NL");
+
         private void Start() => OnActiveChanged(_tools.Controller.Active);
 
         private void LateUpdate()
@@ -98,7 +100,8 @@ namespace Cities.Presentation.Tools
             var reason = _tools.Controller.Preview.InvalidReason;
             _status.text = reason ?? string.Empty;
             _status.style.visibility = reason != null ? Visibility.Visible : Visibility.Hidden;
-            var info = _tools.Controller.Preview.Info;
+            var preview = _tools.Controller.Preview;
+            var info = preview.Cost > 0 ? $"{preview.Info} · € {preview.Cost.ToString("N0", Dutch)}" : preview.Info;
             _info.text = info ?? string.Empty;
             _info.style.visibility = info != null ? Visibility.Visible : Visibility.Hidden;
         }

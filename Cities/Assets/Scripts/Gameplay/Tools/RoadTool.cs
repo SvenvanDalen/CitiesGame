@@ -65,10 +65,14 @@ namespace Cities.Gameplay.Tools
         /// <summary>Het gekozen wegtype (<c>road.…</c>), of <c>null</c> zolang er geen is gekozen.</summary>
         public string TypeId { get; private set; }
 
+        /// <summary>Aanlegkosten per meter van het gekozen type.</summary>
+        public long CostPerMeter { get; private set; }
+
         /// <summary>Legt voortaan wegen van dit type aan.</summary>
         public void Use(string id, RoadTypeSpec type)
         {
             TypeId = id;
+            CostPerMeter = type.CostPerMeter;
             Profile = type.Profile();
             SpeedLimit = type.SpeedLimitMetersPerSecond;
         }
@@ -186,7 +190,7 @@ namespace Cities.Gameplay.Tools
             var reason = RoadPlanner.Check(curve) ?? OutsideReason(curve.P3) ?? OutsideReason(ground) ?? EndReason(node);
             _overlay.ShowCurve(curve, reason == null);
             var heading = RoadPlanner.Yaw(curve.Direction(1f));
-            return new ToolPreview(curve.P3, 0f, float2.zero, reason, $"{curve.Length():0.0} m · {heading:0}°");
+            return new ToolPreview(curve.P3, 0f, float2.zero, reason, $"{curve.Length():0.0} m · {heading:0}°", (long)math.round(curve.Length() * CostPerMeter));
         }
 
         private string EndReason(EntityId<NodeKind>? node)
