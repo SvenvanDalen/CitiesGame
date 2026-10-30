@@ -22,6 +22,7 @@ namespace Cities.World.Grid
         private CellLayer<ZoneCell> _zones;
         private CellLayer<float> _groundPollution;
         private CellLayer<float> _landValue;
+        private CellLayer<GroundCover> _groundCover;
 
         public WorldMap(WorldDimensions dimensions, float baseHeight = 0f)
         {
@@ -39,6 +40,7 @@ namespace Cities.World.Grid
             _zones = new CellLayer<ZoneCell>(LayerLayout.ForCells(dimensions), Allocator.Persistent);
             _groundPollution = new CellLayer<float>(coarse, Allocator.Persistent);
             _landValue = new CellLayer<float>(coarse, Allocator.Persistent);
+            _groundCover = new CellLayer<GroundCover>(LayerLayout.ForCells(dimensions), Allocator.Persistent);
         }
 
         public WorldDimensions Dimensions { get; }
@@ -65,6 +67,17 @@ namespace Cities.World.Grid
         /// <summary>Landwaarde in munteenheden per m², per blok van 32 m (E12).</summary>
         public ref CellLayer<float> LandValue => ref _landValue;
 
+        /// <summary>Akker of bebouwde grond per cel, voor de terreinshader. Meld wijzigingen met <see cref="NotifyGroundCoverChanged"/>.</summary>
+        public ref CellLayer<GroundCover> GroundCover => ref _groundCover;
+
+        /// <summary>Cellen (min inclusief, max exclusief) waarvan de grondbedekking veranderd is.</summary>
+        public event Action<UnityEngine.RectInt> GroundCoverChanged;
+
+        /// <summary>Alle cellen van de kaart.</summary>
+        public UnityEngine.RectInt AllCells => new UnityEngine.RectInt(0, 0, Dimensions.CellsX, Dimensions.CellsZ);
+
+        public void NotifyGroundCoverChanged(UnityEngine.RectInt cells) => GroundCoverChanged?.Invoke(cells);
+
         public bool IsDisposed { get; private set; }
 
         /// <summary>Totaal geheugen van alle lagen in bytes.</summary>
@@ -73,7 +86,8 @@ namespace Cities.World.Grid
             ((long)_waterDepth.Layout.Length * sizeof(float)) +
             ((long)_zones.Layout.Length * 2) +
             ((long)_groundPollution.Layout.Length * sizeof(float)) +
-            ((long)_landValue.Layout.Length * sizeof(float));
+            ((long)_landValue.Layout.Length * sizeof(float)) +
+            _groundCover.Layout.Length;
 
         /// <summary>Waterspiegel (terrein plus waterdiepte) op een hoekpunt.</summary>
         public float WaterSurface(int x, int z) => _height[x, z] + _waterDepth[x, z];
@@ -97,6 +111,7 @@ namespace Cities.World.Grid
             _zones.Dispose();
             _groundPollution.Dispose();
             _landValue.Dispose();
+            _groundCover.Dispose();
             IsDisposed = true;
         }
     }

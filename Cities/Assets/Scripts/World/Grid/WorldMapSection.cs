@@ -5,7 +5,8 @@ namespace Cities.World.Grid
 {
     /// <summary>
     /// Sectie <c>WMAP</c>: afmetingen en alle lagen van de <see cref="WorldMap"/> (hoogte, waterdiepte, zones,
-    /// grondvervuiling, grondwaarde). Een save met een andere kaartgrootte wordt geweigerd.
+    /// grondvervuiling, grondwaarde en vanaf versie 2 de grondbedekking). Een save met een andere kaartgrootte wordt
+    /// geweigerd.
     /// </summary>
     public sealed class WorldMapSection : ISaveSection
     {
@@ -17,7 +18,7 @@ namespace Cities.World.Grid
 
         public string Id => SectionId;
 
-        public int Version => 1;
+        public int Version => 2;
 
         public void Write(SaveWriter writer)
         {
@@ -31,6 +32,7 @@ namespace Cities.World.Grid
             writer.WriteShuffled<ZoneCell>(_map.Zones.Values.AsReadOnlySpan());
             writer.WriteShuffled<float>(_map.GroundPollution.Values.AsReadOnlySpan());
             writer.WriteShuffled<float>(_map.LandValue.Values.AsReadOnlySpan());
+            writer.WriteShuffled<GroundCover>(_map.GroundCover.Values.AsReadOnlySpan());
         }
 
         public Action Read(SaveReader reader, int version)
@@ -47,8 +49,11 @@ namespace Cities.World.Grid
             var zones = Read<ZoneCell>(reader, _map.Zones.Values.Length);
             var pollution = Read<float>(reader, _map.GroundPollution.Values.Length);
             var landValue = Read<float>(reader, _map.LandValue.Values.Length);
+
+            // Versie 1 kende geen grondbedekking: alles natuurlijk.
+            var cover = version >= 2 ? Read<GroundCover>(reader, _map.GroundCover.Values.Length) : new GroundCover[_map.GroundCover.Values.Length];
             reader.ExpectEnd();
-            Validate(reader, zones);
+            Validate(reader, zones, cover);
 
             return () =>
             {
@@ -57,7 +62,9 @@ namespace Cities.World.Grid
                 _map.Zones.Values.CopyFrom(zones);
                 _map.GroundPollution.Values.CopyFrom(pollution);
                 _map.LandValue.Values.CopyFrom(landValue);
+                _map.GroundCover.Values.CopyFrom(cover);
                 _map.NotifyHeightChanged(_map.AllCorners);
+                _map.NotifyGroundCoverChanged(_map.AllCells);
             };
         }
 
@@ -68,8 +75,16 @@ namespace Cities.World.Grid
             return values;
         }
 
-        private static void Validate(SaveReader reader, ZoneCell[] zones)
+        private static void Validate(SaveReader reader, ZoneCell[] zones, GroundCover[] cover)
         {
+            foreach (var value in cover)
+            {
+                if ((byte)value > (byte)GroundCover.Built)
+                {
+                    throw reader.Corrupt($"onbekende grondbedekking {(byte)value}");
+                }
+            }
+
             foreach (var zone in zones)
             {
                 if ((byte)zone.Type > (byte)ZoneType.Office || (byte)zone.Density > (byte)ZoneDensity.High)

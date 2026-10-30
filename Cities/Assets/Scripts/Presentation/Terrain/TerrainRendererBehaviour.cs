@@ -12,7 +12,8 @@ namespace Cities.Presentation.Terrain
     /// Tekent de hoogtekaart van de <see cref="WorldMapHostBehaviour"/> als chunks van 256 m met vier detailniveaus.
     /// Elk frame kiest hij per chunk het niveau op afstand van de camera en bouwt hij de dichtstbijzijnde chunks
     /// die moeten veranderen opnieuw in een Burst-job; gewijzigde hoogtes (<see cref="WorldMap.HeightChanged"/>)
-    /// komen zo vanzelf in beeld.
+    /// komen zo vanzelf in beeld. Houdt ook de splatmap bij (een pixel per cel met zand, rots, akker en bebouwde
+    /// grond) die de terreinshader als <c>_CitySplatMap</c> leest.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class TerrainRendererBehaviour : MonoBehaviour
@@ -30,6 +31,11 @@ namespace Cities.Presentation.Terrain
         [Tooltip("Hoe ver de rokken onder de randen hangen, om kieren tussen detailniveaus te dichten.")]
         [SerializeField, Min(0f)] private float _skirtDepth = 12f;
 
+        [SerializeField] private TerrainSplatSettings _splat = TerrainSplatSettings.Default;
+
+        private static readonly int SplatMapId = Shader.PropertyToID("_CitySplatMap");
+        private static readonly int WorldSizeId = Shader.PropertyToID("_CityWorldSize");
+
         private readonly List<int> _touched = new List<int>();
         private readonly List<(float Distance, int Chunk, int Lod)> _pending = new List<(float, int, int)>();
         private readonly List<Mesh> _batchMeshes = new List<Mesh>();
@@ -45,11 +51,15 @@ namespace Cities.Presentation.Terrain
         private bool _built;
         private float2[] _heightRanges;
         private TerrainMeshBuilder _builder;
+        private Texture2D _splatMap;
+        private RectInt _splatDirty;
 
         public TerrainChunkLayout Layout => _layout;
 
         /// <summary>Huidig detailniveau per chunk, of -1 als hij nog niet gebouwd is.</summary>
         public IReadOnlyList<int> Lods => _lods;
+
+        public Texture2D SplatMap => _splatMap;
 
         /// <summary>Chunks die in het laatste frame opnieuw gebouwd zijn.</summary>
         public int LastRebuildCount { get; private set; }
@@ -88,7 +98,20 @@ namespace Cities.Presentation.Terrain
                 _dirty[i] = true;
             }
 
+            var dimensions = _map.Dimensions;
+            _splatMap = new Texture2D(dimensions.CellsX, dimensions.CellsZ, TextureFormat.RGBA32, true, true)
+            {
+                name = "Terrain splatmap",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Trilinear,
+                anisoLevel = 4,
+            };
+            _splatDirty = _map.AllCells;
+            Shader.SetGlobalTexture(SplatMapId, _splatMap);
+            Shader.SetGlobalVector(WorldSizeId, new Vector4(dimensions.SizeX, dimensions.SizeZ, 1f / dimensions.SizeX, 1f / dimensions.SizeZ));
+
             _map.HeightChanged += OnHeightChanged;
+            _map.GroundCoverChanged += OnGroundCoverChanged;
         }
 
         private void OnDestroy()
@@ -96,7 +119,10 @@ namespace Cities.Presentation.Terrain
             if (_map != null)
             {
                 _map.HeightChanged -= OnHeightChanged;
+                _map.GroundCoverChanged -= OnGroundCoverChanged;
             }
+
+            Destroy(_splatMap);
 
             if (_meshes != null)
             {
@@ -116,6 +142,7 @@ namespace Cities.Presentation.Terrain
                 return;
             }
 
+            UpdateSplatMap();
             CollectPending(_camera.transform.position);
 
             // Bij de start alles in één keer, zodat er geen gaten zijn; daarna de dichtstbijzijnde eerst.
@@ -208,8 +235,40 @@ namespace Cities.Presentation.Terrain
             }
         }
 
+        /// <summary>Werkt het vuile deel van de splatmap bij en stuurt hem (met mipmaps) naar de GPU.</summary>
+        private void UpdateSplatMap()
+        {
+            if (_splatDirty.width <= 0 || _splatDirty.height <= 0)
+            {
+                return;
+            }
+
+            TerrainSplatBuilder.Build(_map, _splat, _splatDirty, _splatMap.GetPixelData<Color32>(0));
+
+            // shortcut: Apply stuurt de hele texture (21 MB met mipmaps) bij elke wijziging; voor penselen die elk frame terraformen (E03-03) alleen de regio uploaden.
+            _splatMap.Apply(true);
+            _splatDirty = default;
+        }
+
+        private void MarkSplatDirty(RectInt cells)
+        {
+            if (_splatDirty.width <= 0 || _splatDirty.height <= 0)
+            {
+                _splatDirty = cells;
+                return;
+            }
+
+            var min = Vector2Int.Min(_splatDirty.min, cells.min);
+            var max = Vector2Int.Max(_splatDirty.max, cells.max);
+            _splatDirty = new RectInt(min, max - min);
+        }
+
+        private void OnGroundCoverChanged(RectInt cells) => MarkSplatDirty(cells);
+
         private void OnHeightChanged(RectInt corners)
         {
+            // Een hoekpunt hoort bij de cellen links en rechts ervan.
+            MarkSplatDirty(new RectInt(corners.xMin - 1, corners.yMin - 1, corners.width + 1, corners.height + 1));
             _layout.ChunksTouching(corners, _touched);
             foreach (var chunk in _touched)
             {

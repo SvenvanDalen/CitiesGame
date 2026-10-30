@@ -22,7 +22,8 @@ namespace Cities.Tests.EditMode.World
             Assert.That(map.Zones.Values.Length, Is.EqualTo(16 * 16));
             Assert.That(map.GroundPollution.Values.Length, Is.EqualTo(4 * 4));
             Assert.That(map.LandValue.Layout.Spacing, Is.EqualTo(32f));
-            Assert.That(map.MemoryBytes, Is.EqualTo((2 * 289 * 4) + (256 * 2) + (2 * 16 * 4)));
+            Assert.That(map.GroundCover.Values.Length, Is.EqualTo(16 * 16));
+            Assert.That(map.MemoryBytes, Is.EqualTo((2 * 289 * 4) + (256 * 2) + (2 * 16 * 4) + 256));
         }
 
         [Test]

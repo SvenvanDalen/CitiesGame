@@ -75,6 +75,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Wie hoogtes wijzigt, meldt dat met `WorldMap.NotifyHeightChanged(rect)` (hoekpunten, max exclusief). `TerrainRendererBehaviour` bouwt dan alleen de geraakte chunks opnieuw; laden uit een save meldt de hele kaart.
 - De terreinmesh bestaat uit chunks van 32 × 32 cellen (256 m) met vier detailniveaus (32, 16, 8 en 4 vlakjes per zijde). Randen tegen een grovere buur worden op diens lijn gelegd; een rok onder elke rand vangt kieren op zolang een buur nog niet herbouwd is.
 - `TerrainShape` maakt het procedurele landschap (laagland, heuvels, bergrug, rivierdal) met vaste seed; `TerrainGeneratorBehaviour` vult er een nieuwe kaart mee. Testscene: `Scenes/Tests/Terrain.unity`.
+- De terreinshader (`Cities/Terrain`) mengt vijf lagen: gras, zand, rots, akker en bebouwde grond. Per cel staat in de splatmap (`_CitySplatMap`) hoeveel zand, rots, akker en bebouwd er ligt; gras is de rest. `TerrainSplat` leidt dat af uit helling, hoogte, water en `WorldMap.GroundCover`. Wie de grondbedekking wijzigt, meldt dat met `WorldMap.NotifyGroundCoverChanged(rect)` (cellen).
+- De terreintexturen zijn procedureel: pas `Scripts/Editor/Terrain/TerrainTextureBuilder.cs` aan en bouw opnieuw via **Cities > Terrein > Texturen bouwen**.
 
 ## Modellen
 
