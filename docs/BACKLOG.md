@@ -79,7 +79,7 @@ Terrein en water zijn de eerste visuele indruk en het zwaarste datamodel van M1;
 | E03-01 | Heightmap-terrein | Eén heightmap per tegel, chunked mesh met LOD, naadloos tussen tegels | M1 | L |
 | E03-02 | Terrein-shader | Splatmap met gras, zand, rots, akker en bebouwde grond; overgangen zijn zacht | M1 | M |
 | E03-03 | Terraform-tools | Omhoog, omlaag, vlak, glad, naar hoogte; penseelgrootte en -sterkte instelbaar | M1 | L |
-| E03-04 | Grondverzet | Grond verplaatsen kost geld en heeft een bron of put nodig; kosten verschijnen in preview | M1 | M |
+| E03-04 | Grondverzet | Grond verplaatsen kost geld en heeft een bron of put nodig; kosten verschijnen in preview (na het geldmodel E11-01) | M3 | M |
 | E03-05 | Watersimulatie | Rivieren, meren en zee met waterhoogte, stroomrichting en kustlijn die meebeweegt met terrein | M1 | XL |
 | E03-06 | Waterbronnen en afvoer | Je plaatst bronnen en afvoerpunten; debiet is instelbaar | M1 | L |
 | E03-07 | Bomen | Bomen staan als instances op een dichtheidskaart; kappen en planten werkt; bomen verdwijnen onder gebouwen | M1 | L |
