@@ -83,6 +83,18 @@ namespace Cities.Simulation.Network
             return new Bezier3(P0 + shiftA, P1 + shiftA, P2 + shiftB, P3 + shiftB);
         }
 
+        /// <summary>Het stuk van de curve tussen <paramref name="from"/> en <paramref name="to"/> (parameters 0..1) als eigen curve.</summary>
+        public Bezier3 Slice(float from, float to) =>
+            new Bezier3(Blossom(from, from, from), Blossom(from, from, to), Blossom(from, to, to), Blossom(to, to, to));
+
+        private float3 Blossom(float a, float b, float c)
+        {
+            var q0 = math.lerp(P0, P1, a);
+            var q1 = math.lerp(P1, P2, a);
+            var q2 = math.lerp(P2, P3, a);
+            return math.lerp(math.lerp(q0, q1, b), math.lerp(q1, q2, b), c);
+        }
+
         /// <summary>Horizontale eenheidsvector rechts van <paramref name="direction"/>.</summary>
         public static float3 Right(float3 direction) => math.normalizesafe(math.cross(math.up(), direction));
     }
