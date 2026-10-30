@@ -84,6 +84,6 @@ namespace Cities.Simulation.Network
         }
 
         /// <summary>Horizontale eenheidsvector rechts van <paramref name="direction"/>.</summary>
-        public static float3 Right(float3 direction) => math.normalizesafe(new float3(direction.z, 0f, -direction.x));
+        public static float3 Right(float3 direction) => math.normalizesafe(math.cross(math.up(), direction));
     }
 }
