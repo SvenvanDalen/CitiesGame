@@ -136,7 +136,7 @@ namespace Cities.Tests.EditMode.Network
 
             Assert.Throws<ArgumentException>(() => Road(a, a));
             Assert.Throws<ArgumentException>(() => _network.AddSegment(a, b, Bezier3.Straight(float3.zero, new float3(31f, 0f, 0f)), TwoLane, 10f));
-            Assert.Throws<ArgumentException>(() => _network.AddSegment(a, b, Bezier3.Straight(float3.zero, new float3(30f, 0f, 0f)), new LaneSpec[0], 10f));
+            Assert.Throws<ArgumentException>(() => _network.AddSegment(a, b, Bezier3.Straight(float3.zero, new float3(30f, 0f, 0f)), Array.Empty<LaneSpec>(), 10f));
             Assert.Throws<KeyNotFoundException>(() => _network.GetNode(new EntityId<NodeKind>(9, 1)));
 
             for (var i = 0; i < RoadNetwork.MaxArms; i++)

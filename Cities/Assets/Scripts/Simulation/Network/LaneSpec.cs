@@ -60,7 +60,7 @@ namespace Cities.Simulation.Network
         public float Width { get; }
 
         public bool Equals(LaneSpec other) =>
-            Types == other.Types && Direction == other.Direction && Offset.Equals(other.Offset) && Width.Equals(other.Width);
+            Types == other.Types && Direction == other.Direction && Offset.CompareTo(other.Offset) == 0 && Width.CompareTo(other.Width) == 0;
 
         public override bool Equals(object obj) => obj is LaneSpec other && Equals(other);
 

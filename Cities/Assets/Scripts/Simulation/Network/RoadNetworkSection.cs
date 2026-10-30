@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Cities.Core.Ids;
 using Cities.Core.Persistence;
 
@@ -67,6 +68,12 @@ namespace Cities.Simulation.Network
 
         private static void Validate(SaveReader reader, RoadNetworkState state)
         {
+            ValidateSegments(reader, state);
+            ValidateNodes(reader, state);
+        }
+
+        private static void ValidateSegments(SaveReader reader, RoadNetworkState state)
+        {
             for (var i = 0; i < state.SegmentSlots.Length; i++)
             {
                 if (!Alive(state.Segments, i))
@@ -88,7 +95,10 @@ namespace Cities.Simulation.Network
                     }
                 }
             }
+        }
 
+        private static void ValidateNodes(SaveReader reader, RoadNetworkState state)
+        {
             for (var i = 0; i < state.NodeSlots.Length; i++)
             {
                 if (!Alive(state.Nodes, i))
@@ -96,12 +106,9 @@ namespace Cities.Simulation.Network
                     continue;
                 }
 
-                foreach (var segment in state.NodeSlots[i].Segments)
+                if (state.NodeSlots[i].Segments.ToArray().Any(segment => !Alive(state.Segments, segment)))
                 {
-                    if (!Alive(state.Segments, segment))
-                    {
-                        throw reader.Corrupt($"knooppunt {i} verwijst naar een ontbrekend segment");
-                    }
+                    throw reader.Corrupt($"knooppunt {i} verwijst naar een ontbrekend segment");
                 }
             }
         }

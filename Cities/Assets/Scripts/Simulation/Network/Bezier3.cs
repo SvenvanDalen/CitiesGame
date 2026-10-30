@@ -5,12 +5,12 @@ namespace Cities.Simulation.Network
     /// <summary>Kubische Bezier-curve in wereldmeters; de vorm van een wegsegment, een lane of een verbinding.</summary>
     public readonly struct Bezier3
     {
-        public Bezier3(float3 p0, float3 p1, float3 p2, float3 p3)
+        public Bezier3(float3 start, float3 startHandle, float3 endHandle, float3 end)
         {
-            P0 = p0;
-            P1 = p1;
-            P2 = p2;
-            P3 = p3;
+            P0 = start;
+            P1 = startHandle;
+            P2 = endHandle;
+            P3 = end;
         }
 
         public float3 P0 { get; }

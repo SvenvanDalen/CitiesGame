@@ -10,6 +10,8 @@ namespace Cities.Simulation.Network
     [DefaultExecutionOrder(-1000)]
     public sealed class RoadNetworkHostBehaviour : MonoBehaviour
     {
+        private const string Group = "Wegennet";
+
         private readonly List<IDisposable> _debug = new List<IDisposable>();
 
         public RoadNetwork Network { get; private set; }
@@ -21,10 +23,10 @@ namespace Cities.Simulation.Network
             if (registry.Find(LaneGraphOverlay.OverlayName) == null)
             {
                 _debug.Add(registry.AddOverlay(new LaneGraphOverlay(Network)));
-                _debug.Add(registry.AddCounter("Wegennet", "Knooppunten", () => Network.NodeCount));
-                _debug.Add(registry.AddCounter("Wegennet", "Segmenten", () => Network.SegmentCount));
-                _debug.Add(registry.AddCounter("Wegennet", "Lanes", () => Network.LaneCount));
-                _debug.Add(registry.AddCounter("Wegennet", "Verbindingen", () => Network.ConnectionCount));
+                _debug.Add(registry.AddCounter(Group, "Knooppunten", () => Network.NodeCount));
+                _debug.Add(registry.AddCounter(Group, "Segmenten", () => Network.SegmentCount));
+                _debug.Add(registry.AddCounter(Group, "Lanes", () => Network.LaneCount));
+                _debug.Add(registry.AddCounter(Group, "Verbindingen", () => Network.ConnectionCount));
             }
         }
 
