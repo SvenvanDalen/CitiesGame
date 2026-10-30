@@ -100,6 +100,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Lanes en verbindingen worden afgeleid uit het profiel (`LaneProfiles`) en `LaneConnector`; alleen knooppunten, segmenten en lanes gaan in de save (sectie `NETW`), verbindingen worden bij het laden herbouwd.
 - Bij een wijziging van het net: gebruik `AddSegment`/`RemoveSegment` zodat verbindingen en losse knooppunten meegaan; luister op `SegmentChanged`. De overlay `Lanegraaf` toont het geheel, de testscene is `Scenes/Tests/Network`.
 - De `RoadTool` (Gameplay/Tools) legt wegen aan; de rekenkunde (snappen, bochten, controles) staat in `RoadPlanner` en is in CI getest. Het voorbeeld tekent de overlay `Aanleg`; `ToolPreview.Info` is de korte uitleg (lengte en koers) in de werkbalk.
+- Het wegdek: `RoadMeshBuilder` (World/Roads) maakt per segment een mesh met een submesh per `RoadSurface` (asfalt, fietspad, stoep, stoeprand, strepen); `RoadRendererBehaviour` herbouwt gewijzigde segmenten binnen een tijdbudget (een segment kost ca. 1 ms). `RoadTerrainShaper` legt het terrein vlak en kapt bomen bij het aanleggen. Materialen en texturen: **Cities > Modellen > Wegen bouwen**.
 
 ## Logging en profiling
 

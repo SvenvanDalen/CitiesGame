@@ -154,7 +154,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Fractal ruis die per as met de opgegeven periode herhaalt (op de basisschaal).</summary>
-        private static float Fbm(float x, float y, int octaves, int periodX, int periodY, int seed)
+        internal static float Fbm(float x, float y, int octaves, int periodX, int periodY, int seed)
         {
             var sum = 0f;
             var amplitude = 0.5f;
@@ -170,7 +170,7 @@ namespace Cities.Editor.Models
             return sum / total;
         }
 
-        private static float ValueNoise(float x, float y, int periodX, int periodY, int seed)
+        internal static float ValueNoise(float x, float y, int periodX, int periodY, int seed)
         {
             var x0 = Mathf.FloorToInt(x);
             var y0 = Mathf.FloorToInt(y);
@@ -186,7 +186,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Worley-cellen: afstand tot de rand van de cel en een vaste waarde per cel, naadloos per periode.</summary>
-        private static (float Edge, float Value) Cells(float x, float y, int periodX, int periodY, int seed)
+        internal static (float Edge, float Value) Cells(float x, float y, int periodX, int periodY, int seed)
         {
             var cx = Mathf.FloorToInt(x);
             var cy = Mathf.FloorToInt(y);
@@ -218,7 +218,7 @@ namespace Cities.Editor.Models
             return (Mathf.Sqrt(second) - Mathf.Sqrt(nearest), value);
         }
 
-        private static float Hash01(int x, int y, int period, int seed, int periodY = 0)
+        internal static float Hash01(int x, int y, int period, int seed, int periodY = 0)
         {
             var px = ((x % period) + period) % period;
             var py = periodY > 0 ? ((y % periodY) + periodY) % periodY : ((y % period) + period) % period;
