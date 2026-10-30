@@ -81,7 +81,10 @@ jobs:
             exit 0
           fi
           counters=$(grep -o '<Counters [^>]*>' "$trx")
-          value() { echo "$counters" | sed -E "s/.* $1=\"([0-9]+)\".*/\1/"; }
+          value() {
+            local name="$1"
+            echo "$counters" | sed -E "s/.* ${name}=\"([0-9]+)\".*/\1/"
+          }
           {
             echo "### Snelle tests (zonder Unity)"
             echo ""
