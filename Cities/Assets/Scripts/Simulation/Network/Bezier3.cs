@@ -78,9 +78,9 @@ namespace Cities.Simulation.Network
         /// </summary>
         public Bezier3 Offset(float offset)
         {
-            var start = Right(Direction(0f)) * offset;
-            var end = Right(Direction(1f)) * offset;
-            return new Bezier3(P0 + start, P1 + start, P2 + end, P3 + end);
+            var shiftA = Right(Direction(0f)) * offset;
+            var shiftB = Right(Direction(1f)) * offset;
+            return new Bezier3(P0 + shiftA, P1 + shiftA, P2 + shiftB, P3 + shiftB);
         }
 
         /// <summary>Horizontale eenheidsvector rechts van <paramref name="direction"/>.</summary>
