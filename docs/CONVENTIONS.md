@@ -106,6 +106,13 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Wegen slopen doet de `DemolishTool` (Gameplay/Tools): een klik kiest een weg of kruispunt, een tweede klik bevestigt. De economie (E11) betaalt terug door te luisteren op `Demolished` (aantal segmenten en gesloopte lengte).
 - Bouwfeedback: een `ToolPreview` heeft `InvalidReason` (rode ghost en de reden in de werkbalk), `Info` en `Cost` (hele munteenheden); de werkbalk toont de kosten achter de uitleg. Alleen de wegtool vult `Cost` al (lengte x kosten per meter); gebouwen volgen met de economie (E11).
 
+## Water
+
+- `Cities.World.Water.ShallowWater` is de pure rekenkern (virtuele pijpen, per rij); de Burst-jobs in `WaterSimulation` roepen dezelfde code aan. Pas de fysica alleen daar aan, zodat CI-tests haar dekken.
+- De simulatie rekent op een grof raster van 32 m (vier cellen per waarde) met een vaste stap van 0,1 s; `WorldMap.WaterDepth` (8 m) is daarvan afgeleid en wordt om de vijf stappen ververst. De echte toestand (diepte en stromen) staat in sectie `WATR`.
+- De zee is een vast waterpeil langs de randen in `SeaEdges`; bronnen (rivieren, later E03-06) zijn debieten in m³/s via `WaterSimulation.SetSource`.
+- Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
