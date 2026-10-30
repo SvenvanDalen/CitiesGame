@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Core.Diagnostics;
 using Cities.Presentation.UI;
 using Cities.Simulation.Scheduling;
@@ -149,9 +150,8 @@ namespace Cities.Presentation.Debugging
             }
 
             _overlays.Clear();
-            foreach (var overlay in _registry.Overlays)
+            foreach (var name in _registry.Overlays.Select(overlay => overlay.Name))
             {
-                var name = overlay.Name;
                 var toggle = new Toggle(name) { name = name, value = _registry.IsEnabled(name) };
                 toggle.RegisterValueChangedCallback(change => _registry.SetEnabled(name, change.newValue));
                 _overlays.Add(toggle);
