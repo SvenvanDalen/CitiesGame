@@ -10,7 +10,7 @@ namespace Cities.Gameplay.Tools
     /// Penseel om het terrein te vormen: omhoog, omlaag, vlak, glad of naar een hoogte. Werkt door zolang de knop
     /// ingedrukt is; <see cref="Strength"/> is in meter per seconde in het midden van het penseel.
     /// </summary>
-    public sealed class TerraformTool : ITool
+    public sealed class TerraformTool : IBrushTool
     {
         public const float MinRadius = 8f;
         public const float MaxRadius = 256f;

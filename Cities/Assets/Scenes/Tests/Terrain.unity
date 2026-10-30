@@ -186,6 +186,7 @@ GameObject:
   - component: {fileID: 114535556}
   - component: {fileID: 114535558}
   - component: {fileID: 114535559}
+  - component: {fileID: 114535560}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -282,6 +283,26 @@ MonoBehaviour:
       width: 18
       height: 14
     Cover: 2
+--- !u!114 &114535560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114535555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ff08b1062d10ba4eb664fa30fd5b6d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.World::Cities.World.Trees.ForestGeneratorBehaviour
+  _world: {fileID: 114535556}
+  _settings:
+    Seed: 1
+    PatchSize: 900
+    Coverage: 0.3
+    TreeLine: 230
+    MaxSlope: 34
+    Scattered: 2
 --- !u!1 &268577728
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,8 +357,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Cities.Presentation::Cities.Presentation.Tools.ToolbarBehaviour
   _tools: {fileID: 1121422579}
-  _placements: []
-  _terraform: {fileID: 1121422580}
+  _placements:
+  - {fileID: 542177699}
+  _brushes: {fileID: 1121422580}
 --- !u!4 &268577731
 Transform:
   m_ObjectHideFlags: 0
@@ -345,6 +367,58 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 268577728}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &542177698
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 542177700}
+  - component: {fileID: 542177699}
+  m_Layer: 0
+  m_Name: Houses (placed)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &542177699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542177698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3d14295fdf544540bb60465a7d5ae62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Gameplay::Cities.Gameplay.Tools.PrefabPlacementBehaviour
+  _tools: {fileID: 1121422579}
+  _prefab: {fileID: 951093645922807242, guid: 6a78eb3dcdca2ae468c6252f32224ef3, type: 3}
+  _toolName: Plaatsen
+  _width: 2
+  _depth: 2
+  _maxRise: 1.5
+  _selectOnStart: 0
+  _world: {fileID: 114535556}
+--- !u!4 &542177700
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542177698}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -919,6 +993,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1735821265
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1735821267}
+  - component: {fileID: 1735821266}
+  m_Layer: 0
+  m_Name: Trees
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1735821266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1735821265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 064a9b88b4e6caa429a104b288490683, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Presentation::Cities.Presentation.Trees.TreeRendererBehaviour
+  _world: {fileID: 114535556}
+  _models: {fileID: 11400000, guid: 37ffed7e248b1214d89e371cb1a0d213, type: 2}
+  _camera: {fileID: 1809154979}
+  _detailDistance: 180
+  _simpleDistance: 500
+  _impostorDistance: 4500
+  _maxRegionBuildsPerFrame: 2
+--- !u!4 &1735821267
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1735821265}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1809154976
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,3 +1245,5 @@ SceneRoots:
   - {fileID: 71885471}
   - {fileID: 1121422581}
   - {fileID: 2121835951}
+  - {fileID: 1735821267}
+  - {fileID: 542177700}

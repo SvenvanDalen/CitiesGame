@@ -3,12 +3,13 @@ using Cities.Gameplay.Tools;
 using Cities.Presentation.UI;
 using Cities.World.Terrain;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace Cities.Presentation.Tools
 {
     /// <summary>
-    /// Werkbalk onderaan met een knop per plaatsingstool en per terreinpenseel, plus een regel die zegt waarom de
+    /// Werkbalk onderaan met een knop per plaatsingstool en per penseel (terrein en bomen), plus een regel die zegt waarom de
     /// preview rood is. Met een penseel actief staan daarboven de penseelgrootte en -sterkte.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
@@ -17,23 +18,15 @@ namespace Cities.Presentation.Tools
         [SerializeField] private ToolsBehaviour _tools;
         [SerializeField] private PrefabPlacementBehaviour[] _placements = System.Array.Empty<PrefabPlacementBehaviour>();
 
-        [Tooltip("Optioneel: voegt de terreinpenselen toe.")]
-        [SerializeField] private TerraformToolBehaviour _terraform;
-
-        private static readonly (TerraformMode Mode, string Label)[] BrushModes =
-        {
-            (TerraformMode.Raise, "Omhoog"),
-            (TerraformMode.Lower, "Omlaag"),
-            (TerraformMode.Flatten, "Vlak"),
-            (TerraformMode.Smooth, "Glad"),
-            (TerraformMode.SetHeight, "Naar hoogte"),
-        };
+        [Tooltip("Optioneel: voegt de penselen voor terrein en bomen toe.")]
+        [FormerlySerializedAs("_terraform")]
+        [SerializeField] private BrushToolsBehaviour _brushes;
 
         private readonly List<(CityButton Button, PrefabPlacementBehaviour Placement)> _buttons = new List<(CityButton, PrefabPlacementBehaviour)>();
-        private readonly List<(CityButton Button, TerraformMode Mode)> _brushButtons = new List<(CityButton, TerraformMode)>();
+        private readonly List<BrushButton> _brushButtons = new List<BrushButton>();
+        private readonly List<(IBrushTool Tool, VisualElement Row)> _brushSettings = new List<(IBrushTool, VisualElement)>();
         private Label _status;
         private VisualElement _bar;
-        private VisualElement _brushSettings;
         private Slider _targetHeight;
 
         private void OnEnable()
@@ -65,7 +58,7 @@ namespace Cities.Presentation.Tools
                 _buttons.Add((button, placement));
             }
 
-            if (_terraform != null)
+            if (_brushes != null)
             {
                 AddBrushes(toolbar);
             }
@@ -81,6 +74,7 @@ namespace Cities.Presentation.Tools
             _bar?.RemoveFromHierarchy();
             _buttons.Clear();
             _brushButtons.Clear();
+            _brushSettings.Clear();
         }
 
         private void Start() => OnActiveChanged(_tools.Controller.Active);
@@ -105,44 +99,74 @@ namespace Cities.Presentation.Tools
                 button.Selected = active != null && ReferenceEquals(active, placement.Tool);
             }
 
-            var brush = _terraform != null ? _terraform.Tool : null;
-            if (brush == null)
+            foreach (var brush in _brushButtons)
             {
-                return;
+                brush.Button.Selected = ReferenceEquals(active, brush.Tool) && brush.IsChosen();
             }
 
-            var brushActive = ReferenceEquals(active, brush);
-            foreach (var (button, mode) in _brushButtons)
+            foreach (var (tool, row) in _brushSettings)
             {
-                button.Selected = brushActive && brush.Mode == mode;
+                row.style.display = ReferenceEquals(active, tool) ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
-            _brushSettings.style.display = brushActive ? DisplayStyle.Flex : DisplayStyle.None;
-            _targetHeight.style.display = brush.Mode == TerraformMode.SetHeight ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_targetHeight != null)
+            {
+                _targetHeight.style.display = _brushes.Terraform.Mode == TerraformMode.SetHeight ? DisplayStyle.Flex : DisplayStyle.None;
+            }
         }
 
         private void AddBrushes(VisualElement toolbar)
         {
+            var terraform = _brushes.Terraform;
+            AddSeparator(toolbar);
+            AddBrush(toolbar, "Omhoog", terraform, () => terraform.Mode = TerraformMode.Raise, () => terraform.Mode == TerraformMode.Raise);
+            AddBrush(toolbar, "Omlaag", terraform, () => terraform.Mode = TerraformMode.Lower, () => terraform.Mode == TerraformMode.Lower);
+            AddBrush(toolbar, "Vlak", terraform, () => terraform.Mode = TerraformMode.Flatten, () => terraform.Mode == TerraformMode.Flatten);
+            AddBrush(toolbar, "Glad", terraform, () => terraform.Mode = TerraformMode.Smooth, () => terraform.Mode == TerraformMode.Smooth);
+            AddBrush(toolbar, "Naar hoogte", terraform, () => terraform.Mode = TerraformMode.SetHeight, () => terraform.Mode == TerraformMode.SetHeight);
+
+            var trees = _brushes.Trees;
+            AddSeparator(toolbar);
+            AddBrush(toolbar, "Bomen planten", trees, () => trees.Plant = true, () => trees.Plant);
+            AddBrush(toolbar, "Bomen kappen", trees, () => trees.Plant = false, () => !trees.Plant);
+
+            _targetHeight = BrushSlider("Hoogte (m)", TerrainBrush.MinHeight, 600f, terraform.TargetHeight, v => terraform.TargetHeight = v);
+            AddSettings(terraform,
+                BrushSlider("Penseel (m)", TerraformTool.MinRadius, TerraformTool.MaxRadius, terraform.Radius, v => terraform.Radius = v),
+                BrushSlider("Sterkte (m/s)", TerraformTool.MinStrength, TerraformTool.MaxStrength, terraform.Strength, v => terraform.Strength = v),
+                _targetHeight);
+            AddSettings(trees,
+                BrushSlider("Penseel (m)", TreeTool.MinRadius, TreeTool.MaxRadius, trees.Radius, v => trees.Radius = v),
+                BrushSlider("Sterkte (bos/s)", TreeTool.MinStrength, TreeTool.MaxStrength, trees.Strength, v => trees.Strength = v));
+        }
+
+        private static void AddSeparator(VisualElement toolbar)
+        {
             var separator = new VisualElement();
             separator.AddToClassList(UiClasses.ToolbarSeparator);
             toolbar.Add(separator);
-            foreach (var (mode, label) in BrushModes)
+        }
+
+        private void AddBrush(VisualElement toolbar, string label, IBrushTool tool, System.Action choose, System.Func<bool> isChosen)
+        {
+            var brush = new BrushButton(new CityButton(label), tool, choose, isChosen);
+            brush.Button.clicked += () => ToggleBrush(brush);
+            toolbar.Add(brush.Button);
+            _brushButtons.Add(brush);
+        }
+
+        private void AddSettings(IBrushTool tool, params Slider[] sliders)
+        {
+            var row = new VisualElement { name = "brush-settings" };
+            row.AddToClassList(UiClasses.Toolbar);
+            row.style.marginBottom = 8;
+            foreach (var slider in sliders)
             {
-                var button = new CityButton(label);
-                button.clicked += () => ToggleBrush(mode);
-                toolbar.Add(button);
-                _brushButtons.Add((button, mode));
+                row.Add(slider);
             }
 
-            var brush = _terraform.Tool;
-            _brushSettings = new VisualElement { name = "brush-settings" };
-            _brushSettings.AddToClassList(UiClasses.Toolbar);
-            _brushSettings.style.marginBottom = 8;
-            _brushSettings.Add(BrushSlider("Penseel (m)", TerraformTool.MinRadius, TerraformTool.MaxRadius, brush.Radius, v => brush.Radius = v));
-            _brushSettings.Add(BrushSlider("Sterkte (m/s)", TerraformTool.MinStrength, TerraformTool.MaxStrength, brush.Strength, v => brush.Strength = v));
-            _targetHeight = BrushSlider("Hoogte (m)", TerrainBrush.MinHeight, 600f, brush.TargetHeight, v => brush.TargetHeight = v);
-            _brushSettings.Add(_targetHeight);
-            _bar.Insert(_bar.IndexOf(_status) + 1, _brushSettings);
+            _bar.Insert(_bar.IndexOf(_status) + 1, row);
+            _brushSettings.Add((tool, row));
         }
 
         private static Slider BrushSlider(string label, float min, float max, float value, System.Action<float> changed)
@@ -155,19 +179,38 @@ namespace Cities.Presentation.Tools
             return slider;
         }
 
-        private void ToggleBrush(TerraformMode mode)
+        private void ToggleBrush(BrushButton brush)
         {
             var controller = _tools.Controller;
-            var brush = _terraform.Tool;
-            if (brush.Mode == mode && ReferenceEquals(controller.Active, brush))
+            if (brush.IsChosen() && ReferenceEquals(controller.Active, brush.Tool))
             {
                 controller.Deselect();
                 return;
             }
 
-            brush.Mode = mode;
-            controller.Select(brush);
+            brush.Choose();
+            controller.Select(brush.Tool);
             OnActiveChanged(controller.Active);
+        }
+
+        /// <summary>Knop voor een penseel in een bepaalde stand.</summary>
+        private sealed class BrushButton
+        {
+            public BrushButton(CityButton button, IBrushTool tool, System.Action choose, System.Func<bool> isChosen)
+            {
+                Button = button;
+                Tool = tool;
+                Choose = choose;
+                IsChosen = isChosen;
+            }
+
+            public CityButton Button { get; }
+
+            public IBrushTool Tool { get; }
+
+            public System.Action Choose { get; }
+
+            public System.Func<bool> IsChosen { get; }
         }
     }
 }

@@ -23,6 +23,7 @@ namespace Cities.World.Grid
         private CellLayer<float> _groundPollution;
         private CellLayer<float> _landValue;
         private CellLayer<GroundCover> _groundCover;
+        private CellLayer<byte> _trees;
 
         public WorldMap(WorldDimensions dimensions, float baseHeight = 0f)
         {
@@ -41,6 +42,7 @@ namespace Cities.World.Grid
             _groundPollution = new CellLayer<float>(coarse, Allocator.Persistent);
             _landValue = new CellLayer<float>(coarse, Allocator.Persistent);
             _groundCover = new CellLayer<GroundCover>(LayerLayout.ForCells(dimensions), Allocator.Persistent);
+            _trees = new CellLayer<byte>(LayerLayout.ForCells(dimensions), Allocator.Persistent);
         }
 
         public WorldDimensions Dimensions { get; }
@@ -78,6 +80,14 @@ namespace Cities.World.Grid
 
         public void NotifyGroundCoverChanged(UnityEngine.RectInt cells) => GroundCoverChanged?.Invoke(cells);
 
+        /// <summary>Bosdichtheid per cel (0 kaal, 255 dicht bos); de bomen zelf volgen eruit. Meld wijzigingen met <see cref="NotifyTreesChanged"/>.</summary>
+        public ref CellLayer<byte> Trees => ref _trees;
+
+        /// <summary>Cellen (min inclusief, max exclusief) waarvan de bosdichtheid veranderd is.</summary>
+        public event Action<UnityEngine.RectInt> TreesChanged;
+
+        public void NotifyTreesChanged(UnityEngine.RectInt cells) => TreesChanged?.Invoke(cells);
+
         public bool IsDisposed { get; private set; }
 
         /// <summary>Totaal geheugen van alle lagen in bytes.</summary>
@@ -87,7 +97,8 @@ namespace Cities.World.Grid
             ((long)_zones.Layout.Length * 2) +
             ((long)_groundPollution.Layout.Length * sizeof(float)) +
             ((long)_landValue.Layout.Length * sizeof(float)) +
-            _groundCover.Layout.Length;
+            _groundCover.Layout.Length +
+            _trees.Layout.Length;
 
         /// <summary>Waterspiegel (terrein plus waterdiepte) op een hoekpunt.</summary>
         public float WaterSurface(int x, int z) => _height[x, z] + _waterDepth[x, z];
@@ -112,6 +123,7 @@ namespace Cities.World.Grid
             _groundPollution.Dispose();
             _landValue.Dispose();
             _groundCover.Dispose();
+            _trees.Dispose();
             IsDisposed = true;
         }
     }

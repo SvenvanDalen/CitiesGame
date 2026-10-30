@@ -7,7 +7,7 @@ namespace Cities.Presentation.Tools
 {
     /// <summary>
     /// Tekent de preview van de actieve tool: het model doorschijnend en de footprint op de grond, blauw als het mag
-    /// en rood als het niet mag. Voor de <see cref="TerraformTool"/> tekent de terreinshader de penseelrand.
+    /// en rood als het niet mag. Voor een <see cref="IBrushTool"/> tekent de terreinshader de penseelrand.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ToolGhostBehaviour : MonoBehaviour
@@ -47,7 +47,7 @@ namespace Cities.Presentation.Tools
             var preview = controller.Preview;
             UseModel(controller.Active?.Ghost);
             var brushState = preview.IsValid ? 1f : -1f;
-            Shader.SetGlobalVector(Brush, controller.Active is TerraformTool brush && preview.IsVisible
+            Shader.SetGlobalVector(Brush, controller.Active is IBrushTool brush && preview.IsVisible
                 ? new Vector4(preview.Position.x, preview.Position.z, brush.Radius, brushState)
                 : Vector4.zero);
             if (!preview.IsVisible)

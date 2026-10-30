@@ -18,7 +18,7 @@ namespace Cities.World.Grid
 
         public string Id => SectionId;
 
-        public int Version => 2;
+        public int Version => 3;
 
         public void Write(SaveWriter writer)
         {
@@ -33,6 +33,7 @@ namespace Cities.World.Grid
             writer.WriteShuffled<float>(_map.GroundPollution.Values.AsReadOnlySpan());
             writer.WriteShuffled<float>(_map.LandValue.Values.AsReadOnlySpan());
             writer.WriteShuffled<GroundCover>(_map.GroundCover.Values.AsReadOnlySpan());
+            writer.WriteShuffled<byte>(_map.Trees.Values.AsReadOnlySpan());
         }
 
         public Action Read(SaveReader reader, int version)
@@ -52,6 +53,9 @@ namespace Cities.World.Grid
 
             // Versie 1 kende geen grondbedekking: alles natuurlijk.
             var cover = version >= 2 ? Read<GroundCover>(reader, _map.GroundCover.Values.Length) : new GroundCover[_map.GroundCover.Values.Length];
+
+            // Versie 2 en ouder kenden geen bomen: kale grond.
+            var trees = version >= 3 ? Read<byte>(reader, _map.Trees.Values.Length) : new byte[_map.Trees.Values.Length];
             reader.ExpectEnd();
             Validate(reader, zones, cover);
 
@@ -63,8 +67,10 @@ namespace Cities.World.Grid
                 _map.GroundPollution.Values.CopyFrom(pollution);
                 _map.LandValue.Values.CopyFrom(landValue);
                 _map.GroundCover.Values.CopyFrom(cover);
+                _map.Trees.Values.CopyFrom(trees);
                 _map.NotifyHeightChanged(_map.AllCorners);
                 _map.NotifyGroundCoverChanged(_map.AllCells);
+                _map.NotifyTreesChanged(_map.AllCells);
             };
         }
 

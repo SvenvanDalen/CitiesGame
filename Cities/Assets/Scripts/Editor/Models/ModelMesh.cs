@@ -79,6 +79,36 @@ namespace Cities.Editor.Models
             });
         }
 
+        /// <summary>
+        /// Slaat <paramref name="mesh"/> op als asset, of vult de bestaande asset op <paramref name="path"/> via de
+        /// Mesh-API, zodat verwijzingen blijven kloppen. Niet met CopySerialized: dan tekent de GPU tot een herstart de oude vorm.
+        /// </summary>
+        public static Mesh Save(Mesh mesh, string path)
+        {
+            var existing = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (existing == null)
+            {
+                UnityEditor.AssetDatabase.CreateAsset(mesh, path);
+                return mesh;
+            }
+
+            existing.Clear();
+            existing.subMeshCount = mesh.subMeshCount;
+            existing.SetVertices(mesh.vertices);
+            existing.SetNormals(mesh.normals);
+            existing.SetTangents(mesh.tangents);
+            existing.SetUVs(0, mesh.uv);
+            for (var i = 0; i < mesh.subMeshCount; i++)
+            {
+                existing.SetTriangles(mesh.GetTriangles(i), i);
+            }
+
+            existing.RecalculateBounds();
+            UnityEditor.EditorUtility.SetDirty(existing);
+            Object.DestroyImmediate(mesh);
+            return existing;
+        }
+
         public Mesh Build(string name)
         {
             var mesh = new Mesh { name = name, subMeshCount = _triangles.Length };

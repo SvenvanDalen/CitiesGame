@@ -79,11 +79,14 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `TerrainShape` maakt het procedurele landschap (laagland, heuvels, bergrug, rivierdal) met vaste seed; `TerrainGeneratorBehaviour` vult er een nieuwe kaart mee. Testscene: `Scenes/Tests/Terrain.unity`.
 - De terreinshader (`Cities/Terrain`) mengt vijf lagen: gras, zand, rots, akker en bebouwde grond. Per cel staat in de splatmap (`_CitySplatMap`) hoeveel zand, rots, akker en bebouwd er ligt; gras is de rest. `TerrainSplat` leidt dat af uit helling, hoogte, water en `WorldMap.GroundCover`. Wie de grondbedekking wijzigt, meldt dat met `WorldMap.NotifyGroundCoverChanged(rect)` (cellen).
 - De terreintexturen zijn procedureel: pas `Scripts/Editor/Terrain/TerrainTextureBuilder.cs` aan en bouw opnieuw via **Cities > Terrein > Texturen bouwen**.
+- Bomen staan als bosdichtheid per cel in `WorldMap.Trees` (0–255; alleen die kaart wordt opgeslagen). `TreePlacement` leidt daar de bomen deterministisch uit af. Wie de dichtheid wijzigt, meldt dat met `WorldMap.NotifyTreesChanged(rect)`. Plant of kap met `TreeBrush`; `TreeBrush.ClearForBuilding` bebouwt de grond en kapt de bomen, en `PrefabPlacementBehaviour` doet dat met een kaart erbij vanzelf. Op bebouwde grond staan nooit bomen.
+- `TreeRendererBehaviour` tekent de bomen per regio van 1 km. In de verte zijn het impostors in één draw per regio en soort (`Cities/TreeImpostor`, via `RenderMeshPrimitives`). Dichtbij komt per boom het volle model of de eenvoudige kroon, met schaduw.
 
 ## Modellen
 
 - Modellen zijn realistisch op ware grootte (meters, lokaal -Z is de straatkant, de oorsprong ligt midden op de kavel op maaiveld) en hebben geen colliders; picking gaat via de picklagen.
 - Procedurele modellen worden gebouwd door editor-code onder `Scripts/Editor/Models` (menu **Cities > Modellen**). Pas de bouwcode aan en bouw opnieuw; bewerk de gegenereerde assets onder `Assets/Art` niet met de hand.
+- Bestaande meshes worden bij opnieuw bouwen via de Mesh-API gevuld, niet met `EditorUtility.CopySerialized`: anders tekent de GPU tot een herstart de oude vorm. Foto's voor impostors maak je met synchrone shadercompilatie (`ShaderUtil.allowAsyncCompilation = false`).
 
 ## Opslaan
 

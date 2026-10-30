@@ -90,16 +90,35 @@ namespace Cities.Tests.EditMode.Persistence
         }
 
         [Test]
+        public void TreesRoundTripAndAreReported()
+        {
+            using (var map = new WorldMap(Small))
+            using (var loaded = new WorldMap(Small))
+            {
+                map.Trees[4, 6] = 180;
+                var changes = new System.Collections.Generic.List<UnityEngine.RectInt>();
+                loaded.TreesChanged += changes.Add;
+
+                SaveBytes.Read(SaveBytes.Write(new SaveMetadata(), new WorldMapSection(map)), new WorldMapSection(loaded));
+
+                Assert.That(loaded.Trees[4, 6], Is.EqualTo(180));
+                Assert.That(changes, Is.EqualTo(new[] { loaded.AllCells }));
+            }
+        }
+
+        [Test]
         public void VersionOneSavesLoadWithNaturalGround()
         {
             using (var map = new WorldMap(Small, 12f))
             using (var loaded = new WorldMap(Small))
             {
                 loaded.GroundCover[1, 1] = GroundCover.Built;
+                loaded.Trees[1, 1] = 99;
                 SaveBytes.Read(SaveBytes.Write(new SaveMetadata(), new VersionOneWorldMap(map)), new WorldMapSection(loaded));
 
                 Assert.That(loaded.Height[2, 2], Is.EqualTo(12f));
                 Assert.That(loaded.GroundCover[1, 1], Is.EqualTo(GroundCover.Natural));
+                Assert.That(loaded.Trees[1, 1], Is.EqualTo(0), "oude saves hebben geen bomen");
             }
         }
 

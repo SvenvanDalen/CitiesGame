@@ -30,5 +30,9 @@ Cities/Assets/Scripts/World/Terrain/TerrainMeshBuilder.cs
 Cities/Assets/Scripts/World/Terrain/TerrainSplatBuilder.cs
 Cities/Assets/Scripts/World/Terrain/TerrainBrush.cs
 Cities/Assets/Scripts/Gameplay/Tools/TerraformTool.cs
+Cities/Assets/Scripts/World/Trees/ForestGenerator.cs
+Cities/Assets/Scripts/World/Trees/TreeBrush.cs
+Cities/Assets/Scripts/Gameplay/Tools/TreeTool.cs
+Cities/Assets/Scripts/Presentation/Trees/TreeModelSet.cs
 # Ontwikkelscripts (PowerShell); CI draait geen PowerShell-tests, ze worden lokaal gebruikt.
 tools/**
