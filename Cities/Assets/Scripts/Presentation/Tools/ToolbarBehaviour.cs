@@ -182,6 +182,8 @@ namespace Cities.Presentation.Tools
                 AddBrush(toolbar, chosen.DisplayName, road, () => road.Use(chosen.Id, chosen.Spec), () => road.TypeId == chosen.Id);
             }
 
+            AddBrush(toolbar, "Upgraden", _roads.Upgrade, () => { }, () => true);
+            AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
             AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
             AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
             AddSettings(road,

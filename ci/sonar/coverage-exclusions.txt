@@ -51,3 +51,4 @@ Cities/Assets/Scripts/World/Water/WaterSection.cs
 tools/**
 Cities/Assets/Scripts/Gameplay/Tools/RoadInspection.cs
 Cities/Assets/Scripts/Gameplay/Tools/RoadPicker.cs
+Cities/Assets/Scripts/Gameplay/Tools/RoadEditTool.cs

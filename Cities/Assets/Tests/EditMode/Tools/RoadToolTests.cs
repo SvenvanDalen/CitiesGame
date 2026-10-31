@@ -68,7 +68,7 @@ namespace Cities.Tests.EditMode.Tools
             Click(100f, 100f);
             var preview = _tool.UpdatePreview(At(100f, 152f));
 
-            Assert.That(preview.Info, Does.StartWith("50").And.EndWith(" m · 0°"), "gesnapt op 5 m");
+            Assert.That(preview.Info, Does.StartWith("50").And.Contain(" m · 0° · 0.0 m (0.0 %)"), "gesnapt op 5 m");
             _tool.Apply(preview);
 
             Assert.That(_network.SegmentCount, Is.EqualTo(1));

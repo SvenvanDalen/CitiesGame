@@ -189,6 +189,86 @@ namespace Cities.Tests.EditMode.Network
         }
 
         /// <summary>Een net met één knooppunt en een segment dat naar een tweede, niet bestaand knooppunt wijst.</summary>
+        /// <summary>De eerste autolane van een segment; een FixedList kent geen LINQ, vandaar de lus.</summary>
+        private Lane CarLane(EntityId<SegmentKind> id)
+        {
+            var lanes = _network.GetSegment(id).Lanes;
+            for (var i = 0; i < lanes.Length; i++)
+            {
+                var lane = _network.GetLane(lanes[i]);
+                if ((lane.Spec.Types & LaneTypes.Car) != 0)
+                {
+                    return lane;
+                }
+            }
+
+            throw new InvalidOperationException("Geen autolane.");
+        }
+
+        [Test]
+        public void RetypeKeepsTheIdAndNodesButReplacesTheLanes()
+        {
+            var a = _network.AddNode(float3.zero);
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            var id = Road(a, b);
+            var before = _network.LaneCount;
+
+            _network.Retype(id, LaneProfiles.Road(2, bikeLanes: true, sidewalks: true), 22f);
+
+            var segment = _network.GetSegment(id);
+            Assert.That(segment.Start, Is.EqualTo(a));
+            Assert.That(segment.End, Is.EqualTo(b));
+            Assert.That(segment.SpeedLimit, Is.EqualTo(22f));
+            Assert.That(segment.Lanes.Length, Is.EqualTo(LaneProfiles.Road(2, bikeLanes: true, sidewalks: true).Count));
+            Assert.That(_network.LaneCount, Is.EqualTo(segment.Lanes.Length), "oude lanes zijn vrijgegeven");
+            Assert.That(before, Is.Not.EqualTo(_network.LaneCount));
+        }
+
+        [Test]
+        public void RetypeReconnectsTheJunctionToTheNewLanes()
+        {
+            var (center, arms) = Crossroads();
+            var connections = new List<LaneConnection>();
+            _network.Retype(arms[0], LaneProfiles.Road(2, bikeLanes: false, sidewalks: true), 13.9f);
+
+            _network.GetConnections(_network.GetSegment(arms[1]).Lanes[1], connections);
+
+            Assert.That(connections.Any(c => _network.GetLane(c.To).Segment == arms[0]), "arm 1 sluit aan op het nieuwe profiel van arm 0");
+            Assert.That(connections.All(c => _network.Contains(c.To)));
+            Assert.That(center, Is.EqualTo(_network.GetSegment(arms[0]).Start));
+        }
+
+        [Test]
+        public void ReverseSwapsTheNodesAndKeepsTheLanesInPlace()
+        {
+            var a = _network.AddNode(new float3(0f, 0f, 0f));
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            var id = Road(a, b, LaneProfiles.Road(1, bikeLanes: false, sidewalks: true, oneWay: true));
+            var carLane = CarLane(id);
+            var middle = carLane.Curve.Position(0.5f);
+
+            _network.Reverse(id);
+
+            var segment = _network.GetSegment(id);
+            var reversed = CarLane(id);
+            Assert.That(segment.Start, Is.EqualTo(b));
+            Assert.That(segment.End, Is.EqualTo(a));
+            Assert.That(reversed.Curve.Direction(0.5f).z, Is.EqualTo(-carLane.Curve.Direction(0.5f).z).Within(1e-3f), "het verkeer rijdt de andere kant op");
+            Assert.That(math.distance(reversed.Curve.Position(0.5f), middle), Is.LessThan(1e-3f), "dezelfde plek");
+            Assert.That(_network.GetNode(a).Segments.Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ReverseRefusesATwoWayRoad()
+        {
+            var a = _network.AddNode(float3.zero);
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            var id = Road(a, b);
+
+            Assert.Throws<InvalidOperationException>(() => _network.Reverse(id));
+            Assert.That(_network.IsOneWay(_network.GetSegment(id)), Is.False);
+        }
+
         private sealed class DanglingSegment : ISaveSection
         {
             public string Id => RoadNetworkSection.SectionId;
