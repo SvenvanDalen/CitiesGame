@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7582219052430389409
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4436265788805854666}
+  - component: {fileID: 2613820747725807310}
+  - component: {fileID: 3266478839905939127}
+  m_Layer: 0
+  m_Name: ResidentialHighWalkUp
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4436265788805854666
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7582219052430389409}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &2613820747725807310
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7582219052430389409}
+  m_Mesh: {fileID: 4300000, guid: fbf9d529d16c6d14289ec3219bc98106, type: 2}
+--- !u!23 &3266478839905939127
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7582219052430389409}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 5ee9a9fbc68e2af4aa8fb12d379423d2, type: 2}
+  - {fileID: 2100000, guid: 336a31adab66e2746ad6ab423c1a8d93, type: 2}
+  - {fileID: 2100000, guid: b8a962eb9ed44c5438d5161eba26e714, type: 2}
+  - {fileID: 2100000, guid: 99078914f9979a94884674de9609b4e3, type: 2}
+  - {fileID: 2100000, guid: eb96228331d732f47a08270590b5cc92, type: 2}
+  - {fileID: 2100000, guid: c60bf9a643c7a7a44a2b3e265fb3553e, type: 2}
+  - {fileID: 2100000, guid: c4960d7a1ade12f49966e2a7b00a7a31, type: 2}
+  - {fileID: 2100000, guid: 60164fbbea6e0524ca47bd5297ad08fd, type: 2}
+  - {fileID: 2100000, guid: f36ce325fbb62124bb3e510d58a2d4ee, type: 2}
+  - {fileID: 2100000, guid: 726881fdf9561df46a248ae0b7cc1c44, type: 2}
+  - {fileID: 2100000, guid: 27d13010a2f179948bc2b90ff824069b, type: 2}
+  - {fileID: 2100000, guid: 14ecc52cf057f0346abcb611364caf80, type: 2}
+  - {fileID: 2100000, guid: d5eb4251d2ea0144295875b9375085f4, type: 2}
+  - {fileID: 2100000, guid: 8819b6e1ad57620418f6c6ab5cc9f826, type: 2}
+  - {fileID: 2100000, guid: 2b938f755c77770449ec99fbcaf7253a, type: 2}
+  - {fileID: 2100000, guid: c84826ad14f988645a243771cc95d1e9, type: 2}
+  - {fileID: 2100000, guid: 3c80a3047a2b6654ca9c4a140f4f6e84, type: 2}
+  - {fileID: 2100000, guid: 0c4539361261844439bfaabfeed30dc5, type: 2}
+  - {fileID: 2100000, guid: 90db1dc429b7c3c4bb94e5e575000db2, type: 2}
+  - {fileID: 2100000, guid: 6bd3731824cfdb74285073e2a7a88722, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}

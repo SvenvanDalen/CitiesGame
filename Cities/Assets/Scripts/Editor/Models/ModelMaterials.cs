@@ -10,7 +10,7 @@ namespace Cities.Editor.Models
     /// </summary>
     internal static class ModelMaterials
     {
-        private const int Size = 512;
+        internal const int Size = 512;
 
         /// <summary>Materialen in de volgorde van de submeshes van <see cref="DetachedHouseBuilder"/>.</summary>
         public static Material[] CreateHouseMaterials(string folder)
@@ -40,7 +40,7 @@ namespace Cities.Editor.Models
             };
         }
 
-        private static Material Lit(string folder, string name, Texture2D texture, Color color, float smoothness, float metallic, Vector2 tiling)
+        internal static Material Lit(string folder, string name, Texture2D texture, Color color, float smoothness, float metallic, Vector2 tiling)
         {
             var path = $"{folder}/{name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -60,7 +60,7 @@ namespace Cities.Editor.Models
             return material;
         }
 
-        private static Texture2D SaveTexture(string path, Color[] pixels)
+        internal static Texture2D SaveTexture(string path, Color[] pixels)
         {
             var texture = new Texture2D(Size, Size, TextureFormat.RGBA32, false);
             texture.SetPixels(pixels);
@@ -78,7 +78,7 @@ namespace Cities.Editor.Models
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
-        private static Color[] Bricks(Color brick, Color mortar, int seed)
+        internal static Color[] Bricks(Color brick, Color mortar, int seed)
         {
             const int courses = 16;
             const int perCourse = 4;
@@ -113,7 +113,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Betonnen dakpannen met holle golf, drie op een rij, met schaduw van de pan erboven.</summary>
-        private static Color[] RoofTiles(Color tile, int seed)
+        internal static Color[] RoofTiles(Color tile, int seed)
         {
             const int rows = 3;
             const int perRow = 3;
@@ -137,7 +137,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Betontegels van 30 × 30 cm met smalle voegen.</summary>
-        private static Color[] Paving(Color stone, int seed)
+        internal static Color[] Paving(Color stone, int seed)
         {
             const int tiles = 3;
             var pixels = new Color[Size * Size];
@@ -155,7 +155,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Bladermassa: ruis op twee schalen, met donkere gaten tussen de bladeren.</summary>
-        private static Color[] Foliage(Color leaf, int seed)
+        internal static Color[] Foliage(Color leaf, int seed)
         {
             var pixels = new Color[Size * Size];
             for (var y = 0; y < Size; y++)
@@ -173,15 +173,15 @@ namespace Cities.Editor.Models
             return pixels;
         }
 
-        private static Color Shade(Color color, float factor) =>
+        internal static Color Shade(Color color, float factor) =>
             new Color(Mathf.Clamp01(color.r * factor), Mathf.Clamp01(color.g * factor), Mathf.Clamp01(color.b * factor), 1f);
 
         /// <summary>Vaste tint per steen of tegel: tussen <paramref name="min"/> en <paramref name="min"/> + <paramref name="range"/>.</summary>
-        private static float Variation(int column, int row, int seed, float min, float range) =>
+        internal static float Variation(int column, int row, int seed, float min, float range) =>
             min + ((Noise(column, row, seed + 7919) + 1f) * 0.5f * range);
 
         /// <summary>Vaste ruis tussen -1 en 1 per pixel.</summary>
-        private static float Noise(int x, int y, int seed)
+        internal static float Noise(int x, int y, int seed)
         {
             unchecked
             {

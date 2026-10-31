@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eec402b62e8089458af45d18d2a10be, type: 3}
+  m_Name: OfficeHighBlock
+  m_EditorClassIdentifier: Cities.World::Cities.World.Buildings.BuildingDefinition
+  _id: building.office-high-block
+  _displayName: Kantoorblok
+  _description: Kantoorblok van zeven lagen met doorlopende glasstroken.
+  _icon: {fileID: 0}
+  _spec:
+    FootprintWidth: 4
+    FootprintDepth: 3
+    Zone: 4
+    Density: 1
+    Level: 1
+    Households: 0
+    Workplaces: 380
+    MediumEducationPercent: 35
+    HighEducationPercent: 50
+    ShopCapacity: 0
+    Production: 0
+    ConstructionCost: 0
+    UpkeepPerMonth: 0
+    ConstructionDays: 500
+  _prefab: {fileID: 5822595759601509636, guid: 5f47d58bf73943a45897c0be1bd77a42, type: 3}
