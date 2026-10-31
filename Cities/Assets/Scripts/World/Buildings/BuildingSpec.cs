@@ -92,6 +92,17 @@ namespace Cities.World.Buildings
             SpecValidation.NotNegative(errors, nameof(ConstructionCost), ConstructionCost);
             SpecValidation.NotNegative(errors, nameof(UpkeepPerMonth), UpkeepPerMonth);
 
+            ValidateHousingAndWork(errors);
+            ValidateShopsAndProduction(errors);
+
+            if (IsGrowable && ConstructionCost > 0)
+            {
+                errors.Add("Groeigebouwen kosten de stad niets om te bouwen.");
+            }
+        }
+
+        private void ValidateHousingAndWork(ICollection<string> errors)
+        {
             if (IsGrowable && FootprintDepth > 4)
             {
                 errors.Add("Groeigebouwen zijn hoogstens 4 cellen diep, net als de zones.");
@@ -116,7 +127,10 @@ namespace Cities.World.Buildings
             {
                 errors.Add("Middelbaar en hoger opgeleide banen samen zijn hoogstens 100 procent.");
             }
+        }
 
+        private void ValidateShopsAndProduction(ICollection<string> errors)
+        {
             if (Zone == ZoneType.Commercial && ShopCapacity == 0)
             {
                 errors.Add("Een winkelgebouw heeft winkelcapaciteit.");
@@ -135,11 +149,6 @@ namespace Cities.World.Buildings
             if (Zone != ZoneType.Industrial && Production > 0)
             {
                 errors.Add("Alleen industriegebouwen produceren goederen.");
-            }
-
-            if (IsGrowable && ConstructionCost > 0)
-            {
-                errors.Add("Groeigebouwen kosten de stad niets om te bouwen.");
             }
         }
     }
