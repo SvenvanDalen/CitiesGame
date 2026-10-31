@@ -17,6 +17,8 @@ namespace Cities.Gameplay.Tools
         [SerializeField] private RoadNetworkHostBehaviour _network;
         [SerializeField] private WorldMapHostBehaviour _world;
         [SerializeField] private DefinitionCatalog _catalog;
+        [Tooltip("Optioneel: de geplaatste gebouwen, voor de inspectietool.")]
+        [SerializeField] private PrefabPlacementBehaviour _placement;
         [SerializeField] private string _defaultType = "road.two-lane";
         [SerializeField] private bool _selectOnStart;
 
@@ -25,6 +27,9 @@ namespace Cities.Gameplay.Tools
         public RoadTool Tool { get; private set; }
 
         public DemolishTool Demolish { get; private set; }
+
+        /// <summary>De sim-inspector voor wegen en (met <c>_placement</c>) gebouwen.</summary>
+        public InspectTool Inspect { get; private set; }
 
         /// <summary>De wegtypes uit de catalogus, op ID gesorteerd.</summary>
         public IReadOnlyList<RoadTypeDefinition> Types { get; private set; } = new List<RoadTypeDefinition>();
@@ -35,6 +40,9 @@ namespace Cities.Gameplay.Tools
             var overlay = new RoadPreviewOverlay();
             Tool = new RoadTool(_network.Network, _world.Map, overlay);
             Demolish = new DemolishTool(_network.Network, overlay);
+            Inspect = new InspectTool(
+                new RoadInspection(_network.Network),
+                _placement != null ? new BuildingInspection(_placement.Occupancy, _world.Map.Dimensions) : null);
             _debug.Add(DebugRegistry.Shared.AddOverlay(overlay));
             _tools.Controller.ActiveChanged += OnActiveChanged;
             if (_catalog != null)
