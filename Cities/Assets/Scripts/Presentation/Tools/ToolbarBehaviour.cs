@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Cities.Gameplay.Tools;
+using Cities.Gameplay.Zoning;
 using Cities.Presentation.UI;
+using Cities.World.Grid;
 using Cities.World.Terrain;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -24,6 +26,9 @@ namespace Cities.Presentation.Tools
 
         [Tooltip("Optioneel: voegt de wegtool toe.")]
         [SerializeField] private RoadToolBehaviour _roads;
+
+        [Tooltip("Optioneel: voegt de zonetool toe.")]
+        [SerializeField] private ZoneToolBehaviour _zones;
 
         private readonly List<(CityButton Button, PrefabPlacementBehaviour Placement)> _buttons = new List<(CityButton, PrefabPlacementBehaviour)>();
         private readonly List<BrushButton> _brushButtons = new List<BrushButton>();
@@ -75,6 +80,11 @@ namespace Cities.Presentation.Tools
             if (_roads != null)
             {
                 AddRoads(toolbar);
+            }
+
+            if (_zones != null)
+            {
+                AddZones(toolbar);
             }
 
             _bar.Add(toolbar);
@@ -192,6 +202,29 @@ namespace Cities.Presentation.Tools
                 BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
                 BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)),
                 BrushSlider("Raster (m)", 0f, 32f, road.GridStep, v => road.GridStep = Mathf.Round(v)));
+        }
+
+        private void AddZones(VisualElement toolbar)
+        {
+            var zone = _zones.Tool;
+            AddSeparator(toolbar);
+            AddBrush(toolbar, "Zone kwast", zone, () => zone.Mode = ZoneMode.Brush, () => zone.Mode == ZoneMode.Brush);
+            AddBrush(toolbar, "Zone vlak", zone, () => zone.Mode = ZoneMode.Rectangle, () => zone.Mode == ZoneMode.Rectangle);
+            AddBrush(toolbar, "Zone vullen", zone, () => zone.Mode = ZoneMode.Fill, () => zone.Mode == ZoneMode.Fill);
+            AddBrush(toolbar, "Wonen", zone, () => Zone(zone, ZoneType.Residential), () => !zone.Erase && zone.Type == ZoneType.Residential);
+            AddBrush(toolbar, "Handel", zone, () => Zone(zone, ZoneType.Commercial), () => !zone.Erase && zone.Type == ZoneType.Commercial);
+            AddBrush(toolbar, "Industrie", zone, () => Zone(zone, ZoneType.Industrial), () => !zone.Erase && zone.Type == ZoneType.Industrial);
+            AddBrush(toolbar, "Kantoor", zone, () => Zone(zone, ZoneType.Office), () => !zone.Erase && zone.Type == ZoneType.Office);
+            AddBrush(toolbar, "Laag", zone, () => zone.Density = ZoneDensity.Low, () => zone.Density == ZoneDensity.Low);
+            AddBrush(toolbar, "Hoog", zone, () => zone.Density = ZoneDensity.High, () => zone.Density == ZoneDensity.High);
+            AddBrush(toolbar, "Zone wissen", zone, () => zone.Erase = true, () => zone.Erase);
+            AddSettings(zone, BrushSlider("Kwast (m)", ZoneTool.MinRadius, ZoneTool.MaxRadius, zone.Radius, v => zone.Radius = v));
+        }
+
+        private static void Zone(ZoneTool zone, ZoneType type)
+        {
+            zone.Erase = false;
+            zone.Type = type;
         }
 
         private static void AddSeparator(VisualElement toolbar)

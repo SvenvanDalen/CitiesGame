@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cities.Gameplay.Tools;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
@@ -40,13 +41,21 @@ namespace Cities.Gameplay.Zoning
         }
 
         /// <summary>Zet <paramref name="type"/> op alle toegestane cellen in <paramref name="cells"/> en geeft terug hoeveel cellen veranderden.</summary>
-        public int Paint(RectInt cells, ZoneType type, ZoneDensity density)
+        public int Paint(RectInt cells, ZoneType type, ZoneDensity density) => Paint(Cells(cells), type, density);
+
+        /// <summary>Zet <paramref name="type"/> op alle toegestane cellen in <paramref name="cells"/> en geeft terug hoeveel cellen veranderden.</summary>
+        public int Paint(IEnumerable<CellCoord> cells, ZoneType type, ZoneDensity density)
         {
             var zone = new ZoneCell(type, density);
             var changed = 0;
             var bounds = new RectInt(0, 0, 0, 0);
-            foreach (var cell in Cells(cells))
+            foreach (var cell in cells)
             {
+                if (!_map.Zones.Layout.Contains(cell.X, cell.Z))
+                {
+                    continue;
+                }
+
                 if (_map.Zones.GetForCell(cell) == zone || (type != ZoneType.None && Reason(cell) != null))
                 {
                     continue;
@@ -67,6 +76,9 @@ namespace Cities.Gameplay.Zoning
 
         /// <summary>Wist de zone op alle cellen in <paramref name="cells"/>.</summary>
         public int Clear(RectInt cells) => Paint(cells, ZoneType.None, ZoneDensity.Low);
+
+        /// <summary>Wist de zone op de cellen in <paramref name="cells"/>.</summary>
+        public int Clear(IEnumerable<CellCoord> cells) => Paint(cells, ZoneType.None, ZoneDensity.Low);
 
         /// <summary>Wist de zones in <paramref name="cells"/> die niet meer langs een weg liggen; geeft terug hoeveel.</summary>
         public int Revalidate(RectInt cells)
@@ -106,7 +118,7 @@ namespace Cities.Gameplay.Zoning
             return best;
         }
 
-        private System.Collections.Generic.IEnumerable<CellCoord> Cells(RectInt rect)
+        private IEnumerable<CellCoord> Cells(RectInt rect)
         {
             var layout = _map.Zones.Layout;
             for (var z = Math.Max(rect.yMin, 0); z < Math.Min(rect.yMax, layout.Depth); z++)
