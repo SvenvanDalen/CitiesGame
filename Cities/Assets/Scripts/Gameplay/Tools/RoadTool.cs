@@ -57,6 +57,9 @@ namespace Cities.Gameplay.Tools
         /// <summary>Lengtestap in meters; 0 zet het snappen uit.</summary>
         public float LengthStep { get; set; } = 5f;
 
+        /// <summary>Rasterstap in meters voor het begin-, buig- en eindpunt; 0 zet het uit. Met raster aan vervangt het de hoek- en lengtestap voor het eindpunt.</summary>
+        public float GridStep { get; set; }
+
         /// <summary>De lanes van nieuwe wegen; <see cref="Use"/> zet ze volgens een wegtype.</summary>
         public IReadOnlyList<LaneSpec> Profile { get; set; } = LaneProfiles.Road(1, bikeLanes: false, sidewalks: true);
 
@@ -94,7 +97,7 @@ namespace Cities.Gameplay.Tools
 
             var ground = input.Pick.Ground.Point;
             var node = FindNode(ground);
-            var point = node.HasValue ? _network.GetNode(node.Value).Position : ground;
+            var point = node.HasValue ? _network.GetNode(node.Value).Position : RoadPlanner.SnapToGrid(ground, GridStep);
             _plan = new Plan(point, node, default);
             if (_stage == Stage.Idle)
             {
@@ -106,7 +109,7 @@ namespace Cities.Gameplay.Tools
                 return Guide(point, ground);
             }
 
-            var end = node.HasValue ? point : RoadPlanner.Snap(_start, point, AngleStep, LengthStep, _referenceYaw);
+            var end = node.HasValue || GridStep > 0f ? point : RoadPlanner.Snap(_start, point, AngleStep, LengthStep, _referenceYaw);
             var curve = _stage == Stage.Bent ? RoadPlanner.Quadratic(_start, _control, end) : Bezier3.Straight(_start, end);
             _plan = new Plan(end, node, curve);
             return Segment(curve, node, ground);
@@ -189,8 +192,7 @@ namespace Cities.Gameplay.Tools
         {
             var reason = RoadPlanner.Check(curve) ?? OutsideReason(curve.P3) ?? OutsideReason(ground) ?? EndReason(node);
             _overlay.ShowCurve(curve, reason == null);
-            var heading = RoadPlanner.Yaw(curve.Direction(1f));
-            return new ToolPreview(curve.P3, 0f, float2.zero, reason, $"{curve.Length():0.0} m · {heading:0}°", (long)math.round(curve.Length() * CostPerMeter));
+            return new ToolPreview(curve.P3, 0f, float2.zero, reason, RoadPlanner.Describe(curve), (long)math.round(curve.Length() * CostPerMeter));
         }
 
         private string EndReason(EntityId<NodeKind>? node)
