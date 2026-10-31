@@ -31,7 +31,6 @@ namespace Cities.Presentation.Water
 
         private WorldMap _map;
         private int _blocksX;
-        private int _blocksZ;
         private int _next;
         private MeshRenderer[] _renderers;
         private Mesh[] _meshes;
@@ -45,9 +44,9 @@ namespace Cities.Presentation.Water
         {
             _map = _world.Map;
             _blocksX = _map.Dimensions.CellsX / WaterMeshBuilder.BlockCells;
-            _blocksZ = _map.Dimensions.CellsZ / WaterMeshBuilder.BlockCells;
-            _renderers = new MeshRenderer[_blocksX * _blocksZ];
-            _meshes = new Mesh[_blocksX * _blocksZ];
+            var blocks = _blocksX * (_map.Dimensions.CellsZ / WaterMeshBuilder.BlockCells);
+            _renderers = new MeshRenderer[blocks];
+            _meshes = new Mesh[blocks];
             _vertexBuffer = new NativeArray<WaterVertex>(_builder.Vertices.Length, Allocator.Persistent);
             _indexBuffer = new NativeArray<ushort>(WaterMeshBuilder.BlockCells * WaterMeshBuilder.BlockCells * 6, Allocator.Persistent);
         }

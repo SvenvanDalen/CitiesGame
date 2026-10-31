@@ -53,7 +53,6 @@ namespace Cities.World.Water
 
         private readonly WaterVertex[] _vertices = new WaterVertex[Side * Side];
         private readonly ushort[] _indices = new ushort[BlockCells * BlockCells * 6];
-        private readonly bool[] _used = new bool[Side * Side];
 
         public ReadOnlySpan<WaterVertex> Vertices => _vertices.AsSpan(0, Side * Side);
 
