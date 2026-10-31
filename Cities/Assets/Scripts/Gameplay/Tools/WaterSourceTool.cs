@@ -68,9 +68,10 @@ namespace Cities.Gameplay.Tools
             }
 
             var existing = _sources.Nearest(point.x, point.z, PickRadius);
+            var kind = Drain ? "Afvoer" : "Bron";
             var info = existing.HasValue
                 ? $"{Describe(existing.Value)} · klik om weg te halen"
-                : $"{(Drain ? "Afvoer" : "Bron")} van {_discharge:0} m³/s · klik om te plaatsen";
+                : $"{kind} van {_discharge:0} m³/s · klik om te plaatsen";
             return new ToolPreview(point, 0f, float2.zero, null, info);
         }
 
