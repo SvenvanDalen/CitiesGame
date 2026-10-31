@@ -57,3 +57,4 @@ Cities/Assets/Scripts/Gameplay/Zoning/ZoneService.cs
 Cities/Assets/Scripts/Gameplay/Zoning/ZoneTool.cs
 Cities/Assets/Scripts/Gameplay/Zoning/ZonePreviewOverlay.cs
 Cities/Assets/Scripts/Gameplay/Zoning/ZoneToolBehaviour.cs
+Cities/Assets/Scripts/Gameplay/Zoning/BuildingSpawner.cs

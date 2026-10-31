@@ -314,6 +314,7 @@ GameObject:
   - component: {fileID: 134375088}
   - component: {fileID: 134375087}
   - component: {fileID: 134375089}
+  - component: {fileID: 134375090}
   m_Layer: 0
   m_Name: Road tool
   m_TagString: Untagged
@@ -370,6 +371,28 @@ MonoBehaviour:
   _tools: {fileID: 1121422579}
   _network: {fileID: 553460543}
   _world: {fileID: 114535556}
+--- !u!114 &134375090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134375086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a632b8262a3e6a94b8aae2ed20232c90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Gameplay::Cities.Gameplay.Zoning.BuildingSpawnerBehaviour
+  _simulation: {fileID: 688566024}
+  _world: {fileID: 114535556}
+  _zones: {fileID: 134375089}
+  _placement: {fileID: 542177699}
+  _catalog: {fileID: 11400000, guid: f484b620dce60a84386ddf375fff4053, type: 2}
+  _attemptsPerTick: 4
+  _seed: 1
+  _residentialDemand: 0.5
+  _commercialDemand: 0.5
+  _workDemand: 0.5
 --- !u!1 &268577728
 GameObject:
   m_ObjectHideFlags: 0

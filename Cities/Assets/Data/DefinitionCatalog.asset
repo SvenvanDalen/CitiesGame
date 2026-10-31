@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DefinitionCatalog
   m_EditorClassIdentifier: Cities.Core::Cities.Core.Configuration.DefinitionCatalog
   _definitions:
+  - {fileID: 11400000, guid: 4b7927a40acd7864d87ca3063ba3515d, type: 2}
   - {fileID: 11400000, guid: 0ad062a5a2ee72e4984fab165baeadd7, type: 2}
   - {fileID: 11400000, guid: 352da60cced5ed64692a5a50867f77ac, type: 2}
   - {fileID: 11400000, guid: 0464b26afa6a780408e3dde81be7e6d4, type: 2}
