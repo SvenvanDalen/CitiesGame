@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eec402b62e8089458af45d18d2a10be, type: 3}
+  m_Name: CommercialLowShopHouse
+  m_EditorClassIdentifier: Cities.World::Cities.World.Buildings.BuildingDefinition
+  _id: building.commercial-low-shop-house
+  _displayName: Winkelpand
+  _description: Winkel op de begane grond met een kantoor- of opslagverdieping erboven.
+  _icon: {fileID: 0}
+  _spec:
+    FootprintWidth: 2
+    FootprintDepth: 2
+    Zone: 2
+    Density: 0
+    Level: 1
+    Households: 0
+    Workplaces: 10
+    MediumEducationPercent: 25
+    HighEducationPercent: 5
+    ShopCapacity: 6000
+    Production: 0
+    ConstructionCost: 0
+    UpkeepPerMonth: 0
+    ConstructionDays: 100
+  _prefab: {fileID: 4644787566373518615, guid: 6812dfb2824a9f24f8ad0951e02f16af, type: 3}

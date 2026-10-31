@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eec402b62e8089458af45d18d2a10be, type: 3}
+  m_Name: ResidentialHighTower
+  m_EditorClassIdentifier: Cities.World::Cities.World.Buildings.BuildingDefinition
+  _id: building.residential-high-tower
+  _displayName: Woontoren
+  _description: Woontoren van tien lagen met betonpanelen en balkons.
+  _icon: {fileID: 0}
+  _spec:
+    FootprintWidth: 3
+    FootprintDepth: 3
+    Zone: 1
+    Density: 1
+    Level: 1
+    Households: 80
+    Workplaces: 0
+    MediumEducationPercent: 0
+    HighEducationPercent: 0
+    ShopCapacity: 0
+    Production: 0
+    ConstructionCost: 0
+    UpkeepPerMonth: 0
+    ConstructionDays: 360
+  _prefab: {fileID: 351436524385166420, guid: 747fe557bdd8ff94b97279fb491c658f, type: 3}

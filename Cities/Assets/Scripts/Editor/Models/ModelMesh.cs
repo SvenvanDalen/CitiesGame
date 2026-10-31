@@ -79,6 +79,27 @@ namespace Cities.Editor.Models
             });
         }
 
+        /// <summary>Staande cilinder (silo, schoorsteen, tank) als veelhoek met <paramref name="segments"/> zijden en een deksel.</summary>
+        public void Cylinder(int submesh, Vector3 baseCentre, float radius, float height, int segments = 16)
+        {
+            var top = baseCentre + (Vector3.up * height);
+            for (var i = 0; i < segments; i++)
+            {
+                var a = Ring(baseCentre, radius, i, segments);
+                var b = Ring(baseCentre, radius, i + 1, segments);
+                var outward = (a + b) * 0.5f - baseCentre;
+                outward.y = 0f;
+                Quad(submesh, a, b, b + (Vector3.up * height), a + (Vector3.up * height), outward);
+                Triangle(submesh, top, Ring(top, radius, i, segments), Ring(top, radius, i + 1, segments), Vector3.up);
+            }
+        }
+
+        private static Vector3 Ring(Vector3 centre, float radius, int index, int segments)
+        {
+            var angle = index * Mathf.PI * 2f / segments;
+            return centre + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+        }
+
         /// <summary>
         /// Slaat <paramref name="mesh"/> op als asset, of vult de bestaande asset op <paramref name="path"/> via de
         /// Mesh-API, zodat verwijzingen blijven kloppen. Niet met CopySerialized: dan tekent de GPU tot een herstart de oude vorm.

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Gameplay.Tools;
 using Cities.Gameplay.Zoning;
 using Cities.Simulation.Network;
@@ -42,8 +43,10 @@ namespace Cities.Tests.EditMode.Zoning
             Set("_prefab", _prefab);
         }
 
-        private void Set(string field, object value) =>
-            typeof(BuildingDefinition).GetField(field, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(_house, value);
+        private void Set(string field, object value) => Set(_house, field, value);
+
+        private static void Set(BuildingDefinition target, string field, object value) =>
+            typeof(BuildingDefinition).GetField(field, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(target, value);
 
         [TearDown]
         public void TearDown()
@@ -107,6 +110,46 @@ namespace Cities.Tests.EditMode.Zoning
             Assert.That(before, Is.GreaterThan(0));
             Assert.That(spawner.ZonedCells, Is.Zero);
             Assert.That(spawner.Grow(50), Is.Zero);
+        }
+
+        [Test]
+        public void SeveralVariantsAllGrowAndTheSeedRepeatsTheChoice()
+        {
+            var variants = new List<BuildingDefinition> { _house, Variant(2, 3), Variant(3, 2) };
+            _zones.Paint(new RectInt(17, 10, 4, 12), ZoneType.Residential, ZoneDensity.Low);
+
+            var first = Pick(variants);
+            var second = Pick(variants);
+
+            Assert.That(first.Distinct().Count(), Is.EqualTo(3), "alle drie de varianten komen voor");
+            Assert.That(second, Is.EqualTo(first), "dezelfde seed geeft dezelfde keuzes");
+            foreach (var extra in variants.Skip(1))
+            {
+                Object.DestroyImmediate(extra);
+            }
+        }
+
+        private BuildingDefinition Variant(int width, int depth)
+        {
+            var definition = ScriptableObject.CreateInstance<BuildingDefinition>();
+            Set(definition, "_spec", new BuildingSpec { FootprintWidth = width, FootprintDepth = depth, Zone = ZoneType.Residential, Density = ZoneDensity.Low, Level = 1, Households = 1 });
+            Set(definition, "_prefab", _prefab);
+            return definition;
+        }
+
+        private List<(int, int)> Pick(IEnumerable<BuildingDefinition> variants)
+        {
+            _placed.Clear();
+            _occupancy.Clear();
+            var sizes = new List<(int, int)>();
+            var spawner = new BuildingSpawner(_map, _zones, _occupancy, variants, _ => 1f, (definition, footprint, position) =>
+            {
+                _occupancy.Add(footprint);
+                sizes.Add((definition.Spec.FootprintWidth, definition.Spec.FootprintDepth));
+            }, seed: 11);
+            spawner.Grow(300);
+            spawner.Detach();
+            return sizes;
         }
 
         private BuildingSpawner Create(System.Func<ZoneType, float> demand) =>
