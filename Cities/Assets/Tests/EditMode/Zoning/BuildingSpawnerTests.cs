@@ -64,12 +64,12 @@ namespace Cities.Tests.EditMode.Zoning
 
             Assert.That(grown, Is.GreaterThan(3));
             Assert.That(_placed, Has.Count.EqualTo(grown));
-            foreach (var (footprint, _) in _placed)
+            for (var i = 0; i < _placed.Count; i++)
             {
-                Assert.That(footprint.QuarterTurns, Is.EqualTo(1), "de weg ligt ten westen: de voorkant wijst naar -X");
-                foreach (var other in _placed)
+                Assert.That(_placed[i].Footprint.QuarterTurns, Is.EqualTo(1), "de weg ligt ten westen: de voorkant wijst naar -X");
+                for (var j = i + 1; j < _placed.Count; j++)
                 {
-                    Assert.That(ReferenceEquals(other.Footprint, footprint) || other.Footprint == footprint || !other.Footprint.Overlaps(footprint), Is.True);
+                    Assert.That(_placed[i].Footprint.Overlaps(_placed[j].Footprint), Is.False, $"{i} en {j}");
                 }
             }
 

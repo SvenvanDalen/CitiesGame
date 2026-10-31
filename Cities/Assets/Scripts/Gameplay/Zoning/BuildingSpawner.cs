@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Cities.Core.Randomness;
 using Cities.Gameplay.Tools;
 using Cities.World.Buildings;
 using Cities.World.Grid;
@@ -17,14 +19,16 @@ namespace Cities.Gameplay.Zoning
     {
         public const int GrowLevel = 1;
 
+        /// <summary>Grootste hoogteverschil binnen een kavel in meters.</summary>
+        public const float MaxRise = 1.5f;
+
         private readonly WorldMap _map;
         private readonly ZoneService _zones;
         private readonly FootprintOccupancy _occupancy;
         private readonly List<BuildingDefinition> _definitions;
         private readonly Func<ZoneType, float> _demand;
         private readonly Action<BuildingDefinition, Footprint, float3> _place;
-        private readonly System.Random _random;
-        private readonly float _maxRise;
+        private DeterministicRandom _random;
         private readonly List<CellCoord> _cells = new List<CellCoord>();
         private readonly Dictionary<CellCoord, int> _index = new Dictionary<CellCoord, int>();
         private readonly float2[] _samples = new float2[5];
@@ -32,7 +36,6 @@ namespace Cities.Gameplay.Zoning
         /// <param name="definitions">Alle gebouwtypes; alleen groeigebouwen met een model doen mee.</param>
         /// <param name="demand">De vraag van -1 tot 1 per zonetype; alleen een positieve vraag laat een gebouw groeien.</param>
         /// <param name="place">Zet het gebouw neer: neemt de kavel in beslag en maakt het model; de spawner doet dat zelf niet.</param>
-        /// <param name="maxRise">Grootste hoogteverschil binnen de kavel in meters.</param>
         public BuildingSpawner(
             WorldMap map,
             ZoneService zones,
@@ -40,16 +43,14 @@ namespace Cities.Gameplay.Zoning
             IEnumerable<BuildingDefinition> definitions,
             Func<ZoneType, float> demand,
             Action<BuildingDefinition, Footprint, float3> place,
-            int seed,
-            float maxRise = 1.5f)
+            ulong seed)
         {
             _map = map ?? throw new ArgumentNullException(nameof(map));
             _zones = zones ?? throw new ArgumentNullException(nameof(zones));
             _occupancy = occupancy ?? throw new ArgumentNullException(nameof(occupancy));
             _demand = demand ?? throw new ArgumentNullException(nameof(demand));
             _place = place ?? throw new ArgumentNullException(nameof(place));
-            _random = new System.Random(seed);
-            _maxRise = maxRise;
+            _random = new DeterministicRandom(seed);
             _definitions = new List<BuildingDefinition>();
             foreach (var definition in definitions ?? throw new ArgumentNullException(nameof(definitions)))
             {
@@ -74,7 +75,7 @@ namespace Cities.Gameplay.Zoning
             var grown = 0;
             for (var i = 0; i < attempts && _cells.Count > 0; i++)
             {
-                if (TryGrow(_cells[_random.Next(_cells.Count)]))
+                if (TryGrow(_cells[_random.NextInt(0, _cells.Count)]))
                 {
                     grown++;
                 }
@@ -109,7 +110,7 @@ namespace Cities.Gameplay.Zoning
                 }
 
                 var candidates = BuildingPlacement.Candidates(anchor, spec.FootprintWidth, spec.FootprintDepth, turns);
-                var start = _random.Next(candidates.Count);
+                var start = _random.NextInt(0, candidates.Count);
                 for (var i = 0; i < candidates.Count; i++)
                 {
                     var footprint = candidates[(start + i) % candidates.Count];
@@ -142,12 +143,9 @@ namespace Cities.Gameplay.Zoning
                 return false;
             }
 
-            foreach (var cell in BuildingPlacement.Cells(footprint))
+            if (BuildingPlacement.Cells(footprint).Any(cell => _map.Zones.GetForCell(cell) != zone || _zones.Reason(cell) != null))
             {
-                if (_map.Zones.GetForCell(cell) != zone || _zones.Reason(cell) != null)
-                {
-                    return false;
-                }
+                return false;
             }
 
             var min = _map.Dimensions.CellMin(footprint.Origin);
@@ -168,7 +166,7 @@ namespace Cities.Gameplay.Zoning
             }
 
             baseHeight = low;
-            return high - low <= _maxRise;
+            return high - low <= MaxRise;
         }
 
         private void ScanAll()
