@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Cities.World.Grid;
 using Unity.Mathematics;
 using UnityEngine;
@@ -20,20 +21,17 @@ namespace Cities.Gameplay.Tools
         public bool TryInspect(float3 point, out InspectionReport report)
         {
             var cell = _world.WorldToCell(new Vector2(point.x, point.z));
-            foreach (var footprint in _occupancy.Placed)
+            foreach (var footprint in _occupancy.Placed.Where(f => f.Contains(cell)))
             {
-                if (footprint.Contains(cell))
-                {
-                    var center = footprint.Center(_world);
-                    var size = _world.CellSize;
-                    report = new InspectionReport(
-                        new float3(center.x, point.y, center.y),
-                        "Gebouw",
-                        $"{footprint.SizeX * size:0} × {footprint.SizeZ * size:0} m",
-                        $"{footprint.SizeX * footprint.SizeZ} cellen",
-                        $"gedraaid {footprint.YawDegrees:0}°");
-                    return true;
-                }
+                var center = footprint.Center(_world);
+                var size = _world.CellSize;
+                report = new InspectionReport(
+                    new float3(center.x, point.y, center.y),
+                    "Gebouw",
+                    $"{footprint.SizeX * size:0} × {footprint.SizeZ * size:0} m",
+                    $"{footprint.SizeX * footprint.SizeZ} cellen",
+                    $"gedraaid {footprint.YawDegrees:0}°");
+                return true;
             }
 
             report = default;
