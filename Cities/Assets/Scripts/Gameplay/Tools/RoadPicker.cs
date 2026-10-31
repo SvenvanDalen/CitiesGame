@@ -64,7 +64,7 @@ namespace Cities.Gameplay.Tools
             foreach (var id in _network.Segments())
             {
                 var road = _network.GetSegment(id);
-                var distance = RoadPlanner.DistanceTo(road.Curve, point) - HalfWidth(road);
+                var distance = RoadPlanner.DistanceTo(road.Curve, point) - HalfWidth(_network, road);
                 if (distance < SegmentSlack && distance < best)
                 {
                     segment = id;
@@ -75,12 +75,13 @@ namespace Cities.Gameplay.Tools
             return new RoadTarget(null, segment);
         }
 
-        private float HalfWidth(RoadSegment road)
+        /// <summary>Halve breedte van het wegdek van een segment, uit zijn lanes.</summary>
+        public static float HalfWidth(RoadNetwork network, RoadSegment road)
         {
             var specs = new List<LaneSpec>();
             foreach (var lane in road.Lanes)
             {
-                specs.Add(_network.GetLane(lane).Spec);
+                specs.Add(network.GetLane(lane).Spec);
             }
 
             return RoadTerrainShaper.HalfWidth(specs);
