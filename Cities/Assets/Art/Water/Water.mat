@@ -32,10 +32,12 @@ Material:
     - _FlowSpeed: 2.5
     - _FoamDepth: 0.35
     - _MinAlpha: 0.55
+    - _Refraction: 0.06
     - _Smoothness: 0.92
     - _WaveScale: 6
     - _WaveStrength: 0.7
     m_Colors:
+    - _Absorption: {r: 0.45, g: 0.11999995, b: 0.06999998, a: 1}
     - _DeepColor: {r: 0.02, g: 0.11999995, b: 0.19999996, a: 1}
     - _FoamColor: {r: 0.92, g: 0.96, b: 0.97999996, a: 1}
     - _ShallowColor: {r: 0.21999997, g: 0.52, b: 0.54999995, a: 1}
