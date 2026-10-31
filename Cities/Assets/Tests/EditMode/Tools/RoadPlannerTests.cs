@@ -117,6 +117,16 @@ namespace Cities.Tests.EditMode.Tools
             Assert.That(RoadPlanner.Describe(down), Does.Contain("90°").And.Contain("-5.0 m"));
         }
 
+        [Test]
+        public void NearestTFindsWhereOnTheCurveAPointIs()
+        {
+            var straight = Bezier3.Straight(new float3(0f, 0f, 0f), new float3(100f, 0f, 0f));
+
+            Assert.That(RoadPlanner.NearestT(straight, new float3(25f, 0f, 9f)), Is.EqualTo(0.25f).Within(0.01f));
+            Assert.That(RoadPlanner.NearestT(straight, new float3(-30f, 0f, 0f)), Is.EqualTo(0f).Within(1e-4f), "voor het begin");
+            Assert.That(RoadPlanner.NearestT(straight, new float3(300f, 0f, 0f)), Is.EqualTo(1f).Within(1e-4f), "voorbij het eind");
+        }
+
         private sealed class Float3Comparer : System.Collections.Generic.IEqualityComparer<float3>
         {
             public bool Equals(float3 x, float3 y) => math.distance(x, y) < 1e-3f;
