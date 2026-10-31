@@ -336,6 +336,7 @@ MonoBehaviour:
   _network: {fileID: 553460543}
   _world: {fileID: 114535556}
   _catalog: {fileID: 11400000, guid: f484b620dce60a84386ddf375fff4053, type: 2}
+  _placement: {fileID: 542177699}
   _defaultType: road.two-lane
   _selectOnStart: 0
 --- !u!4 &134375088
