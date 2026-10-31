@@ -24,6 +24,9 @@ namespace Cities.Gameplay.Tools
         [Tooltip("Optioneel: de kaart waarop de grond bebouwd wordt en de bomen gekapt.")]
         [SerializeField] private WorldMapHostBehaviour _world;
 
+        [Tooltip("Optioneel: laat het object met zijn voorkant naar de dichtstbijzijnde weg wijzen en weigert plaatsen op de weg.")]
+        [SerializeField] private Zoning.ZoneToolBehaviour _roads;
+
         private readonly FootprintOccupancy _occupancy = new FootprintOccupancy();
 
         public PlacementTool Tool { get; private set; }
@@ -52,6 +55,11 @@ namespace Cities.Gameplay.Tools
 
         private void Start()
         {
+            if (_roads != null)
+            {
+                Tool.Roads = _roads.Service;
+            }
+
             if (_selectOnStart)
             {
                 _tools.Controller.Select(Tool);

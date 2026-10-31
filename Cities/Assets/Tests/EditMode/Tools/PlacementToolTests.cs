@@ -35,6 +35,27 @@ namespace Cities.Tests.EditMode.Tools
             public float SurfaceHeight(float2 position) => 10f + (position.x * _rise);
         }
 
+        /// <summary>Een rechte weg langs een vaste X: wat op die kolom cellen ligt is "op de weg".</summary>
+        private sealed class RoadAtX : IRoadSnap
+        {
+            private readonly float _x;
+            private readonly int _roadCell;
+
+            public RoadAtX(float x, int roadCell)
+            {
+                _x = x;
+                _roadCell = roadCell;
+            }
+
+            public bool TryNearestRoad(float3 point, out float3 roadPoint)
+            {
+                roadPoint = new float3(_x, 0f, point.z);
+                return true;
+            }
+
+            public bool IsOnRoad(CellCoord cell) => cell.X == _roadCell;
+        }
+
         private static readonly WorldDimensions Dimensions = new WorldDimensions(1, 1, 64, 8f);
 
         private static ToolInput At(float x, float z, int rotate = 0, float y = 0f) =>
@@ -155,6 +176,40 @@ namespace Cities.Tests.EditMode.Tools
 
             Assert.That(occupancy.Placed, Is.Empty);
             Assert.That(occupancy.Check(new Footprint(default, 1, 1, 0)), Is.Null);
+        }
+
+        [Test]
+        public void TheFrontTurnsTowardANearbyRoadAndTheRotationAddsToIt()
+        {
+            // Weg 16 m ten westen van het midden: de voorkant (lokaal -Z) draait een kwartslag naar het westen.
+            var tool = Tool(new Target());
+            tool.Roads = new RoadAtX(17f, -1);
+            tool.Activate();
+
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).YawDegrees, Is.EqualTo(90f));
+            Assert.That(tool.UpdatePreview(At(33f, 30f, rotate: 1)).YawDegrees, Is.EqualTo(180f));
+            Assert.That(tool.QuarterTurns, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ARoadOutOfReachLeavesTheRotationAlone()
+        {
+            var tool = Tool(new Target());
+            tool.Roads = new RoadAtX(33f - (PlacementTool.RoadSnapCells * 8f) - 1f, -1);
+            tool.Activate();
+
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).YawDegrees, Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void PlacingOnTheRoadIsRefused()
+        {
+            var tool = Tool(new Target());
+            tool.Roads = new RoadAtX(60f, 4);
+            tool.Activate();
+
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).InvalidReason, Is.EqualTo(PlacementTool.OnRoad));
+            Assert.That(tool.UpdatePreview(At(96f, 30f)).IsValid, Is.True);
         }
     }
 }

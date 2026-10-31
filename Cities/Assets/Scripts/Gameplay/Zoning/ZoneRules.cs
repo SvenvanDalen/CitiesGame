@@ -7,6 +7,12 @@ namespace Cities.Gameplay.Zoning
         public const int MaxDepthCells = 4;
 
         /// <summary>
+        /// Of een cel op of te dicht bij het wegdek ligt. Een kleine marge: een rij die precies langs de weg ligt heeft zijn
+        /// midden een halve cel van de rand.
+        /// </summary>
+        public static bool OnRoad(float edgeDistance, float cellSize) => edgeDistance < (cellSize * 0.5f) - 0.01f;
+
+        /// <summary>
         /// Waarom een cel niet gezoned mag worden, of <c>null</c>. <paramref name="edgeDistance"/> is de afstand in meters van
         /// het midden van de cel tot de rand van het dichtstbijzijnde wegdek (negatief als het midden op het wegdek ligt);
         /// <see cref="float.PositiveInfinity"/> zonder weg.
@@ -18,8 +24,7 @@ namespace Cities.Gameplay.Zoning
                 return "Onder water";
             }
 
-            // Een kleine marge: een rij die precies langs de weg ligt heeft zijn midden een halve cel van de rand.
-            if (edgeDistance < (cellSize * 0.5f) - 0.01f)
+            if (OnRoad(edgeDistance, cellSize))
             {
                 return "Op of te dicht bij de weg";
             }

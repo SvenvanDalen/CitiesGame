@@ -13,7 +13,7 @@ namespace Cities.Gameplay.Zoning
     /// <see cref="ZoneRules.MaxDepthCells"/> cellen diep. Zones blijven staan als de weg verdwijnt; <see cref="Revalidate"/>
     /// ruimt ze dan op voor een gebied (de gebouwspawner van E05-04 controleert de toegang zelf ook).
     /// </summary>
-    public sealed class ZoneService
+    public sealed class ZoneService : IRoadSnap
     {
         private readonly WorldMap _map;
         private readonly RoadNetwork _network;
@@ -38,6 +38,12 @@ namespace Cities.Gameplay.Zoning
             var size = _map.Dimensions.CellSize;
             var centre = new float3((cell.X + 0.5f) * size, 0f, (cell.Z + 0.5f) * size);
             return ZoneRules.Reason(EdgeDistance(centre), size, _map.IsUnderwater(cell));
+        }
+
+        public bool IsOnRoad(CellCoord cell)
+        {
+            var size = _map.Dimensions.CellSize;
+            return ZoneRules.OnRoad(EdgeDistance(new float3((cell.X + 0.5f) * size, 0f, (cell.Z + 0.5f) * size)), size);
         }
 
         /// <summary>Zet <paramref name="type"/> op alle toegestane cellen in <paramref name="cells"/> en geeft terug hoeveel cellen veranderden.</summary>
