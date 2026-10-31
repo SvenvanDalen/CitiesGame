@@ -11,7 +11,7 @@ namespace Cities.Tests.EditMode.Utilities
         public void EnoughSupplyKeepsEveryDistrictLit()
         {
             Assert.That(PowerShortage.Shed(100f, Districts, 0), Is.Empty);
-            Assert.That(PowerShortage.Shed(0f, new float[0], 0), Is.Empty);
+            Assert.That(PowerShortage.Shed(0f, System.Array.Empty<float>(), 0), Is.Empty);
         }
 
         [Test]
