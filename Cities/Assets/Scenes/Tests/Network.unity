@@ -313,6 +313,7 @@ GameObject:
   m_Component:
   - component: {fileID: 134375088}
   - component: {fileID: 134375087}
+  - component: {fileID: 134375089}
   m_Layer: 0
   m_Name: Road tool
   m_TagString: Untagged
@@ -354,6 +355,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &134375089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134375086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ef1ac410df5dd4f89758c9ced59749, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Gameplay::Cities.Gameplay.Zoning.ZoneToolBehaviour
+  _tools: {fileID: 1121422579}
+  _network: {fileID: 553460543}
+  _world: {fileID: 114535556}
 --- !u!1 &268577728
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,6 +428,7 @@ MonoBehaviour:
   - {fileID: 542177699}
   _brushes: {fileID: 1121422580}
   _roads: {fileID: 134375087}
+  _zones: {fileID: 134375089}
 --- !u!4 &268577731
 Transform:
   m_ObjectHideFlags: 0
