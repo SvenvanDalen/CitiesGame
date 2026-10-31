@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Cities.World::Cities.World.Utilities.PowerPlantDefinition
   _id: power-plant.coal
   _displayName: Kolencentrale
-  _description: Grote kolencentrale met ketelhuis, machinehal, twee koeltorens en een schoorsteen.
+  _description: Grote kolencentrale met ketelhuis, machinehal, twee koeltorens en
+    een schoorsteen.
   _icon: {fileID: 0}
   _spec:
     Source: 0
@@ -27,4 +28,4 @@ MonoBehaviour:
     AirPollution: 80
     Noise: 60
     ConstructionDays: 720
-  _prefab: {fileID: 0}
+  _prefab: {fileID: 270012671117316622, guid: 380d4a8148a52d348ad19839d8fda87a, type: 3}
