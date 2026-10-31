@@ -937,6 +937,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Cities.Gameplay::Cities.Gameplay.Tools.TerraformToolBehaviour
   _tools: {fileID: 1121422579}
   _world: {fileID: 114535556}
+  _water: {fileID: 1965722476}
   _selectOnStart: 1
 --- !u!4 &1121422581
 Transform:
@@ -1320,6 +1321,71 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1965722474
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1965722477}
+  - component: {fileID: 1965722476}
+  - component: {fileID: 1965722475}
+  m_Layer: 0
+  m_Name: Water
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1965722475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965722474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0b2052a5a1c94409a297e6746b45d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Presentation::Cities.Presentation.Water.WaterRendererBehaviour
+  _world: {fileID: 114535556}
+  _material: {fileID: 2100000, guid: c537cffdd3e77744381720a3b7e95585, type: 2}
+  _blocksPerFrame: 96
+--- !u!114 &1965722476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965722474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cfda55bb3d20cf40a96b4c489075a4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.World::Cities.World.Water.WaterHostBehaviour
+  _simulationHost: {fileID: 688566024}
+  _world: {fileID: 114535556}
+  _sea: 1
+  _seaLevel: 0
+  _riverDischarge: 40
+--- !u!4 &1965722477
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965722474}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2121835949
 GameObject:
   m_ObjectHideFlags: 0
@@ -1392,3 +1458,4 @@ SceneRoots:
   - {fileID: 553460544}
   - {fileID: 134375088}
   - {fileID: 1502679788}
+  - {fileID: 1965722477}
