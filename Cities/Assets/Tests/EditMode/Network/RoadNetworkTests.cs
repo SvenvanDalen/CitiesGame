@@ -269,6 +269,95 @@ namespace Cities.Tests.EditMode.Network
             Assert.That(_network.IsOneWay(_network.GetSegment(id)), Is.False);
         }
 
+        [Test]
+        public void SplitMakesTwoSegmentsWithANodeInTheMiddle()
+        {
+            var a = _network.AddNode(float3.zero);
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            var id = Road(a, b);
+
+            var middle = _network.Split(id, 0.4f);
+
+            Assert.That(_network.SegmentCount, Is.EqualTo(2));
+            Assert.That(_network.NodeCount, Is.EqualTo(3));
+            Assert.That(_network.GetNode(middle).Segments.Length, Is.EqualTo(2));
+            Assert.That(_network.GetNode(middle).Position.z, Is.EqualTo(40f).Within(1e-2f));
+            Assert.That(_network.GetSegment(id).End, Is.EqualTo(middle), "het eerste deel houdt de ID");
+            Assert.That(_network.GetNode(b).Segments.Length, Is.EqualTo(1));
+            Assert.That(_network.GetSegment(id).Length, Is.EqualTo(40f).Within(1e-2f));
+            Assert.That(_network.LaneCount, Is.EqualTo(8), "elk deel krijgt zijn eigen lanes");
+            Assert.Throws<ArgumentOutOfRangeException>(() => _network.Split(id, 1f));
+        }
+
+        [Test]
+        public void SplitConnectsTheLanesAcrossTheNewNode()
+        {
+            var a = _network.AddNode(float3.zero);
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            var middle = _network.Split(Road(a, b), 0.5f);
+            var connections = new List<LaneConnection>();
+
+            var first = _network.GetSegment(_network.GetNode(middle).Segments[0]);
+            _network.GetConnections(first.Lanes[0], connections);
+
+            Assert.That(connections.Select(c => c.Turn), Is.EquivalentTo(new[] { Turn.Straight }), "rechtdoor over het nieuwe knooppunt");
+        }
+
+        [Test]
+        public void MergeUndoesASplitAndKeepsTheShape()
+        {
+            var a = _network.AddNode(float3.zero);
+            var b = _network.AddNode(new float3(30f, 0f, 100f));
+            var id = _network.AddSegment(a, b, Bezier3.FromTangents(float3.zero, new float3(0f, 0f, 1f), new float3(30f, 0f, 100f), new float3(0f, 0f, 1f)), TwoLane, 13.9f);
+            var length = _network.GetSegment(id).Length;
+            var middle = _network.Split(id, 0.5f);
+
+            _network.Merge(middle);
+
+            var merged = _network.GetSegment(id);
+            Assert.That(_network.SegmentCount, Is.EqualTo(1));
+            Assert.That(_network.NodeCount, Is.EqualTo(2));
+            Assert.That(_network.LaneCount, Is.EqualTo(4));
+            Assert.That(merged.Start, Is.EqualTo(a));
+            Assert.That(merged.End, Is.EqualTo(b));
+            Assert.That(merged.Length, Is.EqualTo(length).Within(length * 0.02f), "bijna dezelfde lengte");
+            Assert.That(_network.GetNode(a).Segments.Length, Is.EqualTo(1));
+            Assert.That(_network.GetNode(b).Segments.Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void MergeWorksWhenTheSecondSegmentRunsTowardsTheNode()
+        {
+            var a = _network.AddNode(float3.zero);
+            var middle = _network.AddNode(new float3(0f, 0f, 50f));
+            var b = _network.AddNode(new float3(0f, 0f, 100f));
+            Road(a, middle);
+            Road(b, middle);
+
+            Assert.That(_network.MergeReason(middle), Is.Null);
+            _network.Merge(middle);
+
+            Assert.That(_network.SegmentCount, Is.EqualTo(1));
+            Assert.That(_network.NodeCount, Is.EqualTo(2));
+            Assert.That(_network.GetNode(a).Segments.Length, Is.EqualTo(1));
+            Assert.That(_network.GetNode(b).Segments.Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void MergeRefusesJunctionsAndMismatchedRoads()
+        {
+            var (center, _) = Crossroads();
+            Assert.That(_network.MergeReason(center), Is.Not.Null, "vier wegen");
+            Assert.Throws<InvalidOperationException>(() => _network.Merge(center));
+
+            var a = _network.AddNode(new float3(200f, 0f, 0f));
+            var middle = _network.AddNode(new float3(200f, 0f, 50f));
+            var b = _network.AddNode(new float3(200f, 0f, 100f));
+            Road(a, middle);
+            Road(middle, b, LaneProfiles.Road(2, bikeLanes: false, sidewalks: true));
+            Assert.That(_network.MergeReason(middle), Does.Contain("hetzelfde type"));
+        }
+
         private sealed class DanglingSegment : ISaveSection
         {
             public string Id => RoadNetworkSection.SectionId;

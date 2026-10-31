@@ -98,6 +98,30 @@ namespace Cities.Gameplay.Tools
             return best;
         }
 
+        /// <summary>Parameter (0..1) van het punt op de hartlijn dat het dichtst bij <paramref name="point"/> ligt, in het horizontale vlak, benaderd met <paramref name="steps"/> stukjes.</summary>
+        public static float NearestT(Bezier3 curve, float3 point, int steps = 64)
+        {
+            var best = 0f;
+            var bestDistance = float.MaxValue;
+            var previous = curve.P0;
+            for (var i = 1; i <= steps; i++)
+            {
+                var next = curve.Position(i / (float)steps);
+                var edge = next.xz - previous.xz;
+                var along = math.lengthsq(edge) > 1e-8f ? math.saturate(math.dot(point.xz - previous.xz, edge) / math.lengthsq(edge)) : 0f;
+                var distance = math.distance(point.xz, previous.xz + (edge * along));
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = (i - 1 + along) / steps;
+                }
+
+                previous = next;
+            }
+
+            return best;
+        }
+
         /// <summary>Waarom een weg met deze hartlijn niet mag, of <c>null</c>.</summary>
         public static string Check(Bezier3 curve)
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Core.Ids;
 using Cities.Core.Persistence;
 using Unity.Collections;
@@ -116,6 +117,83 @@ namespace Cities.Simulation.Network
             ReplaceSegment(id, segment.End, segment.Start, segment.Curve.Reversed, profile, segment.SpeedLimit, segment);
         }
 
+        /// <summary>
+        /// Zet een knooppunt in een segment op parameter <paramref name="t"/> (0..1 langs de hartlijn) en deelt het in
+        /// tweeën met hetzelfde profiel en dezelfde snelheid. Het eerste deel houdt de ID van het oorspronkelijke segment.
+        /// </summary>
+        public EntityId<NodeKind> Split(EntityId<SegmentKind> id, float t)
+        {
+            if (t <= 0f || t >= 1f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(t), t, "Splitsen kan alleen binnen het segment.");
+            }
+
+            var segment = GetSegment(id);
+            var profile = ProfileOf(segment, flip: false);
+            var middle = AddNode(segment.Curve.Position(t));
+            Detach(segment.End, id);
+            Attach(middle, id);
+            ReplaceSegment(id, segment.Start, middle, segment.Curve.Slice(0f, t), profile, segment.SpeedLimit, segment);
+            AddSegment(middle, segment.End, segment.Curve.Slice(t, 1f), profile, segment.SpeedLimit);
+            return middle;
+        }
+
+        /// <summary>
+        /// Voegt de twee segmenten bij een knooppunt samen tot één en verwijdert het knooppunt. Dat kan alleen als er precies
+        /// twee wegen samenkomen met hetzelfde profiel en dezelfde snelheid; het eerste segment houdt zijn ID.
+        /// </summary>
+        public void Merge(EntityId<NodeKind> node)
+        {
+            var reason = MergeReason(node);
+            if (reason != null)
+            {
+                throw new InvalidOperationException(reason);
+            }
+
+            var segments = GetNode(node).Segments;
+            var firstId = segments[0];
+            var secondId = segments[1];
+            var first = GetSegment(firstId);
+            var second = GetSegment(secondId);
+            var from = first.Other(node);
+            var to = second.Other(node);
+            var firstProfile = ProfileOf(first, flip: first.Start == node);
+            var curveA = first.Start == node ? first.Curve.Reversed : first.Curve;
+            var curveB = second.End == node ? second.Curve.Reversed : second.Curve;
+            var merged = Join(curveA, curveB);
+
+            Detach(to, secondId);
+            Attach(to, firstId);
+            ReleaseSegment(second);
+            _segmentIds.Release(secondId);
+            _nodeIds.Release(node);
+            ReplaceSegment(firstId, from, to, merged, firstProfile, first.SpeedLimit, first);
+            SegmentChanged?.Invoke(secondId);
+        }
+
+        /// <summary>Waarom twee wegen bij dit knooppunt niet samengevoegd kunnen worden, of <c>null</c> als het kan.</summary>
+        public string MergeReason(EntityId<NodeKind> node)
+        {
+            var segments = GetNode(node).Segments;
+            if (segments.Length != 2)
+            {
+                return "Samenvoegen kan alleen bij een knooppunt met precies twee wegen";
+            }
+
+            var first = GetSegment(segments[0]);
+            var second = GetSegment(segments[1]);
+            if (first.Other(node) == second.Other(node))
+            {
+                return "Een lus van twee wegen kan niet tot één weg worden samengevoegd";
+            }
+
+            // Beide in de richting van -> knooppunt -> naar, met het verkeer op dezelfde plek.
+            // Gespiegeld verandert de volgorde van de lanes in het profiel, dus vergelijken op plek, niet op volgorde.
+            var same = Ordered(ProfileOf(first, flip: first.Start == node)).SequenceEqual(Ordered(ProfileOf(second, flip: second.End == node)))
+                && Math.Abs(first.SpeedLimit - second.SpeedLimit) <= 1e-4f;
+            return same ? null : "Samenvoegen kan alleen als beide wegen hetzelfde type zijn";
+        }
+
         /// <summary><c>true</c> als het verkeer op dit segment maar één kant op rijdt en er minstens één rijstrook is.</summary>
         public bool IsOneWay(RoadSegment segment)
         {
@@ -145,12 +223,7 @@ namespace Cities.Simulation.Network
         public void RemoveSegment(EntityId<SegmentKind> id)
         {
             var segment = GetSegment(id);
-            foreach (var lane in segment.Lanes)
-            {
-                _connections.Remove(Key(lane, true));
-                _connections.Remove(Key(lane, false));
-                _laneIds.Release(lane);
-            }
+            ReleaseSegment(segment);
 
             _segmentIds.Release(id);
             foreach (var node in new[] { segment.Start, segment.End })
@@ -292,6 +365,62 @@ namespace Cities.Simulation.Network
             }
         }
 
+        /// <summary>
+        /// Het profiel van een segment; met <paramref name="flip"/> gezien vanaf het andere uiteinde, waarbij het verkeer
+        /// op dezelfde plek blijft (richting omgedraaid en offset gespiegeld).
+        /// </summary>
+        private List<LaneSpec> ProfileOf(RoadSegment segment, bool flip)
+        {
+            var profile = new List<LaneSpec>(segment.Lanes.Length);
+            foreach (var lane in segment.Lanes)
+            {
+                var spec = _lanes[lane.Index].Spec;
+                if (flip)
+                {
+                    spec = new LaneSpec(spec.Types, Opposite(spec.Direction), -spec.Offset, spec.Width);
+                }
+
+                profile.Add(spec);
+            }
+
+            return profile;
+        }
+
+        /// <summary>
+        /// Eén curve voor twee aansluitende curves: de handvatten van het oorspronkelijke geheel als de twee uit een splitsing
+        /// kwamen (de parameter wordt geschat uit de lengtes), en dus exact voor rechte stukken.
+        /// </summary>
+        private static Bezier3 Join(Bezier3 a, Bezier3 b)
+        {
+            var lengthA = a.Length();
+            var t = lengthA / (lengthA + b.Length());
+            return new Bezier3(a.P0, a.P0 + ((a.P1 - a.P0) / t), b.P3 + ((b.P2 - b.P3) / (1f - t)), b.P3);
+        }
+
+        private static IEnumerable<LaneSpec> Ordered(List<LaneSpec> profile) =>
+            profile.OrderBy(spec => spec.Offset).ThenBy(spec => spec.Types).ThenBy(spec => spec.Direction);
+
+        private static LaneDirection Opposite(LaneDirection direction)
+        {
+            if (direction == LaneDirection.Both)
+            {
+                return direction;
+            }
+
+            return direction == LaneDirection.Forward ? LaneDirection.Backward : LaneDirection.Forward;
+        }
+
+        /// <summary>Geeft de lanes van een segment vrij en haalt hun verbindingen weg; het segment zelf blijft aan de aanroeper.</summary>
+        private void ReleaseSegment(RoadSegment segment)
+        {
+            foreach (var lane in segment.Lanes)
+            {
+                _connections.Remove(Key(lane, true));
+                _connections.Remove(Key(lane, false));
+                _laneIds.Release(lane);
+            }
+        }
+
         private FixedList128Bytes<EntityId<LaneKind>> AllocateLanes(EntityId<SegmentKind> id, Bezier3 curve, IReadOnlyList<LaneSpec> profile)
         {
             var lanes = new FixedList128Bytes<EntityId<LaneKind>>();
@@ -309,12 +438,7 @@ namespace Cities.Simulation.Network
         /// <summary>Vervangt de lanes en de vorm van een bestaand segment en verbindt beide knooppunten opnieuw.</summary>
         private void ReplaceSegment(EntityId<SegmentKind> id, EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile, float speedLimit, RoadSegment old)
         {
-            foreach (var lane in old.Lanes)
-            {
-                _connections.Remove(Key(lane, true));
-                _connections.Remove(Key(lane, false));
-                _laneIds.Release(lane);
-            }
+            ReleaseSegment(old);
 
             Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile)));
             Reconnect(start);

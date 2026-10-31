@@ -184,6 +184,8 @@ namespace Cities.Presentation.Tools
 
             AddBrush(toolbar, "Upgraden", _roads.Upgrade, () => { }, () => true);
             AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
+            AddBrush(toolbar, "Splitsen", _roads.Split, () => { }, () => true);
+            AddBrush(toolbar, "Samenvoegen", _roads.Merge, () => { }, () => true);
             AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
             AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
             AddSettings(road,
