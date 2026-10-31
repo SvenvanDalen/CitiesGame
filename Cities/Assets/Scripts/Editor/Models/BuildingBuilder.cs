@@ -1,3 +1,4 @@
+using Cities.Core.Randomness;
 using Cities.World.Grid;
 using UnityEngine;
 using static Cities.Editor.Models.BuildingMaterials.Slots;
@@ -25,7 +26,7 @@ namespace Cities.Editor.Models
         private readonly float _z1;
         private readonly float _top;
         private readonly int _glass;
-        private readonly System.Random _random;
+        private DeterministicRandom _random;
 
         private BuildingBuilder(BuildingDesign design)
         {
@@ -39,13 +40,13 @@ namespace Cities.Editor.Models
             _z1 = _hz - design.Rear;
             _top = PlinthTop + design.GroundHeight + ((design.Floors - 1) * design.FloorHeight);
             _glass = design.Zone == ZoneType.Office && design.HighDensity ? Curtain : Glass;
-            var seed = 17;
+            ulong seed = 17;
             foreach (var c in design.Name)
             {
                 seed = (seed * 31) + c;
             }
 
-            _random = new System.Random(seed);
+            _random = new DeterministicRandom(seed);
         }
 
         private float Length => _x1 - _x0;
@@ -168,7 +169,7 @@ namespace Cities.Editor.Models
 
             for (var i = slots.Count - 1; i > 0; i--)
             {
-                var j = _random.Next(i + 1);
+                var j = _random.NextInt(0, i + 1);
                 (slots[i], slots[j]) = (slots[j], slots[i]);
             }
 

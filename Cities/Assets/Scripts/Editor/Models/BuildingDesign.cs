@@ -53,6 +53,12 @@ namespace Cities.Editor.Models
         public string Description;
         public BuildingSpec Spec;
 
+        /// <summary>Kavel in cellen van 8 m: breed langs de weg, diep vanaf de weg.</summary>
+        public int Width;
+        public int Depth;
+        public ZoneDensity Density;
+        public int Days;
+
         public int Floors = 1;
         public float FloorHeight = 3f;
         public float GroundHeight = 3f;

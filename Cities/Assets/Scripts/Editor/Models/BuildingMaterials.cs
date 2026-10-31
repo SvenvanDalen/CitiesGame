@@ -47,9 +47,9 @@ namespace Cities.Editor.Models
             var roof = ModelMaterials.SaveTexture($"{textures}/RoofTiles.png", ModelMaterials.RoofTiles(new Color(0.2f, 0.21f, 0.22f), 37));
             var paving = ModelMaterials.SaveTexture($"{textures}/Paving.png", ModelMaterials.Paving(new Color(0.6f, 0.59f, 0.56f), 41));
             var hedge = ModelMaterials.SaveTexture($"{textures}/Hedge.png", ModelMaterials.Foliage(new Color(0.16f, 0.3f, 0.12f), 53));
-            var render = ModelMaterials.SaveTexture($"{textures}/Render.png", Render(new Color(0.9f, 0.88f, 0.82f), 61));
+            var render = ModelMaterials.SaveTexture($"{textures}/Render.png", StuccoTexture(new Color(0.9f, 0.88f, 0.82f), 61));
             var concrete = ModelMaterials.SaveTexture($"{textures}/ConcretePanels.png", ConcretePanels(new Color(0.62f, 0.62f, 0.6f), 67));
-            var cladding = ModelMaterials.SaveTexture($"{textures}/Cladding.png", Cladding(new Color(0.58f, 0.6f, 0.62f), 71));
+            var cladding = ModelMaterials.SaveTexture($"{textures}/Cladding.png", CladdingTexture(new Color(0.58f, 0.6f, 0.62f), 71));
             var gravel = ModelMaterials.SaveTexture($"{textures}/Gravel.png", Gravel(new Color(0.34f, 0.34f, 0.33f), 73));
             var asphalt = ModelMaterials.SaveTexture($"{textures}/Asphalt.png", Gravel(new Color(0.18f, 0.18f, 0.19f), 79));
             var one = Vector2.one;
@@ -79,7 +79,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Spuitpleister met fijne korrel en een paar vlekken.</summary>
-        private static Color[] Render(Color tone, int seed)
+        private static Color[] StuccoTexture(Color tone, int seed)
         {
             var size = ModelMaterials.Size;
             var pixels = new Color[size * size];
@@ -115,7 +115,7 @@ namespace Cities.Editor.Models
         }
 
         /// <summary>Verticale golfplaat: 8 golven over 64 cm, met lichte strepen van oxidatie.</summary>
-        private static Color[] Cladding(Color tone, int seed)
+        private static Color[] CladdingTexture(Color tone, int seed)
         {
             var size = ModelMaterials.Size;
             var pixels = new Color[size * size];
