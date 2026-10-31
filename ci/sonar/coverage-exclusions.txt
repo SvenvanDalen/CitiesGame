@@ -60,3 +60,6 @@ Cities/Assets/Scripts/Gameplay/Zoning/ZoneToolBehaviour.cs
 Cities/Assets/Scripts/Gameplay/Zoning/BuildingSpawner.cs
 Cities/Assets/Scripts/Gameplay/Zoning/ScaffoldingMesh.cs
 Cities/Assets/Scripts/Simulation/Utilities/UtilitySystem.cs
+Cities/Assets/Scripts/Editor/Models/PowerPlantBuilder.cs
+Cities/Assets/Scripts/Editor/Models/PowerPlantMaterials.cs
+Cities/Assets/Scripts/World/Utilities/PowerPlantDefinition.cs

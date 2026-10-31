@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d60651605e84496aa73619a081fa5d0, type: 3}
+  m_Name: CoalPlant
+  m_EditorClassIdentifier: Cities.World::Cities.World.Utilities.PowerPlantDefinition
+  _id: power-plant.coal
+  _displayName: Kolencentrale
+  _description: Grote kolencentrale met ketelhuis, machinehal, twee koeltorens en een schoorsteen.
+  _icon: {fileID: 0}
+  _spec:
+    Source: 0
+    FootprintWidth: 10
+    FootprintDepth: 8
+    CapacityMw: 150
+    ConstructionCost: 120000000
+    UpkeepPerMonth: 900000
+    FuelCostPerMwh: 25
+    AirPollution: 80
+    Noise: 60
+    ConstructionDays: 720
+  _prefab: {fileID: 0}

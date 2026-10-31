@@ -94,6 +94,26 @@ namespace Cities.Editor.Models
             }
         }
 
+        /// <summary>Afgeknotte kegel van straal <paramref name="radius0"/> onderaan naar <paramref name="radius1"/> bovenaan, met een deksel als de top dicht is.</summary>
+        public void Frustum(int submesh, Vector3 baseCentre, float radius0, float radius1, float height, int segments = 24)
+        {
+            var top = baseCentre + (Vector3.up * height);
+            for (var i = 0; i < segments; i++)
+            {
+                var a0 = Ring(baseCentre, radius0, i, segments);
+                var b0 = Ring(baseCentre, radius0, i + 1, segments);
+                var a1 = Ring(top, radius1, i, segments);
+                var b1 = Ring(top, radius1, i + 1, segments);
+                var outward = ((a0 + b0) * 0.5f) - baseCentre;
+                outward.y = 0f;
+                Quad(submesh, a0, b0, b1, a1, outward);
+                if (radius1 > 0f)
+                {
+                    Triangle(submesh, top, a1, b1, Vector3.up);
+                }
+            }
+        }
+
         private static Vector3 Ring(Vector3 centre, float radius, int index, int segments)
         {
             var angle = index * Mathf.PI * 2f / segments;
