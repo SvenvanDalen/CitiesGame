@@ -105,6 +105,27 @@ namespace Cities.Gameplay.Zoning
             return removed;
         }
 
+        /// <summary>Het dichtstbijzijnde punt op een weg (op de hartlijn); <c>false</c> als er geen wegen zijn.</summary>
+        public bool TryNearestRoad(float3 point, out float3 roadPoint)
+        {
+            roadPoint = default;
+            var best = float.PositiveInfinity;
+            foreach (var id in _network.Segments())
+            {
+                var curve = _network.GetSegment(id).Curve;
+                var t = RoadPlanner.NearestT(curve, point);
+                var candidate = curve.Position(t);
+                var distance = math.distance(candidate, point);
+                if (distance < best)
+                {
+                    best = distance;
+                    roadPoint = candidate;
+                }
+            }
+
+            return !float.IsPositiveInfinity(best);
+        }
+
         // shortcut: loopt per cel langs alle segmenten, prima voor een penseel; bij een hele tegel per keer een ruimtelijke index gebruiken.
         private float EdgeDistance(float3 point)
         {

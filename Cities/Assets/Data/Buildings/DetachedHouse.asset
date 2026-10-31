@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eec402b62e8089458af45d18d2a10be, type: 3}
+  m_Name: DetachedHouse
+  m_EditorClassIdentifier: Cities.World::Cities.World.Buildings.BuildingDefinition
+  _id: building.house.detached
+  _displayName: Vrijstaand huis
+  _description: "Vrijstaand gezinshuis van twee bouwlagen op een kavel van 2 \xD7
+    2 cellen."
+  _icon: {fileID: 0}
+  _spec:
+    FootprintWidth: 2
+    FootprintDepth: 2
+    Zone: 1
+    Density: 0
+    Level: 1
+    Households: 1
+    Workplaces: 0
+    ConstructionCost: 0
+    UpkeepPerMonth: 0
+    ConstructionDays: 30
+  _prefab: {fileID: 951093645922807242, guid: 6a78eb3dcdca2ae468c6252f32224ef3, type: 3}
