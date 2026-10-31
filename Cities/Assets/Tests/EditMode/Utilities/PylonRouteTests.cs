@@ -46,13 +46,13 @@ namespace Cities.Tests.EditMode.Utilities
         [Test]
         public void GapWiderThanTheSpanCannotBeBridged()
         {
-            Assert.That(PylonRoute.Plan(float2.zero, new float2(1300f, 0f), 150f, Terrain), Is.Null);
+            Assert.That(PylonRoute.Plan(float2.zero, new float2(1300f, 0f), 150f, Terrain), Is.Empty);
         }
 
         [Test]
         public void EndsInWaterAreRefusedAndBadArgumentsRejected()
         {
-            Assert.That(PylonRoute.Plan(float2.zero, new float2(500f, 0f), 250f, Terrain), Is.Null);
+            Assert.That(PylonRoute.Plan(float2.zero, new float2(500f, 0f), 250f, Terrain), Is.Empty);
             Assert.Throws<ArgumentOutOfRangeException>(() => PylonRoute.Plan(float2.zero, float2.zero, 0f, Everywhere));
             Assert.Throws<ArgumentNullException>(() => PylonRoute.Plan(float2.zero, float2.zero, 100f, null));
         }

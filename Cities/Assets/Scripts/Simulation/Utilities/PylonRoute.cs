@@ -13,7 +13,7 @@ namespace Cities.Simulation.Utilities
         private const int Samples = 25;
 
         /// <summary>
-        /// Geeft de pylonen van <paramref name="from"/> tot en met <paramref name="to"/>, of null als de lijn niet te leggen is. Elke stap kiest
+        /// Geeft de pylonen van <paramref name="from"/> tot en met <paramref name="to"/>, of een lege lijst als de lijn niet te leggen is. Elke stap kiest
         /// het verste staanbare punt op de rechte lijn binnen <paramref name="maxSpan"/>; <paramref name="canStand"/> is false op water en steile grond.
         /// </summary>
         // shortcut: de lijn blijft recht tussen begin en eind (geen omweg om een meer); een routezoeker als een rechte lijn te vaak faalt.
@@ -31,18 +31,17 @@ namespace Cities.Simulation.Utilities
 
             if (!canStand(from) || !canStand(to))
             {
-                return null;
+                return Array.Empty<float2>();
             }
 
             var route = new List<float2> { from };
             var at = from;
-            var total = math.distance(from, to);
             while (math.distance(at, to) > maxSpan)
             {
                 var next = FarthestStandable(at, math.normalize(to - from), maxSpan, canStand);
                 if (next == null)
                 {
-                    return null;
+                    return Array.Empty<float2>();
                 }
 
                 at = next.Value;
