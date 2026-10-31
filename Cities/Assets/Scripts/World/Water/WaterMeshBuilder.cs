@@ -79,6 +79,33 @@ namespace Cities.World.Water
         {
             IndexCount = 0;
             WetShape = 0;
+            if (!FillVertices(ground, water, width, depth, spacing, cornerX, cornerZ))
+            {
+                WetShape = 0;
+                return false;
+            }
+
+            for (var z = 0; z < BlockCells; z++)
+            {
+                for (var x = 0; x < BlockCells; x++)
+                {
+                    var a = (z * Side) + x;
+                    var b = a + 1;
+                    var c = a + Side;
+                    var d = c + 1;
+                    if (_vertices[a].Depth + _vertices[b].Depth + _vertices[c].Depth + _vertices[d].Depth > 0f)
+                    {
+                        Quad(a, b, c, d);
+                    }
+                }
+            }
+
+            return IndexCount > 0;
+        }
+
+        /// <summary>Vult de punten van het blok en geeft terug of er minstens één nat punt is.</summary>
+        private bool FillVertices(ReadOnlySpan<float> ground, ReadOnlySpan<float> water, int width, int depth, float spacing, int cornerX, int cornerZ)
+        {
             var anyWet = false;
             for (var z = 0; z < Side; z++)
             {
@@ -95,30 +122,7 @@ namespace Cities.World.Water
                 }
             }
 
-            if (!anyWet)
-            {
-                WetShape = 0;
-                return false;
-            }
-
-            for (var z = 0; z < BlockCells; z++)
-            {
-                for (var x = 0; x < BlockCells; x++)
-                {
-                    var a = (z * Side) + x;
-                    var b = a + 1;
-                    var c = a + Side;
-                    var d = c + 1;
-                    if (_vertices[a].Depth + _vertices[b].Depth + _vertices[c].Depth + _vertices[d].Depth <= 0f)
-                    {
-                        continue;
-                    }
-
-                    Quad(a, b, c, d);
-                }
-            }
-
-            return IndexCount > 0;
+            return anyWet;
         }
 
         private void Quad(int a, int b, int c, int d)
