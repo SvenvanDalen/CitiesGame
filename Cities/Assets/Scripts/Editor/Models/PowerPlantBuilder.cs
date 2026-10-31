@@ -101,26 +101,26 @@ namespace Cities.Editor.Models
                 var across = new Vector3(Mathf.Cos(angle), -Mathf.Sin(angle), 0f);
                 for (var i = 0; i < t.Length - 1; i++)
                 {
-                    m.Hexahedron(White, Section(new Vector3(0f, hub, -4.2f), along, across, t[i], chord[i], thick[i], t[i + 1], chord[i + 1], thick[i + 1]));
+                    m.Hexahedron(White, Section(new Vector3(0f, hub, -4.2f), along, across, new Vector3(t[i], chord[i], thick[i]), new Vector3(t[i + 1], chord[i + 1], thick[i + 1])));
                 }
             }
 
             return m;
         }
 
-        /// <summary>Acht hoeken van een bladstuk tussen twee dwarsdoorsneden; de koorde loopt langs Z, de dikte langs <paramref name="across"/>.</summary>
-        private static Vector3[] Section(Vector3 hub, Vector3 along, Vector3 across, float t0, float c0, float h0, float t1, float c1, float h1)
+        /// <summary>Acht hoeken van een bladstuk tussen twee dwarsdoorsneden (x = afstand langs het blad, y = koorde, z = dikte); de koorde loopt langs Z, de dikte langs <paramref name="across"/>.</summary>
+        private static Vector3[] Section(Vector3 hub, Vector3 along, Vector3 across, Vector3 from, Vector3 to)
         {
-            Vector3[] Ring(float t, float c, float h)
+            Vector3[] Ring(Vector3 at)
             {
-                var centre = hub + (along * t);
-                var z = Vector3.forward * (c * 0.5f);
-                var d = across * (h * 0.5f);
+                var centre = hub + (along * at.x);
+                var z = Vector3.forward * (at.y * 0.5f);
+                var d = across * (at.z * 0.5f);
                 return new[] { centre + z + d, centre + z - d, centre - z - d, centre - z + d };
             }
 
-            var a = Ring(t0, c0, h0);
-            var b = Ring(t1, c1, h1);
+            var a = Ring(from);
+            var b = Ring(to);
             return new[] { a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3] };
         }
 
@@ -135,7 +135,6 @@ namespace Cities.Editor.Models
             const float width = 12f;
 
             // Paneelrijen: zes rijen van vier tafels, schuin omhoog naar het noorden (+Z), met poten en een draagbalk.
-            var slope = new Vector3(0f, high - low, depth).normalized;
             var normal = new Vector3(0f, depth, -(high - low)).normalized;
             for (var row = 0; row < 6; row++)
             {

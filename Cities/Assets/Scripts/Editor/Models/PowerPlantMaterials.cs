@@ -63,7 +63,8 @@ namespace Cities.Editor.Models
                     var busbar = Mathf.Abs((cx / (float)size * 6f) - 0.5f) < 0.02f;
                     var tone = new Color(0.05f, 0.09f, 0.2f);
                     var shade = 1f + (ModelMaterials.Noise(x / 8, y / 8, 91) * 0.08f);
-                    pixels[(y * size) + x] = grid ? new Color(0.62f, 0.64f, 0.67f) : ModelMaterials.Shade(busbar ? new Color(0.45f, 0.5f, 0.6f) : tone, shade);
+                    var cell = busbar ? new Color(0.45f, 0.5f, 0.6f) : tone;
+                    pixels[(y * size) + x] = grid ? new Color(0.62f, 0.64f, 0.67f) : ModelMaterials.Shade(cell, shade);
                 }
             }
 
