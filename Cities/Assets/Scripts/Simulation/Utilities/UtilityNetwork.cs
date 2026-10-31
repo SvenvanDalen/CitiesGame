@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 
 namespace Cities.Simulation.Utilities
@@ -90,14 +91,18 @@ namespace Cities.Simulation.Utilities
                 throw new ArgumentException("Een knoop kan niet met zichzelf verbonden worden.");
             }
 
-            return _links[a].Add(b) & _links[b].Add(a);
+            var added = _links[a].Add(b);
+            _links[b].Add(a);
+            return added;
         }
 
         public bool Unlink(int a, int b)
         {
             Check(a);
             Check(b);
-            return _links[a].Remove(b) & _links[b].Remove(a);
+            var removed = _links[a].Remove(b);
+            _links[b].Remove(a);
+            return removed;
         }
 
         /// <summary>Het net waar de knoop bij hoort; -1 voor de eerste <see cref="Tick"/>.</summary>
@@ -205,42 +210,40 @@ namespace Cities.Simulation.Utilities
         private void ConnectNearby()
         {
             _grid.Clear();
-            var radiusSq = ConnectRadius * ConnectRadius;
             for (var i = 0; i < _nodes.Count; i++)
             {
-                if (!_nodes[i].Alive)
+                if (_nodes[i].Alive)
                 {
-                    continue;
-                }
-
-                var cell = CellOf(_nodes[i].Position);
-                for (var dx = -1; dx <= 1; dx++)
-                {
-                    for (var dz = -1; dz <= 1; dz++)
+                    var cell = CellOf(_nodes[i].Position);
+                    UnionWithinReach(i, cell);
+                    var key = Key(cell.x, cell.y);
+                    if (!_grid.TryGetValue(key, out var list))
                     {
-                        if (!_grid.TryGetValue(Key(cell.x + dx, cell.y + dz), out var near))
-                        {
-                            continue;
-                        }
+                        list = new List<int>();
+                        _grid[key] = list;
+                    }
 
-                        foreach (var other in near)
+                    list.Add(i);
+                }
+            }
+        }
+
+        /// <summary>Verbindt knoop <paramref name="i"/> met de eerder geplaatste knopen binnen de aansluitafstand in de negen omliggende cellen.</summary>
+        private void UnionWithinReach(int i, int2 cell)
+        {
+            var radiusSq = ConnectRadius * ConnectRadius;
+            for (var dx = -1; dx <= 1; dx++)
+            {
+                for (var dz = -1; dz <= 1; dz++)
+                {
+                    if (_grid.TryGetValue(Key(cell.x + dx, cell.y + dz), out var near))
+                    {
+                        foreach (var other in near.Where(o => math.distancesq(_nodes[i].Position, _nodes[o].Position) <= radiusSq))
                         {
-                            if (math.distancesq(_nodes[i].Position, _nodes[other].Position) <= radiusSq)
-                            {
-                                Union(i, other);
-                            }
+                            Union(i, other);
                         }
                     }
                 }
-
-                var key = Key(cell.x, cell.y);
-                if (!_grid.TryGetValue(key, out var list))
-                {
-                    list = new List<int>();
-                    _grid[key] = list;
-                }
-
-                list.Add(i);
             }
         }
 
