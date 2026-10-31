@@ -132,5 +132,31 @@ namespace Cities.Tests.EditMode.World
             var steep = _builder.Vertices[(5 * 33) + 5];
             Assert.That(steep.FlowX, Is.EqualTo(-1f).Within(1e-4f));
         }
+
+        [Test]
+        public void TheWetShapeChangesWhenTheShoreMovesEvenIfTheCountStaysEqual()
+        {
+            Build();
+            Assert.That(_builder.WetShape, Is.EqualTo(0));
+
+            _water[(5 * Width) + 5] = 1f;
+            Build();
+            var first = _builder.WetShape;
+
+            _water[(5 * Width) + 5] = 0f;
+            _water[(5 * Width) + 6] = 1f;
+            Build();
+
+            Assert.That(first, Is.Not.EqualTo(0));
+            Assert.That(_builder.WetShape, Is.Not.EqualTo(first));
+            Assert.That(_builder.WetShape, Is.Not.EqualTo(0));
+
+            _water[(5 * Width) + 6] = 2f; // dieper, zelfde oever
+            Build();
+            var deeper = _builder.WetShape;
+            _water[(5 * Width) + 6] = 3f;
+            Build();
+            Assert.That(_builder.WetShape, Is.EqualTo(deeper));
+        }
     }
 }

@@ -61,6 +61,12 @@ namespace Cities.World.Water
         public int IndexCount { get; private set; }
 
         /// <summary>
+        /// Vingerafdruk van welke punten nat zijn in het laatst gebouwde blok; 0 zonder water. Verandert als de oever
+        /// verschuift, ook als het aantal natte punten gelijk blijft.
+        /// </summary>
+        public int WetShape { get; private set; }
+
+        /// <summary>
         /// Vult de mesh voor het blok dat bij hoekpunt (<paramref name="cornerX"/>, <paramref name="cornerZ"/>) begint.
         /// Geeft <c>false</c> als er geen water in het blok ligt.
         /// </summary>
@@ -72,23 +78,10 @@ namespace Cities.World.Water
         public bool Build(ReadOnlySpan<float> ground, ReadOnlySpan<float> water, int width, int depth, float spacing, int cornerX, int cornerZ)
         {
             IndexCount = 0;
-            var anyWet = false;
-            for (var z = 0; z < Side; z++)
+            WetShape = 0;
+            if (!FillVertices(ground, water, width, depth, spacing, cornerX, cornerZ))
             {
-                for (var x = 0; x < Side; x++)
-                {
-                    var cx = Math.Min(cornerX + x, width - 1);
-                    var cz = Math.Min(cornerZ + z, depth - 1);
-                    var i = (cz * width) + cx;
-                    var d = water[i] > WetThreshold ? water[i] : 0f;
-                    anyWet |= d > 0f;
-                    var flow = Flow(ground, water, width, depth, cx, cz, spacing);
-                    _vertices[(z * Side) + x] = new WaterVertex(cx * spacing, ground[i] + d, cz * spacing, d, flow.X, flow.Z);
-                }
-            }
-
-            if (!anyWet)
-            {
+                WetShape = 0;
                 return false;
             }
 
@@ -100,16 +93,36 @@ namespace Cities.World.Water
                     var b = a + 1;
                     var c = a + Side;
                     var d = c + 1;
-                    if (_vertices[a].Depth + _vertices[b].Depth + _vertices[c].Depth + _vertices[d].Depth <= 0f)
+                    if (_vertices[a].Depth + _vertices[b].Depth + _vertices[c].Depth + _vertices[d].Depth > 0f)
                     {
-                        continue;
+                        Quad(a, b, c, d);
                     }
-
-                    Quad(a, b, c, d);
                 }
             }
 
             return IndexCount > 0;
+        }
+
+        /// <summary>Vult de punten van het blok en geeft terug of er minstens één nat punt is.</summary>
+        private bool FillVertices(ReadOnlySpan<float> ground, ReadOnlySpan<float> water, int width, int depth, float spacing, int cornerX, int cornerZ)
+        {
+            var anyWet = false;
+            for (var z = 0; z < Side; z++)
+            {
+                for (var x = 0; x < Side; x++)
+                {
+                    var cx = Math.Min(cornerX + x, width - 1);
+                    var cz = Math.Min(cornerZ + z, depth - 1);
+                    var i = (cz * width) + cx;
+                    var d = water[i] > WetThreshold ? water[i] : 0f;
+                    anyWet |= d > 0f;
+                    WetShape = unchecked((WetShape * 31) + (d > 0f ? 1 : 0));
+                    var flow = Flow(ground, water, width, depth, cx, cz, spacing);
+                    _vertices[(z * Side) + x] = new WaterVertex(cx * spacing, ground[i] + d, cz * spacing, d, flow.X, flow.Z);
+                }
+            }
+
+            return anyWet;
         }
 
         private void Quad(int a, int b, int c, int d)

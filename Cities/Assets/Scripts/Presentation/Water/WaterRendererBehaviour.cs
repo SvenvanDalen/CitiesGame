@@ -1,3 +1,4 @@
+using System;
 using Cities.World.Grid;
 using Unity.Collections;
 using Cities.World.Water;
@@ -34,8 +35,14 @@ namespace Cities.Presentation.Water
         private int _next;
         private MeshRenderer[] _renderers;
         private Mesh[] _meshes;
+        private int[] _shapes;
         private NativeArray<WaterVertex> _vertexBuffer;
         private NativeArray<ushort> _indexBuffer;
+
+        /// <summary>
+        /// De oever in dit blok cellen is verschoven (water erbij of weg); het terrein kan er zijn zandrand op aanpassen.
+        /// </summary>
+        public event Action<RectInt> ShoreChanged;
 
         /// <summary>Blokken met een zichtbaar wateroppervlak.</summary>
         public int VisibleBlocks { get; private set; }
@@ -47,6 +54,7 @@ namespace Cities.Presentation.Water
             var blocks = _blocksX * (_map.Dimensions.CellsZ / WaterMeshBuilder.BlockCells);
             _renderers = new MeshRenderer[blocks];
             _meshes = new Mesh[blocks];
+            _shapes = new int[blocks];
             _vertexBuffer = new NativeArray<WaterVertex>(_builder.Vertices.Length, Allocator.Persistent);
             _indexBuffer = new NativeArray<ushort>(WaterMeshBuilder.BlockCells * WaterMeshBuilder.BlockCells * 6, Allocator.Persistent);
         }
@@ -86,6 +94,12 @@ namespace Cities.Presentation.Water
             var cornerZ = block / _blocksX * WaterMeshBuilder.BlockCells;
 
             var wet = _builder.Build(ground.Values.AsReadOnlySpan(), _map.WaterDepth.Values.AsReadOnlySpan(), layout.Width, layout.Depth, spacing, cornerX, cornerZ);
+            if (_builder.WetShape != _shapes[block])
+            {
+                _shapes[block] = _builder.WetShape;
+                ShoreChanged?.Invoke(new RectInt(cornerX, cornerZ, WaterMeshBuilder.BlockCells, WaterMeshBuilder.BlockCells));
+            }
+
             var existing = _renderers[block];
             if (!wet)
             {
