@@ -74,22 +74,71 @@ namespace Cities.Simulation.Network
             ValidateSegment(start, end, curve, profile);
 
             var id = _segmentIds.Allocate();
-            var lanes = new FixedList128Bytes<EntityId<LaneKind>>();
-            foreach (var spec in profile)
-            {
-                var lane = _laneIds.Allocate();
-                var shifted = curve.Offset(spec.Offset);
-                Store(ref _lanes, lane.Index, new Lane(id, spec, spec.Direction == LaneDirection.Backward ? shifted.Reversed : shifted));
-                lanes.Add(lane);
-            }
-
-            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, lanes));
+            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile)));
             Attach(start, id);
             Attach(end, id);
             Reconnect(start);
             Reconnect(end);
             SegmentChanged?.Invoke(id);
             return id;
+        }
+
+        /// <summary>
+        /// Geeft een bestaand segment een ander dwarsprofiel en maximumsnelheid (upgraden), met dezelfde ID, hartlijn en
+        /// knooppunten. De lanes worden nieuw aangemaakt en bij beide knooppunten opnieuw verbonden.
+        /// </summary>
+        public void Retype(EntityId<SegmentKind> id, IReadOnlyList<LaneSpec> profile, float speedLimit)
+        {
+            var segment = GetSegment(id);
+            ValidateProfile(profile);
+            ReplaceSegment(id, segment.Start, segment.End, segment.Curve, profile, speedLimit, segment);
+        }
+
+        /// <summary>
+        /// Keert de rijrichting van een eenrichtingsweg om: begin en eind wisselen, de hartlijn loopt de andere kant op en de
+        /// lanes houden hun plek. Een weg met verkeer in beide richtingen heeft niets om te keren.
+        /// </summary>
+        public void Reverse(EntityId<SegmentKind> id)
+        {
+            var segment = GetSegment(id);
+            if (!IsOneWay(segment))
+            {
+                throw new InvalidOperationException("Alleen een eenrichtingsweg kan omgekeerd worden.");
+            }
+
+            var profile = new List<LaneSpec>(segment.Lanes.Length);
+            foreach (var lane in segment.Lanes)
+            {
+                var spec = _lanes[lane.Index].Spec;
+                profile.Add(new LaneSpec(spec.Types, spec.Direction, -spec.Offset, spec.Width));
+            }
+
+            ReplaceSegment(id, segment.End, segment.Start, segment.Curve.Reversed, profile, segment.SpeedLimit, segment);
+        }
+
+        /// <summary><c>true</c> als het verkeer op dit segment maar één kant op rijdt en er minstens één rijstrook is.</summary>
+        public bool IsOneWay(RoadSegment segment)
+        {
+            var forward = false;
+            var backward = false;
+            foreach (var lane in segment.Lanes)
+            {
+                var spec = _lanes[lane.Index].Spec;
+                if ((spec.Types & LaneTypes.Vehicles) == LaneTypes.None)
+                {
+                    continue;
+                }
+
+                if (spec.Direction == LaneDirection.Both)
+                {
+                    return false;
+                }
+
+                forward |= spec.Direction == LaneDirection.Forward;
+                backward |= spec.Direction == LaneDirection.Backward;
+            }
+
+            return forward != backward;
         }
 
         /// <summary>Verwijdert een segment met zijn lanes; een knooppunt waar daarna niets meer aan vastzit, verdwijnt ook.</summary>
@@ -243,21 +292,55 @@ namespace Cities.Simulation.Network
             }
         }
 
-        private void ValidateSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile)
+        private FixedList128Bytes<EntityId<LaneKind>> AllocateLanes(EntityId<SegmentKind> id, Bezier3 curve, IReadOnlyList<LaneSpec> profile)
+        {
+            var lanes = new FixedList128Bytes<EntityId<LaneKind>>();
+            foreach (var spec in profile)
+            {
+                var lane = _laneIds.Allocate();
+                var shifted = curve.Offset(spec.Offset);
+                Store(ref _lanes, lane.Index, new Lane(id, spec, spec.Direction == LaneDirection.Backward ? shifted.Reversed : shifted));
+                lanes.Add(lane);
+            }
+
+            return lanes;
+        }
+
+        /// <summary>Vervangt de lanes en de vorm van een bestaand segment en verbindt beide knooppunten opnieuw.</summary>
+        private void ReplaceSegment(EntityId<SegmentKind> id, EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile, float speedLimit, RoadSegment old)
+        {
+            foreach (var lane in old.Lanes)
+            {
+                _connections.Remove(Key(lane, true));
+                _connections.Remove(Key(lane, false));
+                _laneIds.Release(lane);
+            }
+
+            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile)));
+            Reconnect(start);
+            Reconnect(end);
+            SegmentChanged?.Invoke(id);
+        }
+
+        private static void ValidateProfile(IReadOnlyList<LaneSpec> profile)
         {
             if (profile == null)
             {
                 throw new ArgumentNullException(nameof(profile));
             }
 
-            if (start == end)
-            {
-                throw new ArgumentException("Een segment verbindt twee verschillende knooppunten.", nameof(end));
-            }
-
             if (profile.Count == 0 || profile.Count > MaxLanes)
             {
                 throw new ArgumentException($"Een segment heeft 1 tot {MaxLanes} lanes, niet {profile.Count}.", nameof(profile));
+            }
+        }
+
+        private void ValidateSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile)
+        {
+            ValidateProfile(profile);
+            if (start == end)
+            {
+                throw new ArgumentException("Een segment verbindt twee verschillende knooppunten.", nameof(end));
             }
 
             var from = GetNode(start);

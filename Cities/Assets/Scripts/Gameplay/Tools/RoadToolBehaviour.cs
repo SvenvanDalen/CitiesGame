@@ -28,6 +28,12 @@ namespace Cities.Gameplay.Tools
 
         public DemolishTool Demolish { get; private set; }
 
+        /// <summary>Wisselt het wegtype van een bestaand segment naar het gekozen type.</summary>
+        public RoadEditTool Upgrade { get; private set; }
+
+        /// <summary>Keert de rijrichting van een eenrichtingsweg om.</summary>
+        public RoadEditTool Reverse { get; private set; }
+
         /// <summary>De sim-inspector voor wegen en (met <c>_placement</c>) gebouwen.</summary>
         public InspectTool Inspect { get; private set; }
 
@@ -40,6 +46,8 @@ namespace Cities.Gameplay.Tools
             var overlay = new RoadPreviewOverlay();
             Tool = new RoadTool(_network.Network, _world.Map, overlay);
             Demolish = new DemolishTool(_network.Network, overlay);
+            Upgrade = new RoadEditTool(RoadEdit.Upgrade, _network.Network, _world.Map, Tool, overlay);
+            Reverse = new RoadEditTool(RoadEdit.Reverse, _network.Network, _world.Map, Tool, overlay);
             Inspect = new InspectTool(
                 new RoadInspection(_network.Network),
                 _placement != null ? new BuildingInspection(_placement.Occupancy, _world.Map.Dimensions) : null);
@@ -77,6 +85,6 @@ namespace Cities.Gameplay.Tools
 
         /// <summary>Het voorbeeld hoort alleen te staan zolang de wegtool actief is.</summary>
         private void OnActiveChanged(ITool active) =>
-            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool) || ReferenceEquals(active, Demolish));
+            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool) || ReferenceEquals(active, Demolish) || ReferenceEquals(active, Upgrade) || ReferenceEquals(active, Reverse));
     }
 }
