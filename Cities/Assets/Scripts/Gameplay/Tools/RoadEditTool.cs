@@ -109,7 +109,12 @@ namespace Cities.Gameplay.Tools
                 return _network.IsOneWay(road) ? null : "Alleen een eenrichtingsweg kan omgekeerd worden";
             }
 
-            return _roads.TypeId == null ? "Kies eerst een wegtype" : SameAsChosen(road) ? "Al dit wegtype" : null;
+            if (_roads.TypeId == null)
+            {
+                return "Kies eerst een wegtype";
+            }
+
+            return SameAsChosen(road) ? "Al dit wegtype" : null;
         }
 
         private string Info(RoadSegment road) =>
