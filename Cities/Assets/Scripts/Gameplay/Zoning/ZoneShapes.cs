@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.World.Grid;
 using Unity.Mathematics;
 
@@ -65,12 +66,9 @@ namespace Cities.Gameplay.Zoning
             {
                 var cell = queue.Dequeue();
                 cells.Add(cell);
-                foreach (var next in new[] { cell.North, cell.East, cell.South, cell.West })
+                foreach (var next in new[] { cell.North, cell.East, cell.South, cell.West }.Where(n => seen.Add(n) && include(n)))
                 {
-                    if (seen.Add(next) && include(next))
-                    {
-                        queue.Enqueue(next);
-                    }
+                    queue.Enqueue(next);
                 }
             }
 
