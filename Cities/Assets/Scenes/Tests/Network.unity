@@ -1106,6 +1106,7 @@ MonoBehaviour:
   _world: {fileID: 114535556}
   _material: {fileID: 2100000, guid: 6e6750f092ccf31459913189b26cb917, type: 2}
   _camera: {fileID: 0}
+  _water: {fileID: 1965722475}
   _lodDistances:
   - 600
   - 1400

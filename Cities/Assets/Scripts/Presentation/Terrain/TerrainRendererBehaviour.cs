@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cities.World.Grid;
+using Cities.Presentation.Water;
 using Cities.World.Terrain;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -22,6 +23,9 @@ namespace Cities.Presentation.Terrain
         [SerializeField] private WorldMapHostBehaviour _world;
         [SerializeField] private Material _material;
         [SerializeField] private UnityEngine.Camera _camera;
+
+        [Tooltip("Optioneel: het water, zodat de zandrand met de oever meeverschuift.")]
+        [SerializeField] private WaterRendererBehaviour _water;
 
         [Tooltip("Afstand in meters waarboven een chunk een niveau grover wordt (drie oplopende grenzen).")]
         [SerializeField] private float[] _lodDistances = { 600f, 1400f, 3200f };
@@ -124,6 +128,10 @@ namespace Cities.Presentation.Terrain
 
             _map.HeightChanged += OnHeightChanged;
             _map.GroundCoverChanged += OnGroundCoverChanged;
+            if (_water != null)
+            {
+                _water.ShoreChanged += MarkSplatDirty;
+            }
         }
 
         private void OnDestroy()
@@ -132,6 +140,11 @@ namespace Cities.Presentation.Terrain
             {
                 _map.HeightChanged -= OnHeightChanged;
                 _map.GroundCoverChanged -= OnGroundCoverChanged;
+            }
+
+            if (_water != null)
+            {
+                _water.ShoreChanged -= MarkSplatDirty;
             }
 
             Destroy(_splatMap);
