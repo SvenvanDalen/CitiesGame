@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cities.Simulation.Network;
 using Unity.Mathematics;
 
@@ -54,6 +55,19 @@ namespace Cities.Gameplay.Tools
             var direction = new float2(math.sin(radians), math.cos(radians));
             var snapped = start.xz + (direction * length);
             return new float3(snapped.x, point.y, snapped.y);
+        }
+
+        /// <summary>Zet <paramref name="point"/> op de dichtstbijzijnde rasterlijnen van <paramref name="step"/> meter; een stap van 0 snapt niet. De hoogte blijft.</summary>
+        public static float3 SnapToGrid(float3 point, float step) =>
+            step <= 0f ? point : new float3(math.round(point.x / step) * step, point.y, math.round(point.z / step) * step);
+
+        /// <summary>Lengte, koers en hoogteverschil van een weg voor in het voorbeeld, bijvoorbeeld "42.0 m · 90° · +1.5 m (3.6 %)".</summary>
+        public static string Describe(Bezier3 curve)
+        {
+            var length = curve.Length();
+            var rise = curve.P3.y - curve.P0.y;
+            var grade = length > 0f ? rise / length * 100f : 0f;
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} m · {1:0}° · {2:+0.0;-0.0;0.0} m ({3:0.0} %)", length, Yaw(curve.Direction(1f)), rise, math.abs(grade));
         }
 
         /// <summary>Koers in graden van noord (+Z) met de klok mee, tussen 0 en 360.</summary>

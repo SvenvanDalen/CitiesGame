@@ -100,6 +100,23 @@ namespace Cities.Tests.EditMode.Tools
             Assert.That(RoadPlanner.DistanceTo(Bezier3.Straight(float3.zero, float3.zero), new float3(3f, 0f, 4f)), Is.EqualTo(5f).Within(1e-3f), "een punt");
         }
 
+        [Test]
+        public void GridSnapRoundsToTheNearestGridLineAndKeepsTheHeight()
+        {
+            Assert.That(RoadPlanner.SnapToGrid(new float3(13f, 7f, 27f), 8f), Is.EqualTo(new float3(16f, 7f, 24f)).Using(new Float3Comparer()));
+            Assert.That(RoadPlanner.SnapToGrid(new float3(13f, 7f, 27f), 0f), Is.EqualTo(new float3(13f, 7f, 27f)).Using(new Float3Comparer()), "stap 0 snapt niet");
+        }
+
+        [Test]
+        public void DescribeShowsLengthHeadingAndTheHeightDifference()
+        {
+            var up = Bezier3.Straight(new float3(0f, 0f, 0f), new float3(0f, 5f, 100f));
+            var down = Bezier3.Straight(new float3(0f, 5f, 0f), new float3(100f, 0f, 0f));
+
+            Assert.That(RoadPlanner.Describe(up), Does.StartWith("100.1 m · 0°").And.Contain("+5.0 m (5.0 %)"));
+            Assert.That(RoadPlanner.Describe(down), Does.Contain("90°").And.Contain("-5.0 m"));
+        }
+
         private sealed class Float3Comparer : System.Collections.Generic.IEqualityComparer<float3>
         {
             public bool Equals(float3 x, float3 y) => math.distance(x, y) < 1e-3f;
