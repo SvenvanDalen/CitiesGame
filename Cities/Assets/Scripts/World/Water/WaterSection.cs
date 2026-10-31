@@ -18,7 +18,7 @@ namespace Cities.World.Water
 
         public string Id => SectionId;
 
-        public int Version => 1;
+        public int Version => 2;
 
         public void Write(SaveWriter writer)
         {
@@ -26,6 +26,13 @@ namespace Cities.World.Water
             writer.Write(_water.Depth);
             writer.WriteShuffled<float>(_water.Water.AsReadOnlySpan());
             writer.WriteShuffled<float>(_water.Flux.AsReadOnlySpan());
+            writer.Write(_water.Sources.Count);
+            foreach (var source in _water.Sources.Items)
+            {
+                writer.Write(source.X);
+                writer.Write(source.Z);
+                writer.Write(source.Discharge);
+            }
         }
 
         public Action Read(SaveReader reader, int version)
@@ -41,11 +48,35 @@ namespace Cities.World.Water
             var flux = new float[_water.Flux.Length];
             reader.ReadShuffled<float>(water);
             reader.ReadShuffled<float>(flux);
+            var sources = version >= 2 ? ReadSources(reader) : Array.Empty<WaterSource>();
             reader.ExpectEnd();
             Validate(reader, water, "waterdiepte");
             Validate(reader, flux, "stroom");
 
-            return () => _water.Restore(water, flux);
+            return () => _water.Restore(water, flux, sources);
+        }
+
+        private static WaterSource[] ReadSources(SaveReader reader)
+        {
+            var count = reader.ReadInt32();
+            if (count < 0 || count > WaterSources.MaxCount)
+            {
+                throw reader.Corrupt($"{count} bronnen");
+            }
+
+            var sources = new WaterSource[count];
+            for (var i = 0; i < count; i++)
+            {
+                var source = new WaterSource(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                if (!float.IsFinite(source.X) || !float.IsFinite(source.Z) || !float.IsFinite(source.Discharge))
+                {
+                    throw reader.Corrupt($"bron {i} is geen getal");
+                }
+
+                sources[i] = source;
+            }
+
+            return sources;
         }
 
         private static void Validate(SaveReader reader, float[] values, string what)

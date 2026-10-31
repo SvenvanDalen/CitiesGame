@@ -39,8 +39,7 @@ namespace Cities.World.Water
             _counter = DebugRegistry.Shared.AddCounter("Water", "Volume (m³)", () => (long)Water.Volume);
             if (_riverDischarge > 0f)
             {
-                var x = LowestOnSouthEdge(_world.Map);
-                Water.SetSource(x, 0f, _riverDischarge);
+                Water.Sources.Add(LowestOnSouthEdge(_world.Map), 0f, _riverDischarge);
             }
         }
 
