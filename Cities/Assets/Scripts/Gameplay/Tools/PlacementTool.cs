@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Cities.Gameplay.Zoning;
 using Cities.World.Grid;
 using Cities.World.Terrain;
 using Unity.Mathematics;
@@ -11,12 +13,17 @@ namespace Cities.Gameplay.Tools
     {
         public const string OutsideMap = "Buiten de kaart";
         public const string TooSteep = "Te steil";
+        public const string OnRoad = "Op de weg";
+
+        /// <summary>Binnen zoveel cellen van een weg draait de voorkant vanzelf naar die weg.</summary>
+        public const int RoadSnapCells = 4;
 
         private readonly WorldDimensions _dimensions;
         private readonly ITerrainHeight _terrain;
         private readonly IPlacementTarget _target;
         private readonly float2[] _samples = new float2[5];
         private Footprint _footprint;
+        private int _manualTurns;
 
         /// <param name="maxRise">Grootste hoogteverschil binnen de footprint in meters.</param>
         public PlacementTool(
@@ -60,9 +67,13 @@ namespace Cities.Gameplay.Tools
 
         public float MaxRise { get; }
 
+        /// <summary>Optioneel: laat de voorkant naar een weg in de buurt wijzen en weigert plaatsen op de weg.</summary>
+        public IRoadSnap Roads { get; set; }
+
+        /// <summary>De draaiing van de footprint: de kant van de weg plus wat de speler erbij draaide.</summary>
         public int QuarterTurns { get; private set; }
 
-        public void Activate() => QuarterTurns = 0;
+        public void Activate() => _manualTurns = QuarterTurns = 0;
 
         public void Deactivate()
         {
@@ -71,13 +82,16 @@ namespace Cities.Gameplay.Tools
 
         public ToolPreview UpdatePreview(in ToolInput input)
         {
-            QuarterTurns = (((QuarterTurns + input.RotateSteps) % 4) + 4) % 4;
+            _manualTurns = (((_manualTurns + input.RotateSteps) % 4) + 4) % 4;
             if (!input.Pick.HasGround)
             {
+                QuarterTurns = _manualTurns;
                 return ToolPreview.Hidden;
             }
 
-            _footprint = GridSnap.Footprint(input.Pick.Ground.Point, Width, Depth, QuarterTurns, _dimensions.CellSize);
+            var point = input.Pick.Ground.Point;
+            QuarterTurns = (_manualTurns + TurnsTowardRoad(point)) % 4;
+            _footprint = GridSnap.Footprint(point, Width, Depth, QuarterTurns, _dimensions.CellSize);
             var center = _footprint.Center(_dimensions);
             var reason = Check(_footprint, out var baseHeight);
             var size = new float2(Width, Depth) * _dimensions.CellSize;
@@ -115,7 +129,23 @@ namespace Cities.Gameplay.Tools
                 return OutsideMap;
             }
 
-            return high - low > MaxRise ? TooSteep : _target.Check(footprint);
+            if (high - low > MaxRise)
+            {
+                return TooSteep;
+            }
+
+            return Roads != null && BuildingPlacement.Cells(footprint).Any(Roads.IsOnRoad) ? OnRoad : _target.Check(footprint);
+        }
+
+        // De voorkant (lokaal -Z) wijst naar de weg; 0 zonder weg binnen bereik.
+        private int TurnsTowardRoad(float3 point)
+        {
+            if (Roads == null || !Roads.TryNearestRoad(point, out var road) || math.distance(road.xz, point.xz) > RoadSnapCells * _dimensions.CellSize)
+            {
+                return 0;
+            }
+
+            return BuildingPlacement.QuarterTurnsToFace(road.xz - point.xz);
         }
     }
 }

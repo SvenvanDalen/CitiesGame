@@ -393,6 +393,8 @@ MonoBehaviour:
   _residentialDemand: 0.5
   _commercialDemand: 0.5
   _workDemand: 0.5
+  _constructionTimeScale: 1
+  _scaffoldMaterial: {fileID: 0}
 --- !u!1 &268577728
 GameObject:
   m_ObjectHideFlags: 0
@@ -504,6 +506,7 @@ MonoBehaviour:
   _maxRise: 1.5
   _selectOnStart: 0
   _world: {fileID: 114535556}
+  _roads: {fileID: 134375089}
 --- !u!4 &542177700
 Transform:
   m_ObjectHideFlags: 0
