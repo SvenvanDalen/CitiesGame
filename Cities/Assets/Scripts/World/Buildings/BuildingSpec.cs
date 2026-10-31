@@ -34,6 +34,18 @@ namespace Cities.World.Buildings
         [Tooltip("Aantal arbeidsplaatsen.")]
         public int Workplaces;
 
+        [Tooltip("Deel van de arbeidsplaatsen voor middelbaar opgeleiden, in procenten.")]
+        public int MediumEducationPercent;
+
+        [Tooltip("Deel van de arbeidsplaatsen voor hoger opgeleiden, in procenten; samen met middelbaar hoogstens 100.")]
+        public int HighEducationPercent;
+
+        [Tooltip("Wat de winkels in dit gebouw per dag kunnen verkopen, in euro (alleen winkels).")]
+        public long ShopCapacity;
+
+        [Tooltip("Goederen die dit gebouw per dag produceert, in eenheden (alleen industrie).")]
+        public int Production;
+
         [Tooltip("Bouwkosten; voor groeigebouwen 0, die betaalt de ontwikkelaar.")]
         public long ConstructionCost;
 
@@ -46,6 +58,25 @@ namespace Cities.World.Buildings
 
         public int FootprintCells => FootprintWidth * FootprintDepth;
 
+        /// <summary>
+        /// Arbeidsplaatsen voor <paramref name="level"/>. De drie niveaus tellen altijd op tot <see cref="Workplaces"/>:
+        /// hoog en middelbaar worden afgerond, de rest is laag opgeleid.
+        /// </summary>
+        public int WorkplacesFor(EducationLevel level)
+        {
+            var high = (int)Math.Round(Workplaces * HighEducationPercent / 100.0, MidpointRounding.AwayFromZero);
+            var medium = Math.Min((int)Math.Round(Workplaces * MediumEducationPercent / 100.0, MidpointRounding.AwayFromZero), Workplaces - high);
+            switch (level)
+            {
+                case EducationLevel.High:
+                    return high;
+                case EducationLevel.Medium:
+                    return medium;
+                default:
+                    return Workplaces - high - medium;
+            }
+        }
+
         public void Validate(ICollection<string> errors)
         {
             SpecValidation.Range(errors, nameof(FootprintWidth), FootprintWidth, 1, 16);
@@ -54,6 +85,10 @@ namespace Cities.World.Buildings
             SpecValidation.Range(errors, nameof(Households), Households, 0, 5000);
             SpecValidation.Range(errors, nameof(Workplaces), Workplaces, 0, 20000);
             SpecValidation.Range(errors, nameof(ConstructionDays), ConstructionDays, 0, 3650);
+            SpecValidation.Range(errors, nameof(MediumEducationPercent), MediumEducationPercent, 0, 100);
+            SpecValidation.Range(errors, nameof(HighEducationPercent), HighEducationPercent, 0, 100);
+            SpecValidation.Range(errors, nameof(Production), Production, 0, 1_000_000);
+            SpecValidation.NotNegative(errors, nameof(ShopCapacity), ShopCapacity);
             SpecValidation.NotNegative(errors, nameof(ConstructionCost), ConstructionCost);
             SpecValidation.NotNegative(errors, nameof(UpkeepPerMonth), UpkeepPerMonth);
 
@@ -75,6 +110,31 @@ namespace Cities.World.Buildings
             if ((Zone == ZoneType.Commercial || Zone == ZoneType.Industrial || Zone == ZoneType.Office) && Workplaces == 0)
             {
                 errors.Add("Een gebouw voor werk heeft minstens één arbeidsplaats.");
+            }
+
+            if (MediumEducationPercent + HighEducationPercent > 100)
+            {
+                errors.Add("Middelbaar en hoger opgeleide banen samen zijn hoogstens 100 procent.");
+            }
+
+            if (Zone == ZoneType.Commercial && ShopCapacity == 0)
+            {
+                errors.Add("Een winkelgebouw heeft winkelcapaciteit.");
+            }
+
+            if (Zone != ZoneType.Commercial && ShopCapacity > 0)
+            {
+                errors.Add("Alleen winkelgebouwen hebben winkelcapaciteit.");
+            }
+
+            if (Zone == ZoneType.Industrial && Production == 0)
+            {
+                errors.Add("Een industriegebouw produceert iets.");
+            }
+
+            if (Zone != ZoneType.Industrial && Production > 0)
+            {
+                errors.Add("Alleen industriegebouwen produceren goederen.");
             }
 
             if (IsGrowable && ConstructionCost > 0)

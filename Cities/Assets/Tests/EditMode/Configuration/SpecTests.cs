@@ -112,6 +112,59 @@ namespace Cities.Tests.EditMode.Configuration
         }
 
         [Test]
+        public void WorkplacesAreSplitByEducationAndAlwaysAddUp()
+        {
+            var office = Terrace();
+            office.Zone = ZoneType.Office;
+            office.Households = 0;
+            office.Workplaces = 25;
+            office.MediumEducationPercent = 30;
+            office.HighEducationPercent = 50;
+
+            Assert.That(Errors(office.Validate), Is.Empty);
+            Assert.That(office.WorkplacesFor(EducationLevel.High), Is.EqualTo(13));
+            Assert.That(office.WorkplacesFor(EducationLevel.Medium), Is.EqualTo(8));
+            Assert.That(office.WorkplacesFor(EducationLevel.Low), Is.EqualTo(4));
+
+            office.Workplaces = 1;
+            office.MediumEducationPercent = 50;
+            office.HighEducationPercent = 50;
+            var total = office.WorkplacesFor(EducationLevel.Low) + office.WorkplacesFor(EducationLevel.Medium) + office.WorkplacesFor(EducationLevel.High);
+            Assert.That(total, Is.EqualTo(1), "afronding verliest nooit een baan");
+            Assert.That(office.WorkplacesFor(EducationLevel.Low), Is.GreaterThanOrEqualTo(0));
+
+            office.HighEducationPercent = 60;
+            Assert.That(Errors(office.Validate), Has.Some.Contains("hoogstens 100 procent"));
+        }
+
+        [Test]
+        public void ShopCapacityAndProductionBelongToTheirZoneType()
+        {
+            var shop = Terrace();
+            shop.Zone = ZoneType.Commercial;
+            shop.Households = 0;
+            shop.Workplaces = 6;
+
+            Assert.That(Errors(shop.Validate), Has.Some.Contains("winkelcapaciteit"));
+            shop.ShopCapacity = 4000;
+            Assert.That(Errors(shop.Validate), Is.Empty);
+
+            var factory = shop;
+            factory.Zone = ZoneType.Industrial;
+            var errors = Errors(factory.Validate);
+            Assert.That(errors, Has.Some.Contains("Alleen winkelgebouwen"));
+            Assert.That(errors, Has.Some.Contains("produceert iets"));
+
+            factory.ShopCapacity = 0;
+            factory.Production = 120;
+            Assert.That(Errors(factory.Validate), Is.Empty);
+
+            var house = Terrace();
+            house.Production = 5;
+            Assert.That(Errors(house.Validate), Has.Some.Contains("Alleen industriegebouwen"));
+        }
+
+        [Test]
         public void ServiceBuildingMayBeDeepAndCostMoney()
         {
             var school = new BuildingSpec
