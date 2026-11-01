@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Simulation.Economy
 {
@@ -76,14 +77,14 @@ namespace Cities.Simulation.Economy
 
         public long Income(int week) => Sum(_income, week);
 
+        public long Income(int week, LedgerCategory category) => Get(_income, week, category);
+
         public long Expenses(int week) => Sum(_expenses, week);
+
+        public long Expenses(int week, LedgerCategory category) => Get(_expenses, week, category);
 
         /// <summary>Inkomsten min uitgaven van een week.</summary>
         public long Net(int week) => Income(week) - Expenses(week);
-
-        public long Income(int week, LedgerCategory category) => Get(_income, week, category);
-
-        public long Expenses(int week, LedgerCategory category) => Get(_expenses, week, category);
 
         private static void CheckAmount(long amount)
         {
@@ -126,16 +127,10 @@ namespace Cities.Simulation.Economy
         {
             foreach (var book in new[] { _income, _expenses })
             {
-                var old = new List<int>();
-                foreach (var week in book.Keys)
+                foreach (var week in book.Keys.Where(w => w <= newest - HistoryWeeks).ToList())
                 {
-                    if (week <= newest - HistoryWeeks)
-                    {
-                        old.Add(week);
-                    }
+                    book.Remove(week);
                 }
-
-                old.ForEach(w => book.Remove(w));
             }
         }
     }
