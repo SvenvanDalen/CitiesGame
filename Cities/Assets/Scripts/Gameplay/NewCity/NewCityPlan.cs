@@ -40,18 +40,7 @@ namespace Cities.Gameplay.NewCity
         public int StartYear { get; }
 
         /// <summary>Startgeld in euro: ruim bij makkelijk, krap bij moeilijk.</summary>
-        public long StartMoney
-        {
-            get
-            {
-                switch (Difficulty)
-                {
-                    case Difficulty.Easy: return 2_000_000;
-                    case Difficulty.Hard: return 500_000;
-                    default: return 1_000_000;
-                }
-            }
-        }
+        public long StartMoney => DifficultySettings.For(Difficulty).StartMoney;
 
         /// <summary>De terreininstellingen van de gekozen kaart.</summary>
         public TerrainShapeSettings Terrain()
