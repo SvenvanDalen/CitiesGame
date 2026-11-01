@@ -35,7 +35,14 @@ namespace Cities.Presentation.UI
         public static float Meter(float demand) => System.Math.Min(1f, System.Math.Max(0f, (demand + 1f) * 0.5f));
 
         /// <summary>Kleur van een vraagmeter: groen bij vraag, oranje bij overschot, anders neutraal.</summary>
-        public static MeterColor MeterColorFor(float demand) =>
-            demand > 0.1f ? MeterColor.Success : demand < -0.1f ? MeterColor.Warning : MeterColor.Accent;
+        public static MeterColor MeterColorFor(float demand)
+        {
+            if (demand > 0.1f)
+            {
+                return MeterColor.Success;
+            }
+
+            return demand < -0.1f ? MeterColor.Warning : MeterColor.Accent;
+        }
     }
 }
