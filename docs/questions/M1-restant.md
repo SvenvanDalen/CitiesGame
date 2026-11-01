@@ -47,3 +47,11 @@ Klaar als: op- en afritten, klaverblad en turbine-opties met voorbeeldpresets.
 4. **Rijrichting en lanes.** Rechts rijden is aangenomen; hoeveel rijstroken hebben de ramps en gebruiken ze de bestaande `Highway`-wegtype of een eigen "ramp"-type met lagere snelheid?
 5. **Verkeer en voorrang.** Voegstroken, vlechtvakken en voorrang bij de ramps hangen af van de verkeersregels (E04-13, M3). Ramps nu alleen als geometrie, of ook al met een eerste voegregel?
 6. **Splitsen.** Voorstel: eerst de geometrie van een preset (ramps als wegstukken, getest op vorm en aansluiting), daarna de tool en de UI. Akkoord?
+
+## E21-03 Asset-register (#231)
+
+Klaar als: registry of Addressables waarmee gebouwen, voertuigen en props worden gevonden en geladen.
+
+1. **Registry of Addressables?** Addressables staat niet in het project. De bestaande `DefinitionCatalog` vindt al elke definitie op ID en verwijst naar het prefab (gebouwen, centrales). Is dat het register, of wil je echt Addressables (asynchroon laden, bundels, geheugenbeheer)? Addressables voegt een pakket, een groepsindeling en asynchrone aanroepen toe aan alles wat nu een prefab direct gebruikt.
+2. **Voertuigen en props.** Er zijn nog geen voertuigmodellen en geen prop-definities (alleen bomen). Moet het register nu ook die typen kennen, of pas als de definities er zijn?
+3. **Wat is "laden"?** Alles bij het starten laden, of per gebouw pas als het nodig is (streaming bij zoomen)? Dat bepaalt of een synchrone opzoeklijst genoeg is.
