@@ -84,3 +84,14 @@ Klaar als: rijtjes, vrijstaand en blokken met gedeeld erf op basis van bouwvolum
 3. **Gedeeld erf.** Is dat alleen een visuele binnenplaats (gras, bomen, geen gebouw), of ook gedeelde functie (parkeren, speeltuin) met effect op landwaarde of geluk?
 4. **Modellen.** Er bestaan nu vrijstaande woningen en enkele rijtjes. Moet ik nu ook blokmodellen met binnenplaats maken (realistisch, per niveau)? Dat is een groot deel van het werk.
 5. **Splitsen.** Voorstel: eerst de indelingsregel (kavel, dichtheid, volume naar typologie, getest), daarna de modellen.
+
+## E04-12 Rotondes (#44)
+
+Klaar als: rotondes met instelbare straal en armen en correcte voorrang.
+
+1. **Voorrang.** Er is nog geen voorrangsbegrip in de code; dat komt met E04-13 (verkeersregels) en E08-05. Mag ik een voorrangsvlag per toegangsarm ("geeft voorrang aan de ring") als data op het wegennet leggen, vooruitlopend daarop, of wachten we met E04-12 tot E04-13 klaar is?
+2. **Armen.** Is het aantal armen het aantal bestaande wegen dat de speler aansluit, of plaatst de tool zelf 2 tot 8 korte armen (maximaal `RoadNetwork.MaxArms`) met een vaste hoek waar de speler daarna aan bouwt?
+3. **Bestaand kruispunt.** Moet de tool ook een bestaand kruispunt omzetten naar een rotonde, of alleen een nieuwe plaatsen op open terrein?
+4. **Straal en rijrichting.** Welke grenzen gelden voor de straal (bijvoorbeeld 12 tot 40 m)? Rechts rijden, dus de ring draait tegen de klok in?
+5. **Baantypes.** Eén of meerdere rijstroken op de ring, en welk wegtype (`LaneProfiles`)?
+6. **Splitsen.** Voorstel: eerst de ringgeometrie met aansluitingen als geteste logica (de ring als eenrichtingssegmenten in `RoadNetwork`), daarna de tool en UI, en de voorrang met E04-13.
