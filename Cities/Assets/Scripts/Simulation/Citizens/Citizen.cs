@@ -22,7 +22,7 @@ namespace Cities.Simulation.Citizens
         public const int MaxAge = 120;
         public const int MaxScore = 100;
 
-        // shortcut: vaste leeftijdsgrenzen, E07-02 (levenscyclus) maakt ze configureerbaar.
+        // shortcut: Group en Validate gebruiken de standaardgrenzen; LifeRules maakt ze instelbaar, upgrade als een stad eigen grenzen krijgt.
         public const int AdultAge = 18;
         public const int RetirementAge = 67;
 
