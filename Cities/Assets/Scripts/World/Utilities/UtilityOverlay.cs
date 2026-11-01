@@ -51,7 +51,8 @@ namespace Cities.World.Utilities
             }
 
             var radiusSq = view.Radius * view.Radius;
-            foreach (var id in _network.Nodes.Where(n => math.lengthsq(_network.PositionOf(n) - view.Focus.xz) <= radiusSq))
+            var focus = view.Focus.xz;
+            foreach (var id in _network.Nodes.Where(n => math.lengthsq(_network.PositionOf(n) - focus) <= radiusSq))
             {
                 var position = _network.PositionOf(id);
                 var color = ColorFor(_network.Satisfaction(id));
