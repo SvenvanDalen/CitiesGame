@@ -64,3 +64,4 @@ Cities/Assets/Scripts/Editor/Models/PowerPlantBuilder.cs
 Cities/Assets/Scripts/Editor/Models/PowerPlantMaterials.cs
 Cities/Assets/Scripts/World/Utilities/PowerPlantDefinition.cs
 Cities/Assets/Scripts/World/Terrain/HeightmapImporter.cs
+Cities/Assets/Scripts/Simulation/Network/LanePathfinder.cs
