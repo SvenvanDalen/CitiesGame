@@ -74,3 +74,13 @@ Klaar als: vaste teststeden van 10k, 100k en 500k inwoners met automatische meti
 3. **Wat meten we?** Alleen framettijd en tick-tijd per systeem (bestaande `PerformanceBudgets`), ook geheugen en laadtijd? Welk resultaat geldt als "mislukt": een vast budget of een vergelijking met de vorige run?
 4. **Waar draait het?** In Unity (PlayMode, handmatig of met de MCP) of ook in CI? CI heeft geen Unity en geen GPU, dus alleen de simulatie zonder rendering kan daar.
 5. **Splitsen.** Voorstel: eerst een generator die een stad van N huishoudens uit een seed bouwt (testbaar), daarna de meetscene.
+
+## E05-11 Bouwblokken (#60)
+
+Klaar als: rijtjes, vrijstaand en blokken met gedeeld erf op basis van bouwvolume.
+
+1. **Wat is bouwvolume?** De kavelgrootte in cellen, de dichtheid van de zone, de landwaarde, of het volume dat de ontwikkelaar wil bouwen? Bepaalt dat per kavel of er een rijtje, een vrijstaand huis of een blok komt?
+2. **Wie bepaalt het bouwblok?** Kiest de spawner per zone een typologie, of groepeert een nieuwe stap bestaande kavels langs een weg tot één blok (met gedeeld erf)? Dat laatste verandert hoe de spawner kavels indeelt.
+3. **Gedeeld erf.** Is dat alleen een visuele binnenplaats (gras, bomen, geen gebouw), of ook gedeelde functie (parkeren, speeltuin) met effect op landwaarde of geluk?
+4. **Modellen.** Er bestaan nu vrijstaande woningen en enkele rijtjes. Moet ik nu ook blokmodellen met binnenplaats maken (realistisch, per niveau)? Dat is een groot deel van het werk.
+5. **Splitsen.** Voorstel: eerst de indelingsregel (kavel, dichtheid, volume naar typologie, getest), daarna de modellen.
