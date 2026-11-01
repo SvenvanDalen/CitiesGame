@@ -55,3 +55,12 @@ Klaar als: registry of Addressables waarmee gebouwen, voertuigen en props worden
 1. **Registry of Addressables?** Addressables staat niet in het project. De bestaande `DefinitionCatalog` vindt al elke definitie op ID en verwijst naar het prefab (gebouwen, centrales). Is dat het register, of wil je echt Addressables (asynchroon laden, bundels, geheugenbeheer)? Addressables voegt een pakket, een groepsindeling en asynchrone aanroepen toe aan alles wat nu een prefab direct gebruikt.
 2. **Voertuigen en props.** Er zijn nog geen voertuigmodellen en geen prop-definities (alleen bomen). Moet het register nu ook die typen kennen, of pas als de definities er zijn?
 3. **Wat is "laden"?** Alles bij het starten laden, of per gebouw pas als het nodig is (streaming bij zoomen)? Dat bepaalt of een synchrone opzoeklijst genoeg is.
+
+## E21-04 Placeholder-set (#232)
+
+Klaar als: lowpoly gebouwen, voertuigen en burgers voor elk type zodat alles testbaar is.
+
+1. **Lowpoly of realistisch?** Je vroeg dat modellen meteen realistisch zijn, niet demo. Een placeholder-set is per definitie grof. Mag deze set dus gewoon de bestaande gegenereerde gebouwen zijn (20 gebouwen en 3 centrales), of wil je echt een aparte, grovere set die elk type dekt?
+2. **Welke typen?** Er zijn nog geen voertuig- of burgerdefinities, en ook geen burgers of voertuigen in de simulatie. Welke voertuigtypes (auto, bus, vrachtwagen, tram, trein, hulpdiensten) en welke burgervarianten (leeftijd, geslacht, kleding) bedoel je met "elk type"?
+3. **Hoe maak ik ze?** Procedureel in code (zoals de gebouwen), via Blender of via een generator. Procedureel kan lowpoly voertuigen goed, mensen veel moeilijker; een generator kost credits. Wat heeft de voorkeur?
+4. **Wachten op de definities?** Voertuigen horen bij E07 (OV en verkeer) en burgers bij E08. Moeten de modellen daar mee worden gemaakt zodra die definities bestaan?
