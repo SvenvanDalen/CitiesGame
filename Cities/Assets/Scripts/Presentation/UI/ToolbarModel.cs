@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Presentation.UI
 {
@@ -45,11 +46,17 @@ namespace Cities.Presentation.UI
             [ToolbarTab.Districts] = "Districten",
         };
 
+        /// <summary>Alle tabs in toolbalkvolgorde.</summary>
+        public static readonly IReadOnlyList<ToolbarTab> Tabs = new[]
+        {
+            ToolbarTab.Roads, ToolbarTab.Zones, ToolbarTab.Utilities, ToolbarTab.Services, ToolbarTab.Transit, ToolbarTab.Policies, ToolbarTab.Districts,
+        };
+
         private readonly Dictionary<ToolbarTab, List<ToolbarEntry>> _entries = new Dictionary<ToolbarTab, List<ToolbarEntry>>();
 
         public ToolbarModel()
         {
-            foreach (ToolbarTab tab in Enum.GetValues(typeof(ToolbarTab)))
+            foreach (var tab in Tabs)
             {
                 _entries[tab] = new List<ToolbarEntry>();
             }
@@ -70,12 +77,9 @@ namespace Cities.Presentation.UI
         /// <summary>Voegt een knop toe aan een tab; een tweede met hetzelfde id wordt geweigerd.</summary>
         public void Add(ToolbarTab tab, ToolbarEntry entry)
         {
-            foreach (var list in _entries.Values)
+            if (_entries.Values.Any(list => list.Exists(e => e.Id == entry.Id)))
             {
-                if (list.Exists(e => e.Id == entry.Id))
-                {
-                    throw new ArgumentException($"Knop '{entry.Id}' bestaat al.", nameof(entry));
-                }
+                throw new ArgumentException($"Knop '{entry.Id}' bestaat al.", nameof(entry));
             }
 
             _entries[tab].Add(entry);

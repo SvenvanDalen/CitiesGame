@@ -20,12 +20,13 @@ namespace Cities.Tests.EditMode.UI
             var model = new ToolbarModel();
 
             Assert.That(model.OpenTab, Is.Null);
-            foreach (ToolbarTab tab in Enum.GetValues(typeof(ToolbarTab)))
+            foreach (var tab in ToolbarModel.Tabs)
             {
                 Assert.That(ToolbarModel.LabelOf(tab), Is.Not.Empty);
                 Assert.That(model.EntriesOf(tab), Is.Empty);
             }
 
+            Assert.That(ToolbarModel.Tabs.Count, Is.EqualTo(7));
             Assert.That(ToolbarModel.LabelOf(ToolbarTab.Utilities), Is.EqualTo("Nutsvoorzieningen"));
         }
 
