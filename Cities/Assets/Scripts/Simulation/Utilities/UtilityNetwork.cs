@@ -126,6 +126,33 @@ namespace Cities.Simulation.Utilities
             return _nodes[id].Demand * _nodes[id].Satisfaction;
         }
 
+        /// <summary>De ID's van alle knopen die nog bestaan.</summary>
+        public IEnumerable<int> Nodes => Enumerable.Range(0, _nodes.Count).Where(i => _nodes[i].Alive);
+
+        public float2 PositionOf(int id)
+        {
+            Check(id);
+            return _nodes[id].Position;
+        }
+
+        /// <summary>De knopen waarmee deze knoop met een leiding is verbonden.</summary>
+        public IReadOnlyCollection<int> LinksOf(int id)
+        {
+            Check(id);
+            return _links[id];
+        }
+
+        /// <summary>Capaciteit, vraag en belasting van één net, voor de inspectie. Geldig na de eerste <see cref="Tick"/>.</summary>
+        public NetworkLoad Inspect(int network)
+        {
+            if (network < 0 || network >= _supply.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(network), network, "Onbekend net.");
+            }
+
+            return new NetworkLoad(_supply[network], _demand[network], _nodes.Count(n => n.Alive && n.Network == network));
+        }
+
         public float Supply(int network) => _supply[network];
 
         public float Demand(int network) => _demand[network];
@@ -289,5 +316,38 @@ namespace Cities.Simulation.Utilities
         }
 
         private void Union(int a, int b) => _parent[Find(a)] = Find(b);
+    }
+
+    /// <summary>Hoe zwaar één net belast is: wat het levert, wat er gevraagd wordt en uit hoeveel knopen het bestaat.</summary>
+    public readonly struct NetworkLoad
+    {
+        public NetworkLoad(float supply, float demand, int nodes)
+        {
+            Supply = supply;
+            Demand = demand;
+            Nodes = nodes;
+        }
+
+        public float Supply { get; }
+
+        public float Demand { get; }
+
+        public int Nodes { get; }
+
+        /// <summary>Vraag gedeeld door aanbod; boven 1 is er een tekort. Zonder aanbod en vraag 0, zonder aanbod maar met vraag oneindig.</summary>
+        public float Utilization
+        {
+            get
+            {
+                if (Supply > 0f)
+                {
+                    return Demand / Supply;
+                }
+
+                return Demand > 0f ? float.PositiveInfinity : 0f;
+            }
+        }
+
+        public bool IsOverloaded => Demand > Supply;
     }
 }
