@@ -85,6 +85,24 @@ namespace Cities.Simulation.Services
             return incident;
         }
 
+        /// <summary>Trekt een melding in (bijvoorbeeld een afgebrand gebouw); een onderweg zijnd voertuig is meteen weer vrij.</summary>
+        public bool Cancel(Incident incident)
+        {
+            if (!_open.Remove(incident))
+            {
+                return false;
+            }
+
+            if (incident.Handler != null)
+            {
+                incident.Handler.FreeVehicles++;
+                incident.Handler = null;
+            }
+
+            Assign();
+            return true;
+        }
+
         /// <summary>Laat <paramref name="seconds"/> verstrijken; geeft de meldingen die nu zijn afgehandeld.</summary>
         public IReadOnlyList<Incident> Tick(float seconds)
         {
