@@ -12,6 +12,9 @@ namespace Cities.Simulation.Network
         Bike = 4,
         Pedestrian = 8,
 
+        /// <summary>Parkeerstrook langs de rijbaan; geen verkeerslane, dus ook niet in het lanegraaf.</summary>
+        Parking = 16,
+
         /// <summary>Alles wat op de rijbaan rijdt; deze lanes sluiten op elkaar aan.</summary>
         Vehicles = Car | Bus,
     }

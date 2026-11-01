@@ -71,9 +71,9 @@ namespace Cities.World.Roads
                     continue;
                 }
 
-                var surface = (lane.Types & LaneTypes.Vehicles) != 0 ? RoadSurface.Asphalt : RoadSurface.Bike;
+                var surface = (lane.Types & (LaneTypes.Vehicles | LaneTypes.Parking)) != 0 ? RoadSurface.Asphalt : RoadSurface.Bike;
                 AddStrip(data, surface, line, lane.Offset - (lane.Width * 0.5f), lane.Offset + (lane.Width * 0.5f), 0f);
-                if (surface == RoadSurface.Asphalt)
+                if ((lane.Types & LaneTypes.Vehicles) != 0)
                 {
                     vehicles.Add(lane);
                 }
