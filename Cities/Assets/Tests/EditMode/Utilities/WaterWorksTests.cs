@@ -49,5 +49,34 @@ namespace Cities.Tests.EditMode.Utilities
             Assert.Throws<ArgumentOutOfRangeException>(() => new WaterTower(0f));
             Assert.Throws<ArgumentOutOfRangeException>(() => tower.Step(-1f, 0f));
         }
+
+        [Test]
+        public void PressureFollowsTheFillOfTheTower()
+        {
+            var tower = new WaterTower(100f, 50f);
+
+            Assert.That(tower.Fill, Is.EqualTo(0.5f));
+            Assert.That(WaterPressure.Head(tower.Fill), Is.EqualTo(20f));
+            Assert.That(WaterPressure.Head(2f), Is.EqualTo(WaterPressure.MaxHead), "begrensd");
+            Assert.That(WaterPressure.Head(-1f), Is.Zero);
+        }
+
+        [Test]
+        public void TallBuildingsLoseWaterWhenPressureDrops()
+        {
+            Assert.That(WaterPressure.Reaches(1f, 30f), Is.True);
+            Assert.That(WaterPressure.Reaches(0.5f, 30f), Is.False, "toren half vol: 20 m opvoerhoogte");
+            Assert.That(WaterPressure.Reaches(0.5f, 15f), Is.True);
+        }
+
+        [Test]
+        public void AShortageCutsThatShareOfConnections()
+        {
+            Assert.That(WaterPressure.OutageFraction(60f, 80f), Is.EqualTo(0.25f).Within(1e-5f));
+            Assert.That(WaterPressure.OutageFraction(80f, 80f), Is.Zero);
+            Assert.That(WaterPressure.OutageFraction(100f, 80f), Is.Zero, "overschot is geen uitval");
+            Assert.That(WaterPressure.OutageFraction(0f, 80f), Is.EqualTo(1f));
+            Assert.That(WaterPressure.OutageFraction(0f, 0f), Is.Zero, "geen vraag, geen uitval");
+        }
     }
 }

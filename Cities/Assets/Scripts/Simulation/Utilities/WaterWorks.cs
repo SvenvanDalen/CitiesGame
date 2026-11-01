@@ -53,6 +53,9 @@ namespace Cities.Simulation.Utilities
 
         public float Level { get; private set; }
 
+        /// <summary>Vulling als deel van de inhoud, 0 (leeg) tot 1 (vol); bepaalt de waterdruk in het net.</summary>
+        public float Fill => Level / Capacity;
+
         /// <summary>Verwerkt één stap: vult met <paramref name="inflow"/> en levert zoveel van <paramref name="demand"/> als beschikbaar is. Geeft het geleverde volume.</summary>
         public float Step(float inflow, float demand)
         {
@@ -65,6 +68,33 @@ namespace Cities.Simulation.Utilities
             var delivered = math.min(demand, available);
             Level = math.min(Capacity, available - delivered);
             return delivered;
+        }
+    }
+
+    /// <summary>
+    /// Waterdruk en uitval (E06-08). De druk volgt de vulling van de toren: een volle toren zet water tot <see cref="MaxHead"/> meter hoogte;
+    /// een gebouw dat hoger ligt dan de opvoerhoogte krijgt geen water. Levert de toren minder dan de vraag, dan valt dat deel van de
+    /// aansluitingen uit.
+    /// </summary>
+    public static class WaterPressure
+    {
+        /// <summary>Opvoerhoogte (m) van een volle toren.</summary>
+        public const float MaxHead = 40f;
+
+        public static float Head(float fill) => math.clamp(fill, 0f, 1f) * MaxHead;
+
+        /// <summary>Of water een gebouw met zijn hoogste tapkraan op <paramref name="tapHeight"/> meter bereikt.</summary>
+        public static bool Reaches(float fill, float tapHeight) => tapHeight <= Head(fill);
+
+        /// <summary>Deel van de aansluitingen dat zonder water zit (0 tot 1), uit het geleverde deel van de vraag.</summary>
+        public static float OutageFraction(float delivered, float demand)
+        {
+            if (!(demand > 0f))
+            {
+                return 0f;
+            }
+
+            return 1f - math.clamp(delivered / demand, 0f, 1f);
         }
     }
 }
