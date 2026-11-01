@@ -11,7 +11,20 @@ namespace Cities.Simulation.Policies
         District,
     }
 
-    /// <summary>Kosten en geldigheid van een beleidsmaatregel (E13); de effecten zelf horen bij de systemen die ze lezen.</summary>
+    /// <summary>
+    /// Eén effect van een beleidsmaatregel: een sleutel die een systeem opvraagt (<c>traffic.speed</c>, <c>tax.income</c>) en de
+    /// factor die daarop komt (1 = geen verandering). Een nieuwe regel is zo alleen data.
+    /// </summary>
+    [Serializable]
+    public struct PolicyEffect
+    {
+        public string Key;
+
+        [Tooltip("Factor op de waarde van de sleutel; 1 = geen verandering.")]
+        public float Multiplier;
+    }
+
+    /// <summary>Kosten, geldigheid en effecten van een beleidsmaatregel (E13); de systemen vragen een effect op via <see cref="PolicyBook.Multiplier"/>.</summary>
     [Serializable]
     public struct PolicySpec
     {
@@ -28,6 +41,8 @@ namespace Cities.Simulation.Policies
 
         [Tooltip("Inwoners nodig om het beleid te ontgrendelen (E16); 0 = altijd beschikbaar.")]
         public int UnlockPopulation;
+
+        public PolicyEffect[] Effects;
 
         /// <summary>Maandkosten voor een gebied met het opgegeven aantal inwoners, afgerond op hele munteenheden.</summary>
         public long MonthlyCostFor(int citizens)
@@ -46,6 +61,20 @@ namespace Cities.Simulation.Policies
             SpecValidation.NotNegative(errors, nameof(MonthlyCost), MonthlyCost);
             SpecValidation.Range(errors, nameof(MonthlyCostPerCitizen), MonthlyCostPerCitizen, 0f, 100f);
             SpecValidation.Range(errors, nameof(UnlockPopulation), UnlockPopulation, 0, 10_000_000);
+            if (Effects == null)
+            {
+                return;
+            }
+
+            foreach (var effect in Effects)
+            {
+                if (string.IsNullOrWhiteSpace(effect.Key))
+                {
+                    errors.Add("Een effect heeft geen sleutel.");
+                }
+
+                SpecValidation.Range(errors, nameof(PolicyEffect.Multiplier), effect.Multiplier, 0f, 10f);
+            }
         }
     }
 }
