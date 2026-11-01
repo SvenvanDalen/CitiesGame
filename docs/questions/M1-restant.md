@@ -64,3 +64,13 @@ Klaar als: lowpoly gebouwen, voertuigen en burgers voor elk type zodat alles tes
 2. **Welke typen?** Er zijn nog geen voertuig- of burgerdefinities, en ook geen burgers of voertuigen in de simulatie. Welke voertuigtypes (auto, bus, vrachtwagen, tram, trein, hulpdiensten) en welke burgervarianten (leeftijd, geslacht, kleding) bedoel je met "elk type"?
 3. **Hoe maak ik ze?** Procedureel in code (zoals de gebouwen), via Blender of via een generator. Procedureel kan lowpoly voertuigen goed, mensen veel moeilijker; een generator kost credits. Wat heeft de voorkeur?
 4. **Wachten op de definities?** Voertuigen horen bij E07 (OV en verkeer) en burgers bij E08. Moeten de modellen daar mee worden gemaakt zodra die definities bestaan?
+
+## E23-02 Benchmark-scenes (#240)
+
+Klaar als: vaste teststeden van 10k, 100k en 500k inwoners met automatische meting.
+
+1. **Wat is een inwoner?** Er zijn nog geen burgers in de simulatie. Tellen inwoners hier als huishoudens uit `BuildingSpec` (huishoudens maal een gemiddelde gezinsgrootte), of wacht dit op echte burgers (E08)?
+2. **Hoe komt de stad er?** Een vooraf gegenereerde stad (wegen, zones en gebouwen uit een vaste seed, in code of als opgeslagen bestand) of een scene die tijdens het laden bouwt? 500k inwoners zijn tienduizenden gebouwen; mag het opbouwen tijd kosten, en past het in de huidige kaart?
+3. **Wat meten we?** Alleen framettijd en tick-tijd per systeem (bestaande `PerformanceBudgets`), ook geheugen en laadtijd? Welk resultaat geldt als "mislukt": een vast budget of een vergelijking met de vorige run?
+4. **Waar draait het?** In Unity (PlayMode, handmatig of met de MCP) of ook in CI? CI heeft geen Unity en geen GPU, dus alleen de simulatie zonder rendering kan daar.
+5. **Splitsen.** Voorstel: eerst een generator die een stad van N huishoudens uit een seed bouwt (testbaar), daarna de meetscene.
