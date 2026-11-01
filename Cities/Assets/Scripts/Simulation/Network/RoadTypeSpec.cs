@@ -24,6 +24,9 @@ namespace Cities.Simulation.Network
 
         public bool Sidewalks;
 
+        [Tooltip("Parkeerstrook aan beide kanten van de rijbaan (E04-14); alleen bij wegen met rijstroken.")]
+        public bool Parking;
+
         [Tooltip("Maximumsnelheid in km/u.")]
         public float SpeedLimitKmh;
 
@@ -36,7 +39,7 @@ namespace Cities.Simulation.Network
         public readonly float SpeedLimitMetersPerSecond => SpeedLimitKmh / 3.6f;
 
         /// <summary>De lanes van een weg van dit type.</summary>
-        public readonly List<LaneSpec> Profile() => LaneProfiles.Road(CarLanes, BikeLanes, Sidewalks, OneWay);
+        public readonly List<LaneSpec> Profile() => LaneProfiles.Road(CarLanes, BikeLanes, Sidewalks, OneWay, Parking);
 
         public readonly void Validate(ICollection<string> errors)
         {
@@ -47,6 +50,11 @@ namespace Cities.Simulation.Network
             if (CarLanes == 0 && !BikeLanes && !Sidewalks)
             {
                 errors.Add("Een weg heeft minstens een rijstrook, fietspad of stoep nodig.");
+            }
+
+            if (Parking && CarLanes == 0)
+            {
+                errors.Add("Parkeren langs de weg vraagt minstens één rijstrook.");
             }
 
             if (OneWay && CarLanes == 0)

@@ -22,6 +22,7 @@ MonoBehaviour:
     OneWay: 0
     BikeLanes: 1
     Sidewalks: 1
+    Parking: 1
     SpeedLimitKmh: 50
     CostPerMeter: 900
     UpkeepPerMeterPerMonth: 5
