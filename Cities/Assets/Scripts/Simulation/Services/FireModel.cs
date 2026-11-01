@@ -124,7 +124,7 @@ namespace Cities.Simulation.Services
             }
 
             var rng = random; // een lambda kan de ref-parameter niet vangen
-            var sparks = _buildings.Where(p => p.Value.State == FireState.Safe).Select(p => p.Key).ToArray()
+            var sparks = _buildings.Where(p => p.Value.State == FireState.Safe).Select(p => p.Key)
                 .Where(id => rng.NextFloat() < Risk(id) + SpreadTo(_buildings[id], burning)).ToArray();
             random = rng;
             foreach (var id in sparks)
