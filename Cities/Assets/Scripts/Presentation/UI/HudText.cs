@@ -6,11 +6,12 @@ namespace Cities.Presentation.UI
     /// <summary>Teksten en waarden van de HUD (E18-03): geld, inwoners, datum en tijd, snelheid en de RCI-meters.</summary>
     public static class HudText
     {
-        private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
+        // Eigen puntscheiding: de invariante cultuur (ook in CI) kent geen nl-NL.
+        private static string Grouped(long value) => value.ToString("N0", CultureInfo.InvariantCulture).Replace(',', '.');
 
-        public static string Money(long amount) => "€ " + amount.ToString("N0", Dutch);
+        public static string Money(long amount) => "€ " + Grouped(amount);
 
-        public static string Population(long residents) => residents.ToString("N0", Dutch);
+        public static string Population(long residents) => Grouped(residents);
 
         /// <summary>Datum en kloktijd, bijvoorbeeld "03-02-2030 14:30"; <paramref name="timeOfDay"/> loopt van 0 tot 1.</summary>
         public static string DateTime(GameDate date, float timeOfDay)
