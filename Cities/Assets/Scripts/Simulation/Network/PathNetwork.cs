@@ -176,6 +176,12 @@ namespace Cities.Simulation.Network
                 return new PathRoute(false, Array.Empty<int>(), 0f, 0f);
             }
 
+            var nodes = Trace(previous, to);
+            return new PathRoute(true, nodes, LengthOf(nodes, allowed), best[to]);
+        }
+
+        private static List<int> Trace(int[] previous, int to)
+        {
             var nodes = new List<int>();
             for (var n = to; n != -1; n = previous[n])
             {
@@ -183,13 +189,19 @@ namespace Cities.Simulation.Network
             }
 
             nodes.Reverse();
+            return nodes;
+        }
+
+        private float LengthOf(List<int> nodes, PathModes allowed)
+        {
             var length = 0f;
             for (var i = 1; i < nodes.Count; i++)
             {
-                length += _arcs[nodes[i - 1]].Find(arc => arc.To == nodes[i] && (arc.Modes & allowed) != PathModes.None).Length;
+                var next = nodes[i];
+                length += _arcs[nodes[i - 1]].Find(arc => arc.To == next && (arc.Modes & allowed) != PathModes.None).Length;
             }
 
-            return new PathRoute(true, nodes, length, best[to]);
+            return length;
         }
 
         private static float Seconds(Arc arc, PathMode mode)
