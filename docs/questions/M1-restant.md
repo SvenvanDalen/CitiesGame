@@ -36,3 +36,14 @@ Klaar als: live data van elk object (burger, voertuig, gebouw) in een paneel.
 1. **Er zijn nog geen burgers of voertuigen in de simulatie**, alleen definities en geplaatste gebouwen. Wat moet het paneel nu laten zien: alleen gebouwen en wegsegmenten, met een uitbreidbaar contract (`IInspectable`) voor wat later komt?
 2. **Selecteren.** Klikken op een object in de wereld (picking) of kiezen uit een lijst?
 3. **Waar.** Als overlay in de werkbalk-UI of als apart debugpaneel naast `DebugRegistry`?
+
+## E04-11 Snelweg-knooppunten (#43)
+
+Klaar als: op- en afritten, klaverblad en turbine-opties met voorbeeldpresets.
+
+1. **Wat is een preset?** Een kant-en-klare bundel wegstukken die ik op één punt neerzet (kruising van twee wegen, met alle ramps), of een tool die je een bestaand kruispunt omzet? Hoeveel vrijheid heeft de speler (straal, aantal armen, welke hoek)?
+2. **Welke typen precies?** Klaverblad en turbine staan erin; moeten ook ruit (diamant), trompet en de losse op- en afrit (op een bestaande snelweg) erbij? Wat noem jij "voorbeeldpresets": een vaste lijst of ook door de speler op te slaan?
+3. **Hoogte.** Klaverblad en turbine hebben een kruisende weg op een andere hoogte nodig, dus bruggen, pijlers of tunnels (E04-06, ook overgeslagen) en verhoogde wegen (E04-10: nu alleen pijlers als data). Wacht ik daarop, of mag ik de ramps eerst plat op de grond leggen met alleen het dek op een vaste hoogte?
+4. **Rijrichting en lanes.** Rechts rijden is aangenomen; hoeveel rijstroken hebben de ramps en gebruiken ze de bestaande `Highway`-wegtype of een eigen "ramp"-type met lagere snelheid?
+5. **Verkeer en voorrang.** Voegstroken, vlechtvakken en voorrang bij de ramps hangen af van de verkeersregels (E04-13, M3). Ramps nu alleen als geometrie, of ook al met een eerste voegregel?
+6. **Splitsen.** Voorstel: eerst de geometrie van een preset (ramps als wegstukken, getest op vorm en aansluiting), daarna de tool en de UI. Akkoord?
