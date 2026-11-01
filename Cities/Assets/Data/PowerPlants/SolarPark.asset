@@ -27,4 +27,4 @@ MonoBehaviour:
     AirPollution: 0
     Noise: 0
     ConstructionDays: 120
-  _prefab: {fileID: 0}
+  _prefab: {fileID: 1697875290168842336, guid: 449cebd22e791d749863629f0780159c, type: 3}
