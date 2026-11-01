@@ -59,12 +59,9 @@ namespace Cities.World.Utilities
                 var at = Point(position);
                 geometry.AddLine(at - new float3(1f, 0f, 0f), at + new float3(1f, 0f, 0f), color);
                 geometry.AddLine(at - new float3(0f, 0f, 1f), at + new float3(0f, 0f, 1f), color);
-                foreach (var other in _network.LinksOf(id))
+                foreach (var other in _network.LinksOf(id).Where(o => o > id))
                 {
-                    if (other > id)
-                    {
-                        geometry.AddLine(at, Point(_network.PositionOf(other)), DebugColor.Info);
-                    }
+                    geometry.AddLine(at, Point(_network.PositionOf(other)), DebugColor.Info);
                 }
             }
         }
