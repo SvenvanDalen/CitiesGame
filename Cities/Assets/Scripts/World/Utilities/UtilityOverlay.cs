@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Cities.Core.Diagnostics;
 using Cities.Simulation.Utilities;
 using Cities.World.Terrain;
@@ -50,14 +51,9 @@ namespace Cities.World.Utilities
             }
 
             var radiusSq = view.Radius * view.Radius;
-            foreach (var id in _network.Nodes)
+            foreach (var id in _network.Nodes.Where(n => math.lengthsq(_network.PositionOf(n) - view.Focus.xz) <= radiusSq))
             {
                 var position = _network.PositionOf(id);
-                if (math.lengthsq(position - view.Focus.xz) > radiusSq)
-                {
-                    continue;
-                }
-
                 var color = ColorFor(_network.Satisfaction(id));
                 var at = Point(position);
                 geometry.AddLine(at - new float3(1f, 0f, 0f), at + new float3(1f, 0f, 0f), color);
