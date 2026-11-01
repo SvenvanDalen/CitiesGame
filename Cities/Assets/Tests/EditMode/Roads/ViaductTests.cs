@@ -49,7 +49,7 @@ namespace Cities.Tests.EditMode.Roads
             Assert.That(piers.Count, Is.LessThan(11), "de eerste stukken liggen op de grond");
             Assert.That(piers, Has.All.Matches<ViaductPier>(p => p.Height >= Viaduct.MinClearance));
             Assert.That(piers.Select(p => p.Base.y), Has.All.EqualTo(10f), "pijlers staan op de grond");
-            Assert.That(piers.Last().Height, Is.EqualTo(10f).Within(1e-3f), "aan het eind 10 m boven de grond");
+            Assert.That(piers[piers.Count - 1].Height, Is.EqualTo(10f).Within(1e-3f), "aan het eind 10 m boven de grond");
             Assert.That(piers[1].Base.x - piers[0].Base.x, Is.InRange(25f, Viaduct.PierSpacing), "hooguit de maximale afstand");
         }
 
