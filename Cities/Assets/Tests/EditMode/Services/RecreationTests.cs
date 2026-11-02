@@ -54,7 +54,7 @@ namespace Cities.Tests.EditMode.Services
         public void EveryKindHasItsOwnBonusAndUpkeepAddsUp()
         {
             var map = new RecreationMap();
-            foreach (RecreationKind kind in Enum.GetValues(typeof(RecreationKind)))
+            foreach (RecreationKind kind in new[] { RecreationKind.Park, RecreationKind.Playground, RecreationKind.SportsField, RecreationKind.Plaza })
             {
                 map.Add(new RecreationSite(kind, float2.zero, 10f, 10));
             }

@@ -90,7 +90,9 @@ namespace Cities.Simulation.Services
 
         /// <summary>De geluksbonus (0 tot 1) op een punt: per soort de sterkste plek.</summary>
         public float HappinessBonus(float2 point) =>
-            math.saturate(_sites.GroupBy(s => s.Kind).Sum(g => g.Max(s => s.StrengthAt(point)) * HappinessOf(g.Key)));
+            math.saturate(_sites.GroupBy((RecreationSite s) => s.Kind).Sum((IGrouping<RecreationKind, RecreationSite> g) => BestStrength(g, point) * HappinessOf(g.Key)));
+
+        private static float BestStrength(IEnumerable<RecreationSite> sites, float2 point) => sites.Max(s => s.StrengthAt(point));
 
         public static float LandValueOf(RecreationKind kind) => kind switch
         {
