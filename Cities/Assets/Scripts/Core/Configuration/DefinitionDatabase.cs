@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Cities.Core.Configuration
 {
@@ -55,6 +56,17 @@ namespace Cities.Core.Configuration
             definition = id != null && _byId.TryGetValue(id, out var found) ? found as T : null;
             return definition != null;
         }
+
+        /// <summary>Het model van een definitie op ID; false als de definitie of het model ontbreekt.</summary>
+        public bool TryGetPrefab(string id, out GameObject prefab)
+        {
+            prefab = TryGet<IPrefabDefinition>(id, out var definition) ? definition.Prefab : null;
+            return prefab != null;
+        }
+
+        /// <summary>ID's van definities die nog geen model hebben, gesorteerd; de lijst die E21-04 nog moet vullen.</summary>
+        public IReadOnlyList<string> IdsWithoutPrefab() =>
+            All<IPrefabDefinition>().Where(d => d.Prefab == null).Select(d => d.Id).ToList();
 
         /// <summary>Alle definities van type <typeparamref name="T"/> (inclusief subtypes), gesorteerd op ID.</summary>
         public IReadOnlyList<T> All<T>() where T : class, IDefinition

@@ -39,6 +39,19 @@ namespace Cities.Tests.EditMode.Configuration
         }
 
         [Test]
+        public void ProjectCatalogFindsThePrefabOfAModelledBuilding()
+        {
+            var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset");
+            var database = catalog.CreateDatabase();
+
+            var modelled = database.All<Cities.World.Buildings.BuildingDefinition>().First(b => b.Prefab != null);
+
+            Assert.That(database.TryGetPrefab(modelled.Id, out var prefab), Is.True);
+            Assert.That(prefab, Is.SameAs(modelled.Prefab));
+            Assert.That(database.IdsWithoutPrefab(), Does.Not.Contain(modelled.Id));
+        }
+
+        [Test]
         public void ProjectCatalogHasAtLeastFifteenCityWidePolicies()
         {
             var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset");

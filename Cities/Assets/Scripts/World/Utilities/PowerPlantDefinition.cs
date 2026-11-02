@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Cities.World.Utilities
 {
     [CreateAssetMenu(fileName = "PowerPlant", menuName = "Cities/Definitions/Power plant")]
-    public sealed class PowerPlantDefinition : GameDefinition
+    public sealed class PowerPlantDefinition : GameDefinition, IPrefabDefinition
     {
         [SerializeField] private PowerPlantSpec _spec;
         [SerializeField] private GameObject _prefab;
