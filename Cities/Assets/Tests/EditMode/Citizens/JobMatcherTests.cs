@@ -63,7 +63,7 @@ namespace Cities.Tests.EditMode.Citizens
         [Test]
         public void MismatchedHomesAreRejected()
         {
-            Assert.Throws<ArgumentException>(() => JobMatcher.Match(new Citizen[2], new float2[1], new Vacancy[0]));
+            Assert.Throws<ArgumentException>(() => JobMatcher.Match(new Citizen[2], new float2[1], Array.Empty<Vacancy>()));
         }
     }
 }

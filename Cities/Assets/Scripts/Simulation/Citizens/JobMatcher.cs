@@ -8,10 +8,13 @@ namespace Cities.Simulation.Citizens
     /// <summary>Een vacature (E07-05): een werkplek met vrije plekken en een minimale opleiding.</summary>
     public struct Vacancy
     {
-        public EntityId<BuildingKind> Building;
-        public float2 Position;
-        public byte MinEducation;
-        public int Slots;
+        public EntityId<BuildingKind> Building { get; set; }
+
+        public float2 Position { get; set; }
+
+        public byte MinEducation { get; set; }
+
+        public int Slots { get; set; }
     }
 
     /// <summary>
