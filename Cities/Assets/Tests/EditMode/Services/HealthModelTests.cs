@@ -77,6 +77,26 @@ namespace Cities.Tests.EditMode.Services
         }
 
         [Test]
+        public void PollutedAirMakesMoreCitizensSick()
+        {
+            int SickAfterOneDay(bool polluted)
+            {
+                var dispatcher = WithClinic();
+                var model = new HealthModel(dispatcher) { PollutionAt = polluted ? (_ => 1f) : null };
+                for (var i = 0; i < 2000; i++)
+                {
+                    model.Add(i, new float2(10f, 0f), 90);
+                }
+
+                var random = new DeterministicRandom(5);
+                model.Step(ref random);
+                return dispatcher.Open.Count;
+            }
+
+            Assert.That(SickAfterOneDay(true), Is.GreaterThan(SickAfterOneDay(false)));
+        }
+
+        [Test]
         public void HealthyCitizensFallSickByChanceAndNeverTheSameWayTwice()
         {
             var dispatcher = WithClinic();

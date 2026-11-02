@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cities.Core.Randomness;
+using Cities.Simulation.Fields;
 using Unity.Mathematics;
 
 namespace Cities.Simulation.Services
@@ -43,6 +44,9 @@ namespace Cities.Simulation.Services
         {
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
+
+        /// <summary>Luchtvervuiling (0 tot 1) op een plek (E12-03); leeg betekent schone lucht. Vervuiling verhoogt de kans op ziekte.</summary>
+        public Func<float2, float> PollutionAt { get; set; }
 
         public static ServiceStation Clinic(float2 position) => new ServiceStation(ServiceKind.Health, position, 400f, 1, 20000);
 
@@ -103,7 +107,8 @@ namespace Cities.Simulation.Services
 
             var rng = random; // een lambda kan de ref-parameter niet vangen
             var fallen = _citizens.Where(p => p.Value.State == PatientState.Healthy)
-                .Where(p => rng.NextFloat() < SickChance(p.Value.Age)).Select(p => p.Key).ToArray();
+                .Where(p => rng.NextFloat() < SickChance(p.Value.Age) * AirPollution.HealthFactor(PollutionAt?.Invoke(p.Value.Position) ?? 0f))
+                .Select(p => p.Key).ToArray();
             random = rng;
             foreach (var id in fallen)
             {
