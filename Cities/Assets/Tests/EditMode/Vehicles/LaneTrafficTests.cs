@@ -99,7 +99,7 @@ namespace Cities.Tests.EditMode.Vehicles
             Assert.Throws<ArgumentOutOfRangeException>(() => new Idm(0f, 1f, 1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => new Idm(10f, 1f, 1f, -1f));
             Assert.Throws<ArgumentNullException>(() => LaneTraffic.Step(null, 10f, false, 0.1f));
-            Assert.Throws<ArgumentOutOfRangeException>(() => LaneTraffic.Step(new VehicleAgent[0], 10f, false, 0f));
+            Assert.Throws<ArgumentOutOfRangeException>(() => LaneTraffic.Step(Array.Empty<VehicleAgent>(), 10f, false, 0f));
         }
     }
 }

@@ -6,10 +6,10 @@ namespace Cities.Simulation.Vehicles
     /// <summary>Een voertuig op een lane (E08-02): plaats van de voorbumper in meters vanaf het begin, snelheid in m/s en lengte.</summary>
     public struct VehicleAgent
     {
-        public float Position;
-        public float Speed;
-        public float Length;
-        public Idm Driver;
+        public float Position { get; set; }
+        public float Speed { get; set; }
+        public float Length { get; set; }
+        public Idm Driver { get; set; }
     }
 
     /// <summary>
