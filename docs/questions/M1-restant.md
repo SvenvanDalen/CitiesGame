@@ -95,3 +95,19 @@ Klaar als: rotondes met instelbare straal en armen en correcte voorrang.
 4. **Straal en rijrichting.** Welke grenzen gelden voor de straal (bijvoorbeeld 12 tot 40 m)? Rechts rijden, dus de ring draait tegen de klok in?
 5. **Baantypes.** Eén of meerdere rijstroken op de ring, en welk wegtype (`LaneProfiles`)?
 6. **Splitsen.** Voorstel: eerst de ringgeometrie met aansluitingen als geteste logica (de ring als eenrichtingssegmenten in `RoadNetwork`), daarna de tool en UI, en de voorrang met E04-13.
+
+## E13-06 Specialisatiekoppeling (#158)
+
+Klaar als: districtsbeleid schakelt specialisaties en industrietypes in.
+
+1. **Afhankelijkheden.** E05-12 (specialisaties) en E14-02 (industrietypes) bestaan nog niet in de code, en districtsbeleid (E13-05) staat nog open. Mag E13-06 wachten tot die drie klaar zijn?
+2. **Generieke koppeling.** Of bouw ik nu alleen een beleidssleutel per specialisatie die `PolicyBook` kan opvragen, zonder de specialisaties zelf?
+
+## E07-07 Agents met level of detail (#83)
+
+Klaar als: zichtbare voetgangers dichtbij, statistische burgers ver weg, zonder zichtbare sprongen bij wisselen.
+
+1. **Dagplanning.** Er is nog geen dagplanning of route per burger, dus geen positie om tussen de niveaus te wisselen. Mag E07-07 wachten tot die er is?
+2. **Alleen de rekenkant.** Of alleen een LOD-indeling op afstand met hysterese en een positie afgeleid uit het schema, zonder visuele voetgangers?
+3. **Afstand en aantal.** Hoe ver is "dichtbij" en hoeveel zichtbare voetgangers mogen er tegelijk zijn?
+4. **Modellen en Unity.** Voetgangers vragen modellen en een controle in Unity op sprongen en het E23-budget. Mag ik Unity daarvoor gebruiken?
