@@ -40,6 +40,21 @@ namespace Cities.Tests.EditMode.Services
         }
 
         [Test]
+        public void LowerFundingMeansFewerVehiclesSoTheSecondIncidentWaits()
+        {
+            var dispatcher = new ServiceDispatcher(10f);
+            var station = Fire(0f, vehicles: 2);
+            station.SetFunding(0.5f);
+            dispatcher.Add(station);
+
+            var first = dispatcher.Report(ServiceKind.Fire, new float2(10f, 0f));
+            var second = dispatcher.Report(ServiceKind.Fire, new float2(20f, 0f));
+
+            Assert.That(first.Handler, Is.SameAs(station));
+            Assert.That(second.Handler, Is.Null, "één voertuig bij 50% van twee");
+        }
+
+        [Test]
         public void WithoutCoverageTheIncidentWaitsAndStaysOpen()
         {
             var dispatcher = new ServiceDispatcher(10f);
