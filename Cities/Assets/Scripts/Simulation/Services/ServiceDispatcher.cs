@@ -95,7 +95,7 @@ namespace Cities.Simulation.Services
 
             if (incident.Handler != null)
             {
-                incident.Handler.FreeVehicles++;
+                incident.Handler.Busy--;
                 incident.Handler = null;
             }
 
@@ -112,7 +112,7 @@ namespace Cities.Simulation.Services
                 incident.Remaining -= seconds;
                 if (incident.Remaining <= 0f)
                 {
-                    incident.Handler.FreeVehicles++;
+                    incident.Handler.Busy--;
                     done.Add(incident);
                 }
             }
@@ -137,7 +137,7 @@ namespace Cities.Simulation.Services
                     continue;
                 }
 
-                station.FreeVehicles--;
+                station.Busy++;
                 incident.Handler = station;
                 incident.Remaining = (2f * math.distance(station.Position, position) / Speed) + HandlingSeconds;
             }

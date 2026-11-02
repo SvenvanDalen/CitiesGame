@@ -35,11 +35,29 @@ namespace Cities.Tests.EditMode.Economy
         {
             var budget = new Budget();
             budget.SetFunding(ServiceKind.Fire, 0.5f);
-            budget.SetFunding(ServiceKind.Police, 0f);
+            budget.SetFunding(ServiceKind.Police, Budget.MinFunding);
 
             Assert.That(budget.Funding(ServiceKind.Fire), Is.EqualTo(0.5f));
             Assert.That(budget.WeeklyCost(ServiceKind.Fire, Stations), Is.EqualTo(700));
-            Assert.That(budget.WeeklyCost(ServiceKind.Police, Stations), Is.Zero);
+            Assert.That(budget.WeeklyCost(ServiceKind.Police, Stations), Is.EqualTo(700));
+        }
+
+        [Test]
+        public void TheSliderAlsoScalesTheNumberOfVehicles()
+        {
+            var station = new ServiceStation(ServiceKind.Fire, float2.zero, 100f, 4, 1000);
+            var budget = new Budget();
+
+            budget.SetFunding(ServiceKind.Fire, 1.5f);
+            budget.Apply(new[] { station });
+            Assert.That(station.Capacity, Is.EqualTo(6));
+
+            budget.SetFunding(ServiceKind.Fire, Budget.MinFunding);
+            budget.Apply(new[] { station });
+            Assert.That(station.Capacity, Is.EqualTo(2));
+            Assert.That(station.FreeVehicles, Is.EqualTo(2));
+            Assert.Throws<ArgumentNullException>(() => budget.Apply(null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => station.SetFunding(0f));
         }
 
         [Test]
@@ -69,7 +87,7 @@ namespace Cities.Tests.EditMode.Economy
         {
             var budget = new Budget();
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => budget.SetFunding(ServiceKind.Fire, -0.1f));
+            Assert.Throws<ArgumentOutOfRangeException>(() => budget.SetFunding(ServiceKind.Fire, Budget.MinFunding - 0.1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => budget.SetFunding(ServiceKind.Fire, Budget.MaxFunding + 0.1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => budget.SetFunding(ServiceKind.Fire, float.NaN));
             Assert.Throws<ArgumentOutOfRangeException>(() => budget.Funding((ServiceKind)99));
