@@ -55,6 +55,8 @@ namespace Cities.Simulation.Services
 
         public IReadOnlyList<Incident> Open => _open;
 
+        public IReadOnlyList<ServiceStation> Stations => _stations;
+
         /// <summary>Totale maandelijkse onderhoudskosten van alle dienstgebouwen.</summary>
         public long UpkeepPerMonth => _stations.Sum(s => s.UpkeepPerMonth);
 
