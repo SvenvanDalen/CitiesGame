@@ -26,6 +26,7 @@ namespace Cities.Simulation.Transit
         private readonly List<int> _depots = new List<int>();
         private readonly HashSet<int> _stations = new HashSet<int>();
         private readonly Dictionary<int, int> _waiting = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> _boardings = new Dictionary<int, int>();
         private readonly Dictionary<int, float> _sinceSpawn = new Dictionary<int, float>();
         private readonly List<Bus> _buses = new List<Bus>();
 
@@ -56,6 +57,9 @@ namespace Cities.Simulation.Transit
             _network.PositionOf(stop);
             _stations.Add(stop);
         }
+
+        /// <summary>Totaal aantal ingestapte reizigers op een lijn sinds het begin; basis voor de ticketinkomsten.</summary>
+        public int Boardings(int lineId) => _boardings.TryGetValue(lineId, out var count) ? count : 0;
 
         public int Waiting(int stop) => _waiting.TryGetValue(stop, out var count) ? count : 0;
 
@@ -155,6 +159,7 @@ namespace Cities.Simulation.Transit
                 }
 
                 bus.Board(destination, take);
+                _boardings[bus.LineId] = Boardings(bus.LineId) + take;
                 _waiting[stop] = Waiting(stop) - take;
             }
 
