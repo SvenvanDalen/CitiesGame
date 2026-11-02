@@ -51,6 +51,18 @@ namespace Cities.Tests.EditMode.Configuration
         }
 
         [Test]
+        public void ProjectCatalogHasAtLeastFifteenDistrictPolicies()
+        {
+            var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset");
+
+            var districts = catalog.CreateDatabase().All<PolicyDefinition>().Where(p => p.Spec.Scope == PolicyScope.District).ToList();
+
+            Assert.That(districts.Count, Is.GreaterThanOrEqualTo(15));
+            Assert.That(districts.Select(p => p.Id), Does.Contain("policy.district-high-rise-ban").And.Contain("policy.district-small-business")
+                .And.Contain("policy.district-nightlife").And.Contain("policy.district-industry-specialisation").And.Contain("policy.district-free-healthcare"));
+        }
+
+        [Test]
         public void OverrideChangesCopyNotAsset()
         {
             var bus = CreateBus();

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0def626525d6aad4b8a724d832575cb3, type: 3}
+  m_Name: DistrictCarFree
+  m_EditorClassIdentifier: Cities.Simulation::Cities.Simulation.Policies.PolicyDefinition
+  _id: policy.district-car-free
+  _displayName: Autovrije zone
+  _description: Alleen voetgangers, fietsers en openbaar vervoer in het district.
+  _icon: {fileID: 0}
+  _spec:
+    Scope: 1
+    ActivationCost: 350000
+    MonthlyCost: 0
+    MonthlyCostPerCitizen: 0.04
+    UnlockPopulation: 12000
+    Effects:
+    - Key: traffic.car-access
+      Multiplier: 0
+    - Key: transit.demand
+      Multiplier: 1.3
+    - Key: land-value.commercial
+      Multiplier: 1.1
