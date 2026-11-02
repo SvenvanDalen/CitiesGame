@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Cities.Core.Configuration;
+using System.Linq;
+using Cities.Simulation.Policies;
 using Cities.Simulation.Vehicles;
 using NUnit.Framework;
 using UnityEngine;
@@ -34,6 +36,18 @@ namespace Cities.Tests.EditMode.Configuration
             Assert.That(database.Errors, Is.Empty);
             Assert.That(database.All<VehicleDefinition>().Count, Is.GreaterThanOrEqualTo(4));
             Assert.That(database.Get<VehicleDefinition>("vehicle.city-bus").Spec.PassengerCapacity, Is.EqualTo(80));
+        }
+
+        [Test]
+        public void ProjectCatalogHasAtLeastFifteenCityWidePolicies()
+        {
+            var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset");
+
+            var policies = catalog.CreateDatabase().All<PolicyDefinition>();
+
+            Assert.That(policies.Count, Is.GreaterThanOrEqualTo(15));
+            Assert.That(policies.Select(p => p.Id), Is.Unique);
+            Assert.That(policies.Select(p => p.Id), Does.Contain("policy.free-transit").And.Contain("policy.truck-ban").And.Contain("policy.school-bonus"));
         }
 
         [Test]

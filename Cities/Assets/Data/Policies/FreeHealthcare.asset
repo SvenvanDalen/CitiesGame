@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0def626525d6aad4b8a724d832575cb3, type: 3}
+  m_Name: FreeHealthcare
+  m_EditorClassIdentifier: Cities.Simulation::Cities.Simulation.Policies.PolicyDefinition
+  _id: policy.free-healthcare
+  _displayName: Gratis zorg
+  _description: Huisarts en ziekenhuis kosten niets; gezondheid stijgt, kosten ook.
+  _icon: {fileID: 0}
+  _spec:
+    Scope: 0
+    ActivationCost: 3000000
+    MonthlyCost: 800000
+    MonthlyCostPerCitizen: 0.5
+    UnlockPopulation: 15000
+    Effects:
+    - Key: health.level
+      Multiplier: 1.12
+    - Key: health.cost
+      Multiplier: 1.3
