@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Simulation.Network;
 
 namespace Cities.Simulation.Bikes
@@ -52,10 +53,10 @@ namespace Cities.Simulation.Bikes
 
             var bike = false;
             var vehicles = false;
-            foreach (var lane in profile)
+            foreach (var types in profile.Select(lane => lane.Types))
             {
-                bike |= (lane.Types & LaneTypes.Bike) != 0;
-                vehicles |= (lane.Types & LaneTypes.Vehicles) != 0;
+                bike |= (types & LaneTypes.Bike) != 0;
+                vehicles |= (types & LaneTypes.Vehicles) != 0;
             }
 
             if (!bike)
@@ -98,15 +99,25 @@ namespace Cities.Simulation.Bikes
         /// <summary>Reistijd in seconden over <paramref name="meters"/> op deze voorziening.</summary>
         public static float TravelSeconds(BikeFacility facility, float meters) => Math.Max(meters, 0f) / Speed(facility);
 
+        private static long PerMeter(BikeFacility facility, long path, long lane)
+        {
+            if (facility == BikeFacility.Path)
+            {
+                return path;
+            }
+
+            return facility == BikeFacility.Lane ? lane : 0L;
+        }
+
         public static long BuildCost(BikeFacility facility, float meters)
         {
-            var perMeter = facility == BikeFacility.Path ? PathBuildCostPerMeter : facility == BikeFacility.Lane ? LaneBuildCostPerMeter : 0L;
+            var perMeter = PerMeter(facility, PathBuildCostPerMeter, LaneBuildCostPerMeter);
             return (long)Math.Ceiling(Math.Max(meters, 0f) * perMeter);
         }
 
         public static long WeeklyUpkeep(BikeFacility facility, float meters)
         {
-            var perMeter = facility == BikeFacility.Path ? PathUpkeepPerMeterPerWeek : facility == BikeFacility.Lane ? LaneUpkeepPerMeterPerWeek : 0L;
+            var perMeter = PerMeter(facility, PathUpkeepPerMeterPerWeek, LaneUpkeepPerMeterPerWeek);
             return (long)Math.Ceiling(Math.Max(meters, 0f) * perMeter);
         }
     }
