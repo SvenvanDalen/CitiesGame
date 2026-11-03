@@ -19,20 +19,26 @@ namespace Cities.Simulation.Network
         private readonly Func<EntityId<LaneKind>, float> _congestion;
         private readonly TrafficRules _rules;
         private readonly List<LaneConnection> _connections = new List<LaneConnection>();
+        private readonly RouteCache _cache;
 
         /// <param name="congestion">Factor ≥ 1 per lane; <c>null</c> betekent overal vrij verkeer.</param>
+        /// <param name="cache">Optionele gedeelde routecache (E23-05); <c>null</c> rekent elke route opnieuw.</param>
         /// <param name="rules">Verkeersregels; een segment waar verboden in te rijden geldt wordt niet gebruikt. <c>null</c> betekent geen verboden.</param>
-        public LanePathfinder(RoadNetwork network, Func<EntityId<LaneKind>, float> congestion = null, TrafficRules rules = null)
+        public LanePathfinder(RoadNetwork network, Func<EntityId<LaneKind>, float> congestion = null, TrafficRules rules = null, RouteCache cache = null)
         {
             _network = network ?? throw new ArgumentNullException(nameof(network));
             _congestion = congestion;
             _rules = rules;
+            _cache = cache;
         }
 
+        /// <summary>Laat gecachte routes over <paramref name="lane"/> vervallen (bijvoorbeeld na een wegwijziging); geeft het aantal terug.</summary>
+        public int InvalidateLane(EntityId<LaneKind> lane) => _cache?.Invalidate(lane.Packed) ?? 0;
+
         /// <summary>Lanes van begin tot eind (beide inbegrepen) en de totale reistijd; leeg als er geen route is.</summary>
-        public (IReadOnlyList<EntityId<LaneKind>> Lanes, float Seconds) FindRoute(EntityId<LaneKind> from, EntityId<LaneKind> to)
+        public (IReadOnlyList<EntityId<LaneKind>> Lanes, float Seconds) FindRoute(EntityId<LaneKind> from, EntityId<LaneKind> to, long tick = 0)
         {
-            var result = RoutePlanner.Find(this, from.Packed, to.Packed);
+            var result = _cache is null ? RoutePlanner.Find(this, from.Packed, to.Packed) : _cache.Find(this, from.Packed, to.Packed, tick);
             var lanes = new List<EntityId<LaneKind>>(result.Path.Count);
             foreach (var key in result.Path)
             {
