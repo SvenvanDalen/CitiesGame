@@ -203,3 +203,9 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
 - Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.
+
+## Overlays
+
+- Een overlay is een `IOverlaySource` (`Cities.Gameplay.Overlays`) met een `OverlayLegend` (titel, eenheid, bereik, `OverlayColorScale`) en een `Version` die oploopt als de gegevens veranderen. Een celoverlay (`ICellOverlaySource`) geeft één waarde per cel, een gebouw- of segmentoverlay (`IEntityOverlaySource`) vult een lijst `OverlayEntityValue` (lint van `From` naar `To`, gebouw = vierkant). `float.NaN` betekent geen gegevens en wordt niet getekend.
+- Een nieuw systeem registreert zijn bron met `OverlayBehaviour.Controller.Register(...)`; `WorldLayerOverlays` doet dat voor hoogte, landwaarde, grondvervuiling en waterdiepte. Kleurverlopen: `Hot` (hoog is slecht), `Good` (hoog is goed), `Terrain`.
+- `CellOverlayBaker` bakt een celoverlay in stukken (budget in cellen per stap; `OverlayBehaviour` geeft `_bakeBudgetMs` per frame) in een achterbuffer en wisselt pas als alles klaar is, zodat wisselen of verversen niet haperen. De terreinshader leest de textuur als `_CityOverlay` (`_CityOverlayParams.x` = dekking). Gebouw- en segmentoverlays worden een lint-mesh (`OverlayRibbonBuilder`). `OverlayPanel` toont de knoppen en de legenda.
