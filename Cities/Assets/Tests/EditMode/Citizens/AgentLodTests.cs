@@ -24,7 +24,7 @@ namespace Cities.Tests.EditMode.Citizens
             }
         }
 
-        private static Citizen Worker() => new Citizen { Age = 30, Work = new EntityId<BuildingKind>(1), Home = new EntityId<BuildingKind>(2) };
+        private static Citizen Worker() => new Citizen { Age = 30, Work = new EntityId<BuildingKind>(1, 1), Home = new EntityId<BuildingKind>(2, 1) };
 
         private static Placement Walk(float x) => new Placement(new float2(x, 0), true);
 
