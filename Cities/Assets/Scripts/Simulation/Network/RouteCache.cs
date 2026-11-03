@@ -172,16 +172,18 @@ namespace Cities.Simulation.Network
             {
                 steps.Clear();
                 graph.Expand(result.Path[i - 1], steps);
-                var best = float.MaxValue;
+                var best = 0f;
+                var found = false;
                 foreach (var step in steps)
                 {
-                    if (step.To == result.Path[i] && step.Cost < best)
+                    if (step.To == result.Path[i] && (!found || step.Cost < best))
                     {
                         best = step.Cost;
+                        found = true;
                     }
                 }
 
-                sum += best == float.MaxValue ? 0f : best;
+                sum += best;
                 total[i] = sum;
             }
 
