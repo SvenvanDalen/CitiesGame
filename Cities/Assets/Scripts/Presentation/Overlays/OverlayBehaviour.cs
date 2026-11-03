@@ -187,9 +187,12 @@ namespace Cities.Presentation.Overlays
             }
 
             _clock.Restart();
-            while (!_baker.Step(CellsPerChunk) && _clock.Elapsed.TotalMilliseconds < _bakeBudgetMs)
+            bool finished;
+            do
             {
+                finished = _baker.Step(CellsPerChunk);
             }
+            while (!finished && _clock.Elapsed.TotalMilliseconds < _bakeBudgetMs);
 
             if (_baker.CompletedCount != _uploadedCount)
             {
