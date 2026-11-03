@@ -13,10 +13,12 @@ namespace Cities.Tests.EditMode.Persistence
         private DateTime _now;
         private TestSection _section;
         private SaveSlots _slots;
+        private RecordingLogSink _log;
 
         [SetUp]
         public void SetUp()
         {
+            _log = new RecordingLogSink();
             _directory = SaveBytes.TempDirectory();
             _storage = new SaveStorage(_directory);
             _now = new DateTime(2026, 11, 3, 12, 0, 0, DateTimeKind.Utc);
@@ -28,6 +30,7 @@ namespace Cities.Tests.EditMode.Persistence
         [TearDown]
         public void TearDown()
         {
+            _log.Dispose();
             if (Directory.Exists(_directory))
             {
                 Directory.Delete(_directory, recursive: true);
