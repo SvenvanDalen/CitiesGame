@@ -78,9 +78,19 @@ namespace Cities.Gameplay.Overlays
                 }
 
                 var stats = _data.Get(segment);
-                var value = _mode == TrafficFlowMode.Flow ? stats.VehiclesPerHour : (stats.Bottleneck ? 100f : stats.Occupancy * 100f);
+                var value = ValueOf(stats);
                 output.Add(new OverlayEntityValue(segment, line.Value.From, line.Value.To, line.Value.Width, value));
             }
+        }
+
+        private float ValueOf(SegmentTrafficStats stats)
+        {
+            if (_mode == TrafficFlowMode.Flow)
+            {
+                return stats.VehiclesPerHour;
+            }
+
+            return stats.Bottleneck ? 100f : stats.Occupancy * 100f;
         }
     }
 }
