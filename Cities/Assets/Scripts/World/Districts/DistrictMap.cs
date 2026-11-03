@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Cities.World.Grid;
 using Unity.Mathematics;
 
@@ -125,20 +126,7 @@ namespace Cities.World.Districts
         /// <summary>Controleert opgeslagen blokken: juiste lengte en alleen districten waarvoor <paramref name="known"/> waar geeft.</summary>
         public bool IsValid(byte[] blocks, Func<int, bool> known)
         {
-            if (blocks is null || blocks.Length != _blocks.Length)
-            {
-                return false;
-            }
-
-            foreach (var b in blocks)
-            {
-                if (b != 0 && !known(b))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return blocks != null && blocks.Length == _blocks.Length && blocks.All(b => b == 0 || known(b));
         }
 
         /// <summary>Vervangt alle blokken; roep eerst <see cref="IsValid"/> aan.</summary>
