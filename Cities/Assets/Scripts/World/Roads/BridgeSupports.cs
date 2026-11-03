@@ -162,14 +162,14 @@ namespace Cities.World.Roads
             }
 
             var forward = math.normalizesafe(new float3(portal.Into.x, 0f, portal.Into.z), new float3(0f, 0f, 1f));
-            var side = new float3(forward.z, 0f, -forward.x);
+            var side = math.cross(new float3(0f, 1f, 0f), forward);
             var data = new RoadMeshData();
             var postWidth = 0.8f;
             var height = PortalClearance + PortalHeadHeight;
-            AddBox(data, portal.Position + (side * (left - (postWidth * 0.5f))), side, forward, postWidth, PortalDepth, 0f, height);
-            AddBox(data, portal.Position + (side * (right + (postWidth * 0.5f))), side, forward, postWidth, PortalDepth, 0f, height);
+            AddBox(data, portal.Position + (side * (left - (postWidth * 0.5f))), side, forward, new float4(postWidth, PortalDepth, 0f, height));
+            AddBox(data, portal.Position + (side * (right + (postWidth * 0.5f))), side, forward, new float4(postWidth, PortalDepth, 0f, height));
             var middle = (left + right) * 0.5f;
-            AddBox(data, portal.Position + (side * middle), side, forward, (right - left) + (postWidth * 2f), PortalDepth, PortalClearance, height);
+            AddBox(data, portal.Position + (side * middle), side, forward, new float4((right - left) + (postWidth * 2f), PortalDepth, PortalClearance, height));
             return data;
         }
 
@@ -228,9 +228,10 @@ namespace Cities.World.Roads
             }
         }
 
-        // Doos met de voet op `center`, breedte langs `side`, diepte langs `forward`, van hoogte `bottom` tot `top` boven die voet.
-        private static void AddBox(RoadMeshData data, float3 center, float3 side, float3 forward, float width, float depth, float bottom, float top)
+        // Doos met de voet op `center`; size = (breedte langs `side`, diepte langs `forward`, onderkant, bovenkant) boven die voet.
+        private static void AddBox(RoadMeshData data, float3 center, float3 side, float3 forward, float4 size)
         {
+            var (width, depth, bottom, top) = (size.x, size.y, size.z, size.w);
             var up = new float3(0f, 1f, 0f);
             var halfW = side * (width * 0.5f);
             var halfD = forward * (depth * 0.5f);
