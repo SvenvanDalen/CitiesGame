@@ -17,35 +17,21 @@ namespace Cities.Simulation.Network
         /// <param name="carLanes">Rijstroken per richting, of bij <paramref name="oneWay"/> in totaal; 0 voor een voet- of fietspad.</param>
         /// <param name="oneWay">Alle rijstroken heen, symmetrisch rond de hartlijn.</param>
         /// <param name="parking">Een parkeerstrook aan beide kanten, direct naast de rijstroken.</param>
-        public static List<LaneSpec> Road(int carLanes, bool bikeLanes, bool sidewalks, bool oneWay = false, bool parking = false)
+        /// <param name="busLanes">De buitenste rijstrook per richting is een busbaan (E09-11); vraagt minstens twee rijstroken per richting; bij een eenrichtingsweg met één rijstrook is de hele weg een busstraat.</param>
+        public static List<LaneSpec> Road(int carLanes, bool bikeLanes, bool sidewalks, bool oneWay = false, bool parking = false, bool busLanes = false)
         {
+            if (busLanes && carLanes < (oneWay ? 1 : 2))
+            {
+                throw new ArgumentException("Een busbaan naast een rijstrook voor auto's vraagt minstens twee rijstroken per richting.", nameof(busLanes));
+            }
+
             if (carLanes < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(carLanes), carLanes, "Kan niet negatief zijn.");
             }
 
             var lanes = new List<LaneSpec>();
-            var edge = oneWay ? -carLanes * CarLaneWidth * 0.5f : 0f;
-            if (oneWay)
-            {
-                for (var i = 0; i < carLanes; i++)
-                {
-                    lanes.Add(new LaneSpec(LaneTypes.Vehicles, LaneDirection.Forward, edge + ((i + 0.5f) * CarLaneWidth), CarLaneWidth));
-                }
-
-                edge = -edge;
-            }
-            else
-            {
-                for (var i = 0; i < carLanes; i++)
-                {
-                    var offset = (i + 0.5f) * CarLaneWidth;
-                    lanes.Add(new LaneSpec(LaneTypes.Vehicles, LaneDirection.Forward, offset, CarLaneWidth));
-                    lanes.Add(new LaneSpec(LaneTypes.Vehicles, LaneDirection.Backward, -offset, CarLaneWidth));
-                }
-
-                edge = carLanes * CarLaneWidth;
-            }
+            var edge = AddCarLanes(lanes, carLanes, oneWay, busLanes);
 
             if (parking && carLanes > 0)
             {
@@ -68,6 +54,28 @@ namespace Cities.Simulation.Network
             }
 
             return lanes;
+        }
+
+        // Voegt de rijstroken toe (de buitenste per richting is een busbaan als dat gevraagd is) en geeft de rand van het wegdek terug.
+        private static float AddCarLanes(List<LaneSpec> lanes, int carLanes, bool oneWay, bool busLanes)
+        {
+            var start = oneWay ? -carLanes * CarLaneWidth * 0.5f : 0f;
+            for (var i = 0; i < carLanes; i++)
+            {
+                var kind = busLanes && i == carLanes - 1 ? LaneTypes.Bus : LaneTypes.Vehicles;
+                var offset = (i + 0.5f) * CarLaneWidth;
+                if (oneWay)
+                {
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, start + offset, CarLaneWidth));
+                }
+                else
+                {
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, offset, CarLaneWidth));
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Backward, -offset, CarLaneWidth));
+                }
+            }
+
+            return oneWay ? -start : carLanes * CarLaneWidth;
         }
     }
 }

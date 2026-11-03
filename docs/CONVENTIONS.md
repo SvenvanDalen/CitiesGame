@@ -223,6 +223,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
 - `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
 
+## OV-prioriteit
+
+- Een busbaan is een lane van type `LaneTypes.Bus` (zonder `Car`): `LaneProfiles.Road(..., busLanes: true)` maakt de buitenste rijstrook per richting een busbaan (minstens twee rijstroken per richting; bij een eenrichtingsweg met één strook een busstraat). `TransitPriority.MayUse` en `IsBusLane` beantwoorden wie erop mag.
+- `TransitPriority` (Simulation/Transit, E09-11) bewaart welke lijnen en welke kruispunten OV-voorrang hebben (sectie `TPRI`, `TransitPrioritySection`). `Mark` zet `Approach.TransitPriority` op een aanrijding: `IntersectionRules` laat zo'n voertuig doorrijden tenzij de rotonde of een ander lijnvoertuig voorgaat; de reservering blijft de botsingsgarantie.
+- `SignalPlan.TryTransitPriority` verlengt een bijna aflopend groen (hoogstens `TransitExtension`) of kapt het groen van de lopende fase in (niet onder `MinGreen`) voor de volgende groep; hoogstens één ingreep per ronde. `TransitPriority.RequestSignal` telt toegekende en geweigerde aanvragen.
+
 ## Metro
 
 - `Metro` (Simulation/Transit, E09-06) bevat de rekenregels van de metro: perrondiepte `MinDepth` tot `MaxDepth` m onder het maaiveld, stationsafstand, maximale tunnelhelling (`MaxGrade`, 4%), `AccessTime` (lopen plus roltrap naar de diepte) en `TravelTime` (optrekken, topsnelheid, remmen). Net als `Tram` rijdt de metro nog niet met eigen snelheid in `TransitFleet`.
