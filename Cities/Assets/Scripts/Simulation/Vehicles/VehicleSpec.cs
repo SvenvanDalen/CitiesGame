@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cities.Core.Configuration;
+using Cities.Simulation.Network;
 using UnityEngine;
 
 namespace Cities.Simulation.Vehicles
@@ -13,6 +14,8 @@ namespace Cities.Simulation.Vehicles
         Bus,
         Tram,
         Service,
+        Motorcycle,
+        Bicycle,
     }
 
     /// <summary>Fysieke en economische eigenschappen van een voertuigtype, in SI-eenheden waar mogelijk.</summary>
@@ -48,6 +51,35 @@ namespace Cities.Simulation.Vehicles
         [Tooltip("Vaste kosten per maand voor de stad (onderhoud, personeel); 0 voor particuliere voertuigen.")]
         public long UpkeepPerMonth;
 
+        /// <summary>Op welke lanes dit type mag rijden: de fiets op fietspaden, het OV op buslanes, de rest op de rijbaan.</summary>
+        public LaneTypes AllowedLanes => Category switch
+        {
+            VehicleCategory.Bicycle => LaneTypes.Bike,
+            VehicleCategory.Bus or VehicleCategory.Tram => LaneTypes.Bus | LaneTypes.Car,
+            _ => LaneTypes.Car,
+        };
+
+        /// <summary>Gewenste tijdsafstand tot de voorganger (s): vrachtwagens houden meer afstand, motoren en fietsen volgen dichter.</summary>
+        public float TimeHeadwaySeconds => Category switch
+        {
+            VehicleCategory.Truck or VehicleCategory.Bus => 2.0f,
+            VehicleCategory.Motorcycle => 1.2f,
+            VehicleCategory.Bicycle => 1.0f,
+            _ => 1.5f,
+        };
+
+        /// <summary>Opening bij stilstand (m).</summary>
+        public float MinGapMeters => Category switch
+        {
+            VehicleCategory.Bicycle => 1f,
+            VehicleCategory.Motorcycle => 1.5f,
+            VehicleCategory.Truck or VehicleCategory.Bus => 3f,
+            _ => 2f,
+        };
+
+        /// <summary>Een smal voertuig (motor, fiets) kan naast een file langs; de lanewissel mag het dan voorbij een stilstaand voertuig.</summary>
+        public bool CanFilter => Category is VehicleCategory.Motorcycle or VehicleCategory.Bicycle;
+
         public float MaxSpeedMetersPerSecond => MaxSpeedKmh / 3.6f;
 
         /// <summary>Remweg in meters vanaf topsnelheid bij comfortabel remmen: v² / 2a.</summary>
@@ -65,6 +97,11 @@ namespace Cities.Simulation.Vehicles
             SpecValidation.Range(errors, nameof(CargoCapacityTonnes), CargoCapacityTonnes, 0f, 60f, " t");
             SpecValidation.NotNegative(errors, nameof(PurchaseCost), PurchaseCost);
             SpecValidation.NotNegative(errors, nameof(UpkeepPerMonth), UpkeepPerMonth);
+            if (Category == VehicleCategory.Bicycle && MaxSpeedKmh > 45f)
+            {
+                errors.Add("Een fiets rijdt hoogstens 45 km/u.");
+            }
+
             if (Category == VehicleCategory.Bus && PassengerCapacity < 10)
             {
                 errors.Add("Een bus vervoert minstens 10 reizigers.");

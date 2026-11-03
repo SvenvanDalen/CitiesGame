@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab370cfdfc5a5874299d2d94c9d5f2e9, type: 3}
+  m_Name: Bicycle
+  m_EditorClassIdentifier: Cities.Simulation::Cities.Simulation.Vehicles.VehicleDefinition
+  _id: vehicle.bicycle
+  _displayName: Fiets
+  _description: Gewone fiets van een inwoner; rijdt op het fietspad.
+  _icon: {fileID: 0}
+  _spec:
+    Category: 7
+    LengthMeters: 1.8
+    WidthMeters: 0.6
+    MaxSpeedKmh: 22
+    AccelerationMs2: 1.0
+    BrakingMs2: 3
+    PassengerCapacity: 1
+    CargoCapacityTonnes: 0.02
+    PurchaseCost: 0
+    UpkeepPerMonth: 0
+  _prefab: {fileID: 0}
