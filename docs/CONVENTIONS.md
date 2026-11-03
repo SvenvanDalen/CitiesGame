@@ -179,3 +179,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Gezondheid en sterfte
 
 - `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
+
+## Parkeren
+
+- `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
+- Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.
