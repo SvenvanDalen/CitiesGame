@@ -84,9 +84,17 @@ namespace Cities.Gameplay.Persistence
         {
             _synchronize();
             SaveLoadResult result;
-            using (var stream = _storage.OpenRead(name))
+            try
             {
-                result = SaveFile.Read(stream, _sections);
+                using (var stream = _storage.OpenRead(name))
+                {
+                    result = SaveFile.Read(stream, _sections);
+                }
+            }
+            catch (Exception exception) when (exception is SaveFormatException || exception is IOException)
+            {
+                Log.Error(exception, $"Laden van {name} mislukt; de huidige stad is ongewijzigd");
+                throw;
             }
 
             CityName = result.Metadata.CityName;
@@ -104,6 +112,12 @@ namespace Cities.Gameplay.Persistence
             Log.Info("Geladen: {0}.", name);
             return result;
         }
+
+        /// <summary>Controleert een save op beschadiging zonder hem te laden.</summary>
+        public SaveIntegrity Verify(string name) => SaveVerifier.Check(_storage, name);
+
+        /// <summary>Controleert alle saves, nieuwste eerst, zodat de lijst kapotte saves kan markeren.</summary>
+        public IReadOnlyList<SaveIntegrity> VerifyAll() => SaveVerifier.CheckAll(_storage);
 
         /// <summary>Leest alleen de metadata; false als het bestand ontbreekt of geen geldige save is.</summary>
         public bool TryReadMetadata(string name, out SaveMetadata metadata)
