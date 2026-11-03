@@ -129,7 +129,10 @@ namespace Cities.Gameplay.Overlays
             }
         }
 
-        private static ulong PairId(int a, int b) => ((ulong)(uint)a << 32) | (uint)b;
+        /// <summary>ID van een leiding; de bovenste bit houdt hem uit de buurt van de knoop-ID's.</summary>
+        private static ulong PairId(int a, int b) => PipeFlag | ((ulong)(uint)a << 32) | (uint)b;
+
+        private const ulong PipeFlag = 1UL << 63;
 
         private static float3 Point(ITerrainHeight terrain, float2 position) =>
             new float3(position.x, terrain.SurfaceHeight(position) + Lift, position.y);

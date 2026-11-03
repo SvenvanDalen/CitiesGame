@@ -38,6 +38,7 @@ namespace Cities.Tests.EditMode.Overlays
             var values = Collect(NetworkOverlays.Power(network, terrain));
 
             Assert.That(values, Has.Count.EqualTo(3), "twee knopen en één leiding");
+            Assert.That(values.Select(v => v.Id).Distinct().Count(), Is.EqualTo(3), "elke ID is uniek");
             var pipe = values.Single(v => !v.From.Equals(v.To));
             Assert.That(pipe.Width, Is.EqualTo(NetworkOverlays.PipeWidth));
             Assert.That(pipe.Value, Is.EqualTo(50f).Within(1e-3f), "de helft van de vraag wordt geleverd");
