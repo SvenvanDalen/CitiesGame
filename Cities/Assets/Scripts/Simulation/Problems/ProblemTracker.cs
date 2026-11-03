@@ -58,18 +58,8 @@ namespace Cities.Simulation.Problems
                 _entries.Add(building, entry);
             }
 
-            var index = (int)problem;
-            var streak = entry.Streak[index];
-            if (active)
-            {
-                streak = streak > 0 ? streak + 1 : 1;
-            }
-            else
-            {
-                streak = streak < 0 ? streak - 1 : -1;
-            }
-
-            entry.Streak[index] = streak;
+            var streak = NextStreak(entry.Streak[(int)problem], active);
+            entry.Streak[(int)problem] = streak;
             var shown = entry.Visible.Contains(problem);
             if (!shown && active && (streak >= ShowAfter || problem == BuildingProblem.Fire))
             {
@@ -78,12 +68,28 @@ namespace Cities.Simulation.Problems
             }
             else if (shown && !active && -streak >= HideAfter)
             {
-                entry.Visible = entry.Visible.Without(problem);
-                Changed?.Invoke(building, problem, false);
-                if (entry.Visible.IsEmpty)
-                {
-                    _entries.Remove(building);
-                }
+                Hide(building, entry, problem);
+            }
+        }
+
+        /// <summary>Positief = opeenvolgende stappen met probleem, negatief = opeenvolgende stappen zonder.</summary>
+        private static int NextStreak(int streak, bool active)
+        {
+            if (active)
+            {
+                return streak > 0 ? streak + 1 : 1;
+            }
+
+            return streak < 0 ? streak - 1 : -1;
+        }
+
+        private void Hide(int building, Entry entry, BuildingProblem problem)
+        {
+            entry.Visible = entry.Visible.Without(problem);
+            Changed?.Invoke(building, problem, false);
+            if (entry.Visible.IsEmpty)
+            {
+                _entries.Remove(building);
             }
         }
 

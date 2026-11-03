@@ -112,8 +112,8 @@ namespace Cities.Presentation.Problems
 
             var cameraTransform = _camera.transform;
             Tracker.CollectVisible(_visible);
-            ProblemIconLayout.Build(_visible, RoofOf, cameraTransform.position, cameraTransform.right, _iconSize, _lift,
-                _maxDistance, _maxIcons, _icons);
+            var view = new ProblemIconView(cameraTransform.position, cameraTransform.right, _iconSize, _lift, _maxDistance, _maxIcons);
+            ProblemIconLayout.Build(_visible, RoofOf, view, _icons);
             foreach (var list in _perKind)
             {
                 list.Clear();

@@ -225,7 +225,7 @@ namespace Cities.Tests.EditMode.Problems
             };
             var icons = new List<ProblemIcon>();
 
-            ProblemIconLayout.Build(buildings, id => roofs[id], float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 100, icons);
+            ProblemIconLayout.Build(buildings, id => roofs[id], new ProblemIconView(float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 100), icons);
             Assert.That(icons.Count, Is.EqualTo(4), "gebouw 3 is te ver weg");
             Assert.That(icons[0].Problem, Is.EqualTo(BuildingProblem.Fire));
             Assert.That(icons[1].Problem, Is.EqualTo(BuildingProblem.NoPower));
@@ -234,7 +234,7 @@ namespace Cities.Tests.EditMode.Problems
             Assert.That(icons[2].Position.x, Is.EqualTo(50f), "daarna gebouw 4, dan gebouw 2");
             Assert.That(icons[3].Position.x, Is.EqualTo(100f));
 
-            ProblemIconLayout.Build(buildings, id => roofs[id], float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 2, icons);
+            ProblemIconLayout.Build(buildings, id => roofs[id], new ProblemIconView(float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 2), icons);
             Assert.That(icons.Count, Is.EqualTo(2), "een gebouw wordt nooit half getekend");
             Assert.That(icons[0].Position.x, Is.LessThan(icons[1].Position.x), "alleen gebouw 1 past");
         }
@@ -249,8 +249,8 @@ namespace Cities.Tests.EditMode.Problems
                 new KeyValuePair<int, ProblemSet>(6, default(ProblemSet).With(BuildingProblem.Crime)),
             };
             var icons = new List<ProblemIcon>();
-            ProblemIconLayout.Build(buildings, id => id == 6 ? new float3(float.MaxValue) : new float3(10f, 0f, 0f), float3.zero,
-                new float3(1f, 0f, 0f), 1f, 0f, 50f, 10, icons);
+            ProblemIconLayout.Build(buildings, id => id == 6 ? new float3(float.MaxValue) : new float3(10f, 0f, 0f),
+                new ProblemIconView(float3.zero, new float3(1f, 0f, 0f), 1f, 0f, 50f, 10), icons);
             Assert.That(icons.Count, Is.EqualTo(2));
         }
     }

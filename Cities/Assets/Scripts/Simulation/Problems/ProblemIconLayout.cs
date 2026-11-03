@@ -18,6 +18,34 @@ namespace Cities.Simulation.Problems
         public BuildingProblem Problem { get; }
     }
 
+    /// <summary>Camera en grenzen voor <see cref="ProblemIconLayout.Build"/>.</summary>
+    public readonly struct ProblemIconView
+    {
+        public ProblemIconView(float3 eye, float3 right, float iconSize, float lift, float maxDistance, int maxIcons)
+        {
+            Eye = eye;
+            Right = right;
+            IconSize = iconSize;
+            Lift = lift;
+            MaxDistance = maxDistance;
+            MaxIcons = maxIcons;
+        }
+
+        public float3 Eye { get; }
+
+        /// <summary>Rechtervector van de camera.</summary>
+        public float3 Right { get; }
+
+        public float IconSize { get; }
+
+        /// <summary>Hoogte boven het dak.</summary>
+        public float Lift { get; }
+
+        public float MaxDistance { get; }
+
+        public int MaxIcons { get; }
+    }
+
     /// <summary>Kiest en rangschikt de iconen boven gebouwen: dichtbij, begrensd in aantal, naast elkaar gecentreerd.</summary>
     public static class ProblemIconLayout
     {
@@ -40,8 +68,9 @@ namespace Cities.Simulation.Problems
         /// gebouwen eerst, en stopt bij <paramref name="maxIcons"/>. <paramref name="right"/> is de rechtervector van de camera.
         /// </summary>
         public static void Build(IReadOnlyList<KeyValuePair<int, ProblemSet>> buildings, Func<int, float3> roofOf,
-            float3 eye, float3 right, float iconSize, float lift, float maxDistance, int maxIcons, List<ProblemIcon> into)
+            in ProblemIconView view, List<ProblemIcon> into)
         {
+            var (eye, right, iconSize, lift, maxDistance, maxIcons) = (view.Eye, view.Right, view.IconSize, view.Lift, view.MaxDistance, view.MaxIcons);
             into.Clear();
             var candidates = new List<(float Distance, int Index)>();
             for (var i = 0; i < buildings.Count; i++)
