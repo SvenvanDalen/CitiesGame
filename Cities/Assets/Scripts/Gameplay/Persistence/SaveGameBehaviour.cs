@@ -58,6 +58,7 @@ namespace Cities.Gameplay.Persistence
             if (_network != null)
             {
                 sections.Add(new RoadNetworkSection(_network.Network));
+                sections.Add(new TrafficRulesSection(_network.Rules, _network.Network.Contains));
             }
 
             if (_water != null)
