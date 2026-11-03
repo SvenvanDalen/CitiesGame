@@ -64,6 +64,23 @@ namespace Cities.Simulation.Vehicles
 
         public bool IsOpen(int group) => !Enabled || (CheckGroup(group) == _phase && !Clearing);
 
+        /// <summary>Seconden tot <paramref name="group"/> weer groen krijgt; 0 als de groep nu open is.</summary>
+        public float SecondsUntilOpen(int group)
+        {
+            if (IsOpen(group))
+            {
+                return 0f;
+            }
+
+            var seconds = _green[_phase] + Clearance - _elapsed;
+            for (var q = (_phase + 1) % _green.Length; q != group; q = (q + 1) % _green.Length)
+            {
+                seconds += _green[q] + Clearance;
+            }
+
+            return seconds;
+        }
+
         public void Tick(float dt)
         {
             if (!(dt >= 0f))
