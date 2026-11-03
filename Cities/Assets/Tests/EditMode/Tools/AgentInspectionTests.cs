@@ -39,7 +39,7 @@ namespace Cities.Tests.EditMode.Tools
         public void ALocatorNeedsItsInputs()
         {
             Assert.Throws<ArgumentNullException>(() => new NearestAgentLocator<int>(null, _ => float3.zero));
-            Assert.Throws<ArgumentNullException>(() => new NearestAgentLocator<int>(() => new int[0], null));
+            Assert.Throws<ArgumentNullException>(() => new NearestAgentLocator<int>(() => Array.Empty<int>(), null));
             Assert.Throws<ArgumentNullException>(() => new CitizenInspection(null));
             Assert.Throws<ArgumentNullException>(() => new VehicleInspection(null));
         }
