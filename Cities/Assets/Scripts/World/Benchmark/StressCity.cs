@@ -62,13 +62,8 @@ namespace Cities.World.Benchmark
         private const int CommercialPercent = 75;
         private const int IndustrialPercent = 90;
 
-        public static StressCityPlan Generate(WorldMap map, int population, ulong seed, IReadOnlyList<int> householdsPerTemplate)
+        public static StressCityPlan Generate(WorldDimensions dimensions, int population, ulong seed, IReadOnlyList<int> householdsPerTemplate)
         {
-            if (map is null)
-            {
-                throw new ArgumentNullException(nameof(map));
-            }
-
             if (population <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(population), population, "Een stresstest-stad heeft inwoners nodig.");
@@ -79,8 +74,8 @@ namespace Cities.World.Benchmark
                 throw new ArgumentException("Geen woonsjablonen.", nameof(householdsPerTemplate));
             }
 
-            var blocksX = map.Dimensions.CellsX / Pitch;
-            var blocksZ = map.Dimensions.CellsZ / Pitch;
+            var blocksX = dimensions.CellsX / Pitch;
+            var blocksZ = dimensions.CellsZ / Pitch;
             var lots = new List<StressLot>();
             var households = 0L;
             for (var index = 0; index < blocksX * blocksZ && Inhabitants(households) < population; index++)
@@ -88,7 +83,6 @@ namespace Cities.World.Benchmark
                 var zone = ZoneOf(SeedHash.Combine(seed, (ulong)index));
                 var originX = (index % blocksX) * Pitch;
                 var originZ = (index / blocksX) * Pitch;
-                PaintBlock(map, originX, originZ, zone);
                 for (var lot = 0; lot < 4; lot++)
                 {
                     var template = -1;
@@ -110,6 +104,32 @@ namespace Cities.World.Benchmark
             return new StressCityPlan(lots, Inhabitants(households));
         }
 
+        /// <summary>Schildert de zones van <paramref name="plan"/> in de kaart (alleen kavels; straten blijven leeg).</summary>
+        public static void Apply(WorldMap map, StressCityPlan plan)
+        {
+            if (map is null)
+            {
+                throw new ArgumentNullException(nameof(map));
+            }
+
+            if (plan is null)
+            {
+                throw new ArgumentNullException(nameof(plan));
+            }
+
+            foreach (var lot in plan.Lots)
+            {
+                var cell = new ZoneCell(lot.Zone, ZoneDensity.Low);
+                for (var z = 0; z < LotCells; z++)
+                {
+                    for (var x = 0; x < LotCells; x++)
+                    {
+                        map.Zones[lot.X + x, lot.Z + z] = cell;
+                    }
+                }
+            }
+        }
+
         private static long Inhabitants(long households) => (long)(households * BenchmarkCity.HouseholdSize);
 
         private static ZoneType ZoneOf(ulong hash)
@@ -126,18 +146,6 @@ namespace Cities.World.Benchmark
             }
 
             return roll < IndustrialPercent ? ZoneType.Industrial : ZoneType.Office;
-        }
-
-        private static void PaintBlock(WorldMap map, int originX, int originZ, ZoneType zone)
-        {
-            var cell = new ZoneCell(zone, ZoneDensity.Low);
-            for (var z = 0; z < BlockCells; z++)
-            {
-                for (var x = 0; x < BlockCells; x++)
-                {
-                    map.Zones[originX + x, originZ + z] = cell;
-                }
-            }
         }
     }
 }
