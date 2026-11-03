@@ -4,6 +4,7 @@ using Cities.Gameplay.Tools;
 using Cities.World.Grid;
 using Cities.World.Picking;
 using Cities.World.Terrain;
+using Cities.World.Tiles;
 using NUnit.Framework;
 using Unity.Mathematics;
 
@@ -63,6 +64,17 @@ namespace Cities.Tests.EditMode.Tools
 
         private static PlacementTool Tool(Target target, ITerrainHeight terrain = null) =>
             new PlacementTool("Huis", 2, 3, Dimensions, terrain ?? new FlatTerrain(4f), target);
+
+        [Test]
+        public void LockedTileBlocksPlacement()
+        {
+            var two = new WorldDimensions(2, 1, 64, 8f);
+            var tool = new PlacementTool("Huis", 2, 3, two, new FlatTerrain(4f), new Target()) { Tiles = new TileUnlocks(two, new TileCoord(0, 0)) };
+            tool.Activate();
+
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).IsValid, Is.True);
+            Assert.That(tool.UpdatePreview(At(600f, 30f)).InvalidReason, Is.EqualTo(TileUnlocks.Locked));
+        }
 
         [Test]
         public void PreviewSnapsToTheGridAndSitsOnTheGround()
