@@ -25,14 +25,14 @@ namespace Cities.Editor.Models
         public static void BuildAll()
         {
             Directory.CreateDirectory(ArtFolder);
-            Save("PassengerCar", Car(), new Color(0.12f, 0.27f, 0.5f), new Color(0.8f, 0.8f, 0.78f));
-            Save("DeliveryVan", Van(), new Color(0.92f, 0.92f, 0.9f), new Color(0.1f, 0.35f, 0.7f));
-            Save("Truck", Truck(), new Color(0.82f, 0.4f, 0.1f), new Color(0.85f, 0.85f, 0.85f));
-            Save("CityBus", Bus(), new Color(0.95f, 0.75f, 0.1f), new Color(0.1f, 0.1f, 0.12f));
-            Save("CityTram", Tram(), new Color(0.75f, 0.1f, 0.12f), new Color(0.9f, 0.9f, 0.9f));
-            Save("EmergencyVan", Emergency(), new Color(0.95f, 0.95f, 0.93f), new Color(0.8f, 0.08f, 0.08f));
-            Save("Motorcycle", Motorcycle(), new Color(0.1f, 0.1f, 0.12f), new Color(0.75f, 0.1f, 0.1f));
-            Save("Bicycle", Bicycle(), new Color(0.15f, 0.45f, 0.3f), new Color(0.85f, 0.85f, 0.85f));
+            Save("PassengerCar", Car(), new Color(0.12f, 0.27f, 0.5f), new Color(0.8f, 0.8f, 0.78f), 0.32f);
+            Save("DeliveryVan", Van(), new Color(0.92f, 0.92f, 0.9f), new Color(0.1f, 0.35f, 0.7f), 0.36f);
+            Save("Truck", Truck(), new Color(0.82f, 0.4f, 0.1f), new Color(0.85f, 0.85f, 0.85f), 0.5f);
+            Save("CityBus", Bus(), new Color(0.95f, 0.75f, 0.1f), new Color(0.1f, 0.1f, 0.12f), 0.5f);
+            Save("CityTram", Tram(), new Color(0.75f, 0.1f, 0.12f), new Color(0.9f, 0.9f, 0.9f), 0.35f);
+            Save("EmergencyVan", Emergency(), new Color(0.95f, 0.95f, 0.93f), new Color(0.8f, 0.08f, 0.08f), 0.36f);
+            Save("Motorcycle", Motorcycle(), new Color(0.1f, 0.1f, 0.12f), new Color(0.75f, 0.1f, 0.1f), 0.3f);
+            Save("Bicycle", Bicycle(), new Color(0.15f, 0.45f, 0.3f), new Color(0.85f, 0.85f, 0.85f), 0.34f);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -46,7 +46,7 @@ namespace Cities.Editor.Models
             ModelMaterials.Lit(ArtFolder, name + "Accent", null, accent, 0.6f, 0.1f, Vector2.one),
         };
 
-        private static void Save(string name, ModelMesh model, Color body, Color accent)
+        private static void Save(string name, ModelMesh model, Color body, Color accent, float wheelRadius)
         {
             var mesh = ModelMesh.Save(model.Build(name + "Mesh"), $"{ArtFolder}/{name}Mesh.asset");
             var root = new GameObject(name);
@@ -62,6 +62,7 @@ namespace Cities.Editor.Models
                 Object.DestroyImmediate(root);
             }
 
+            AgentRenderer(name, mesh, body, accent, wheelRadius);
             var definition = AssetDatabase.LoadAssetAtPath<VehicleDefinition>($"{DataFolder}/{name}.asset");
             if (definition != null)
             {
@@ -71,10 +72,25 @@ namespace Cities.Editor.Models
             }
         }
 
+        /// <summary>Renderer-prefab die dit model met draaiende wielen tekent (E21-05): zelfde kleuren, shader <c>Cities/CityAgent</c>.</summary>
+        private static void AgentRenderer(string name, Mesh mesh, Color body, Color accent, float wheelRadius)
+        {
+            var materials = new[]
+            {
+                AgentModels.Material(name + "AgentPaint", body, 0.75f),
+                AgentModels.Material("VehicleGlassAgent", new Color(0.08f, 0.12f, 0.15f), 0.95f),
+                AgentModels.Material("VehicleTyreAgent", new Color(0.04f, 0.04f, 0.04f), 0.2f),
+                AgentModels.Material("VehicleDarkAgent", new Color(0.12f, 0.12f, 0.13f), 0.4f),
+                AgentModels.Material(name + "AgentAccent", accent, 0.6f),
+            };
+            AgentModels.RendererPrefab(name, mesh, materials, Cities.Simulation.Animation.AgentAnimationKind.Wheel, wheelRadius);
+        }
+
         /// <summary>Wiel als achtkant om de X-as: loopvlak, zijkanten en een velg van donker metaal.</summary>
         private static void Wheel(ModelMesh m, float x, float z, float radius, float width)
         {
             const int sides = 12;
+            var first = m.VertexCount;
             var centre = new Vector3(x, radius, z);
             var half = Vector3.right * (width * 0.5f);
             for (var i = 0; i < sides; i++)
@@ -88,6 +104,9 @@ namespace Cities.Editor.Models
                 var face = centre + (Vector3.right * (side * width * 0.5f));
                 m.Triangle(Dark, face, face + (a * rim), face + (b * rim), Vector3.right * side);
             }
+
+            // De shader draait deze hoekpunten om de as van het wiel (E21-05).
+            m.TagWheel(first, radius, z);
         }
 
         private static Vector3 Spoke(int index, int sides)

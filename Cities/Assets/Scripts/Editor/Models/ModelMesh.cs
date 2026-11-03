@@ -12,6 +12,7 @@ namespace Cities.Editor.Models
         private readonly List<Vector3> _vertices = new List<Vector3>();
         private readonly List<Vector3> _normals = new List<Vector3>();
         private readonly List<Vector2> _uvs = new List<Vector2>();
+        private readonly List<Vector3> _animation = new List<Vector3>();
         private readonly List<int>[] _triangles;
 
         public ModelMesh(int submeshCount)
@@ -20,6 +21,21 @@ namespace Cities.Editor.Models
             for (var i = 0; i < submeshCount; i++)
             {
                 _triangles[i] = new List<int>();
+            }
+        }
+
+        /// <summary>Aantal hoekpunten tot nu toe; gebruik het om na het bouwen van een onderdeel de nieuwe hoekpunten te taggen.</summary>
+        public int VertexCount => _vertices.Count;
+
+        /// <summary>
+        /// Markeert de hoekpunten vanaf <paramref name="from"/> als wiel (UV2 = 1, scharnier-y, scharnier-z); de shader draait ze om de X-as
+        /// door dat scharnier (E21-05).
+        /// </summary>
+        public void TagWheel(int from, float pivotY, float pivotZ)
+        {
+            for (var i = from; i < _animation.Count; i++)
+            {
+                _animation[i] = new Vector3(1f, pivotY, pivotZ);
             }
         }
 
@@ -139,6 +155,9 @@ namespace Cities.Editor.Models
             existing.SetNormals(mesh.normals);
             existing.SetTangents(mesh.tangents);
             existing.SetUVs(0, mesh.uv);
+            var animation = new List<Vector3>();
+            mesh.GetUVs(1, animation);
+            existing.SetUVs(1, animation);
             for (var i = 0; i < mesh.subMeshCount; i++)
             {
                 existing.SetTriangles(mesh.GetTriangles(i), i);
@@ -156,6 +175,7 @@ namespace Cities.Editor.Models
             mesh.SetVertices(_vertices);
             mesh.SetNormals(_normals);
             mesh.SetUVs(0, _uvs);
+            mesh.SetUVs(1, _animation);
             for (var i = 0; i < _triangles.Length; i++)
             {
                 mesh.SetTriangles(_triangles[i], i);
@@ -187,6 +207,7 @@ namespace Cities.Editor.Models
                 _vertices.Add(point);
                 _normals.Add(normal);
                 _uvs.Add(new Vector2(Vector3.Dot(point, tangent), Vector3.Dot(point, bitangent)));
+                _animation.Add(Vector3.zero);
             }
 
             return start;
