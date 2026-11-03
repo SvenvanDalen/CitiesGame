@@ -37,6 +37,7 @@ namespace Cities.Simulation.Vehicles
             Stopped = stopped;
             WaitTime = waitTime;
             Circulating = circulating;
+            TransitPriority = false;
         }
 
         private Approach(Approach source, bool transitPriority)
