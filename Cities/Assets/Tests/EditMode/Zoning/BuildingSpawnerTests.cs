@@ -129,6 +129,39 @@ namespace Cities.Tests.EditMode.Zoning
             }
         }
 
+        [Test]
+        public void SpecializedBuildingsGrowOnlyWhilePolicyEnablesThem()
+        {
+            var eco = Variant(2, 2);
+            Set(eco, "_spec", new BuildingSpec { FootprintWidth = 2, FootprintDepth = 2, Zone = ZoneType.Residential, Density = ZoneDensity.Low, Level = 1, Households = 1, Specialization = "eco" });
+            _zones.Paint(new RectInt(17, 10, 4, 12), ZoneType.Residential, ZoneDensity.Low);
+            var book = new Cities.Simulation.Policies.PolicyBook(new Dictionary<string, Cities.Simulation.Policies.PolicySpec>
+            {
+                ["policy.eco"] = new Cities.Simulation.Policies.PolicySpec
+                {
+                    Scope = Cities.Simulation.Policies.PolicyScope.City,
+                    Effects = new[] { new Cities.Simulation.Policies.PolicyEffect { Key = ZoneSpecialization.EffectKey("eco"), Multiplier = 1000f } },
+                },
+            });
+            var kinds = new List<bool>();
+            var spawner = new BuildingSpawner(_map, _zones, _occupancy, new[] { _house, eco }, _ => 1f, (definition, footprint, position) =>
+            {
+                _occupancy.Add(footprint);
+                kinds.Add(definition.Spec.IsSpecialized);
+            }, seed: 5);
+            spawner.Policies = book;
+
+            spawner.Grow(100);
+            Assert.That(kinds, Is.Not.Empty.And.All.False, "zonder beleid groeit alleen het gewone gebouw");
+
+            kinds.Clear();
+            book.Activate("policy.eco");
+            spawner.Grow(300);
+            Assert.That(kinds, Has.Some.True, "met beleid krijgt de specialisatie veruit het grootste gewicht");
+            spawner.Detach();
+            Object.DestroyImmediate(eco);
+        }
+
         private BuildingDefinition Variant(int width, int depth)
         {
             var definition = ScriptableObject.CreateInstance<BuildingDefinition>();
