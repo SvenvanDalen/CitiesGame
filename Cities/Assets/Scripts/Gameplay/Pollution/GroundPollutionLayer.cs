@@ -2,7 +2,7 @@ using System;
 using Cities.Simulation.Fields;
 using Cities.World.Grid;
 
-namespace Cities.Gameplay.Environment
+namespace Cities.Gameplay.Pollution
 {
     /// <summary>
     /// Verbindt <see cref="SoilPollution"/> (E12-05, de bron) met de wereldlaag <see cref="WorldMap.GroundPollution"/> (E03-10):

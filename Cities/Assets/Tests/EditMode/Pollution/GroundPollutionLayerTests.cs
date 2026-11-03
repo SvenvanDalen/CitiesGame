@@ -1,10 +1,10 @@
 using System;
-using Cities.Gameplay.Environment;
+using Cities.Gameplay.Pollution;
 using Cities.Simulation.Fields;
 using Cities.World.Grid;
 using NUnit.Framework;
 
-namespace Cities.Tests.EditMode.Environment
+namespace Cities.Tests.EditMode.Pollution
 {
     /// <summary>Gebruikt de NativeArray-lagen van <see cref="WorldMap"/> en draait daarom alleen in Unity, niet in de CI-analyse.</summary>
     [Category("UnityRuntime")]
