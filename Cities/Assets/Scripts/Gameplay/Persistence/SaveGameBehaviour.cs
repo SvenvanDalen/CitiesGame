@@ -27,6 +27,9 @@ namespace Cities.Gameplay.Persistence
 
         [Tooltip("Optioneel: de watersimulatie.")]
         [SerializeField] private WaterHostBehaviour _water;
+
+        [Tooltip("Optioneel: de camera met bladwijzers.")]
+        [SerializeField] private Cities.Gameplay.Cameras.CityCameraBehaviour _camera;
         [SerializeField] private string _cityName = "Nieuwe stad";
 
         [Tooltip("Naam van de save voor de contextmenu-opdrachten in de inspector.")]
@@ -63,6 +66,11 @@ namespace Cities.Gameplay.Persistence
             if (_water != null)
             {
                 sections.Add(new WaterSection(_water.Water));
+            }
+
+            if (_camera != null)
+            {
+                sections.Add(new Cities.Gameplay.Cameras.CameraBookmarksSection(_camera.Bookmarks));
             }
 
             Saves = new SaveGameService(new SaveStorage(_directory ?? SavesDirectory), sections, metadata => Describe(clock, metadata), _simulation.Scheduler.Complete)

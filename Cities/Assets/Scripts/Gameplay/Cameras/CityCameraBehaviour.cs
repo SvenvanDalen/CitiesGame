@@ -46,8 +46,13 @@ namespace Cities.Gameplay.Cameras
         private InputAction _panDrag;
         private InputAction _orbitDrag;
         private InputAction _fast;
+        private InputAction _bookmarkSet;
+        private readonly InputAction[] _bookmarkActions = new InputAction[CameraBookmarks.Slots];
 
         public CameraController Controller { get; private set; }
+
+        /// <summary>Bladwijzers: F5 tot en met F9 roepen terug, met Ctrl erbij slaan ze de stand op.</summary>
+        public CameraBookmarks Bookmarks { get; } = new CameraBookmarks();
 
         private void Awake()
         {
@@ -80,6 +85,12 @@ namespace Cities.Gameplay.Cameras
             _panDrag = map.FindAction("PanDrag", true);
             _orbitDrag = map.FindAction("OrbitDrag", true);
             _fast = map.FindAction("Fast", true);
+            _bookmarkSet = map.FindAction("BookmarkSet", true);
+            for (var i = 0; i < _bookmarkActions.Length; i++)
+            {
+                _bookmarkActions[i] = map.FindAction("Bookmark" + (i + 1), true);
+            }
+
             Apply(Controller.Current);
         }
 
@@ -116,6 +127,14 @@ namespace Cities.Gameplay.Cameras
                 HasCursorPoint = hasCursorPoint,
                 CursorPoint = cursorPoint,
             };
+
+            for (var i = 0; i < _bookmarkActions.Length; i++)
+            {
+                if (_bookmarkActions[i].WasPressedThisFrame())
+                {
+                    Bookmarks.Use(i, _bookmarkSet.IsPressed(), Controller);
+                }
+            }
 
             Controller.Settings = _settings;
             Controller.Update(input, UnityEngine.Time.unscaledDeltaTime);

@@ -71,6 +71,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Een tool met `RepeatsWhileHeld` (zoals een penseel) werkt elk frame zolang de knop ingedrukt is; `ToolInput.DeltaTime` geeft de frametijd.
 - Terraformen gaat met `TerraformTool` (omhoog, omlaag, vlak, glad, naar hoogte) via `TerrainBrush`. Het penseel meldt de gewijzigde hoekpunten met `NotifyHeightChanged`, en de terreinshader tekent de rand via `_CityBrush`. Testscene: `Scenes/Tests/Terrain.unity`.
 
+## Camera
+
+- `CameraBookmarks` bewaart vijf standen (`CameraRig`): F5 tot en met F9 roepen er een terug (gedempt), met Ctrl erbij slaan ze de huidige stand op. De toetsen staan in de map `Camera` en zijn herbindbaar. `CameraBookmarksSection` (`CAMB`) neemt ze mee in de save; hang `CityCameraBehaviour` aan `SaveGameBehaviour._camera`.
+
 ## Terrein
 
 - De hoogte staat in `WorldMap.Height`: één waarde per hoekpunt van het celraster (8 m). Tegels en chunks delen hun randhoekpunten, dus elke tegel heeft zijn eigen heightmap van 257 × 257 hoekpunten zonder naad met de buren.
