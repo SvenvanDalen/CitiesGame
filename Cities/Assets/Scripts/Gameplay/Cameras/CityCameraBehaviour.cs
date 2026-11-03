@@ -51,6 +51,9 @@ namespace Cities.Gameplay.Cameras
 
         public CameraController Controller { get; private set; }
 
+        /// <summary>Ruimere grenzen voor kantelen en afstand, voor de screenshot-modus.</summary>
+        public bool FreeLook { get; set; }
+
         /// <summary>Bladwijzers: F5 tot en met F9 roepen terug, met Ctrl erbij slaan ze de stand op.</summary>
         public CameraBookmarks Bookmarks { get; } = new CameraBookmarks();
 
@@ -174,7 +177,7 @@ namespace Cities.Gameplay.Cameras
                 }
             }
 
-            Controller.Settings = _settings;
+            Controller.Settings = FreeLook ? ScreenshotMode.FreeLook(_settings) : _settings;
             Controller.Update(input, UnityEngine.Time.unscaledDeltaTime);
             Apply(Controller.Current);
         }

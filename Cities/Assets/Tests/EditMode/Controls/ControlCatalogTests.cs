@@ -55,13 +55,13 @@ namespace Cities.Tests.EditMode.Controls
         public void UnlabeledRowsGoLastWithTheirKey()
         {
             var bindings = ControlTestData.Bindings();
-            bindings.Insert(0, new BindingInfo("Game", "Screenshot", 0, null, "<Keyboard>/f12", BindingKind.Simple, true));
+            bindings.Insert(0, new BindingInfo("Game", "Unlabeled", 0, null, "<Keyboard>/f12", BindingKind.Simple, true));
 
             var rows = ControlCatalog.Build(bindings);
 
-            Assert.That(rows[rows.Count - 1].Key, Is.EqualTo("Game/Screenshot"));
-            Assert.That(rows[rows.Count - 1].Label, Is.EqualTo("Game/Screenshot"));
-            Assert.That(ControlCatalog.FindUnlabeled(rows), Is.EqualTo(new[] { "Game/Screenshot" }));
+            Assert.That(rows[rows.Count - 1].Key, Is.EqualTo("Game/Unlabeled"));
+            Assert.That(rows[rows.Count - 1].Label, Is.EqualTo("Game/Unlabeled"));
+            Assert.That(ControlCatalog.FindUnlabeled(rows), Is.EqualTo(new[] { "Game/Unlabeled" }));
         }
 
         [Test]

@@ -3910,6 +3910,7 @@ GameObject:
   - component: {fileID: 1809154979}
   - component: {fileID: 1809154978}
   - component: {fileID: 1809154977}
+  - component: {fileID: 1809154990}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3917,6 +3918,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1809154990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809154976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3f6c20d1e74b59a6c4f0e2b7d19c85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cities.Presentation::Cities.Presentation.Screenshots.ScreenshotBehaviour
+  _controls: {fileID: -944628639613478452, guid: 922bc5d4237c03d4dadd68feb1fb3ec0, type: 3}
+  _camera: {fileID: 1809154977}
+  _targetWidth: 7680
 --- !u!114 &1809154977
 MonoBehaviour:
   m_ObjectHideFlags: 0

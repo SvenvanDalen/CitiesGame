@@ -39,6 +39,8 @@ namespace Cities.Gameplay.Controls
             new ControlLabel("Tools/Apply", CategoryTools, "Plaatsen"),
             new ControlLabel("Tools/Rotate", CategoryTools, "Draaien (kwartslag)"),
             new ControlLabel("Game/Menu", CategoryGeneral, "Tool annuleren, anders menu openen of sluiten"),
+            new ControlLabel("Game/ScreenshotMode", CategoryGeneral, "Screenshot-modus aan of uit (verbergt de interface)"),
+            new ControlLabel("Game/Screenshot", CategoryGeneral, "Screenshot maken in hoge resolutie"),
             new ControlLabel("Debug/TogglePanel", CategoryDebug, "Debugpaneel tonen of verbergen"),
             new ControlLabel("Debug/ToggleCells", CategoryDebug, "Cellenraster tonen of verbergen"),
         };

@@ -62,6 +62,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Elke knopactie en elk deel van een composite heeft twee slots (primair en alternatief); een leeg slot krijgt pad `""`. Een nieuwe actie krijgt een Nederlandse naam in `ControlLabels`; een test controleert dat.
 - `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape en de linkermuisknop zijn vast. Escape annuleert herbinden, breekt een tool af en opent anders het menu; links klikken plaatst.
 
+## Screenshot-modus
+
+- F11 zet de screenshot-modus aan: `ScreenshotBehaviour` verbergt alle `UIDocument`s en de bouwghost, zet de tools uit en geeft `CityCameraBehaviour.FreeLook` ruimere grenzen (`ScreenshotMode.FreeLook`: kantelen van 1° tot 89,9°, vanaf 3 m afstand). F12 maakt een opname op minstens `_targetWidth` pixels (`ScreenshotMode.SuperSize`, hoogstens 16384 per zijde) in `persistentDataPath/Screenshots`. Een nieuw schermvullend UI-element hoeft niets te doen zolang het in een `UIDocument` zit. Testscene: `Scenes/Tests/Camera.unity`.
+
 ## Tools
 
 - Een bouw- of bewerkingstool implementeert `ITool` (`Cities.Gameplay.Tools`): elk frame maakt hij uit de muis (`ToolInput`) een `ToolPreview` met positie, draaiing, maat en eventueel de reden waarom het niet mag. De `ToolController` voert alleen een geldige preview uit.
@@ -124,6 +128,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Het water wordt getekend door `WaterRendererBehaviour`: blokken van 32 × 32 cellen die om beurten uit `WorldMap.Height` en `WaterDepth` worden gebouwd (`WaterMeshBuilder`, per punt diepte en stroomrichting), met shader `Cities/Water` (dikte uit scènediepte, breking en absorptie, meestromende rimpels, schuim, Fresnel-reflectie; vereist depth en opaque texture in de URP-asset). Blokken zonder water bestaan niet.
 - Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
 
+## Fauna
+
+- Vogels, vissen en herten zijn sfeerleven, geen simulatie: ze hebben geen toestand, staan niet in de save en kosten geen simulatietijd. `FaunaGroups.Spawn` legt per vak van 256 m uit wereldseed en vaknummer vast welke groepen er wonen (meeuwen boven water, kraaien boven land, scholen in water van 2,5 m of meer, kuddes reeën op open land); `FaunaMotion.TryPose` rekent de stand van een dier uit de tijd. Een dier dat op een plek komt waar het niet kan (vis op het droge, ree in het water of in het bos) is er dan niet; terrein of water aanpassen werkt dus meteen door.
+- De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
+- `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
@@ -140,6 +150,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `Assets/Data/DefinitionCatalog.asset` wordt automatisch bijgewerkt. **Cities > Definities > Catalogus bijwerken en valideren** meldt fouten.
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
+
+## Wind
+
+- `WindModel.At(seed, tick)` (Simulation/Fields) geeft de wind als `Wind` (richting in radialen, snelheid in m/s, `Strength` 0 tot 1). De wind is een zuivere functie van wereldseed en tick: er is geen status en dus geen eigen save-sectie; de seed zit al in `RAND`. Hij wisselt vloeiend om de `KnotTicks` rond een heersende richting per wereld.
+- `Wind.Vector` (lengte = kracht) is de invoer van `FireSpread.Step`; `Wind.CellsPerStep(max)` is de invoer voor `DiffusionSettings` van de milieulagen.
 
 ## Zone-specialisaties
 
@@ -174,3 +189,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Gezondheid en sterfte
 
 - `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
+
+## Parkeren
+
+- `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
+- Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.
