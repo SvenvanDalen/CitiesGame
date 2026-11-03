@@ -39,6 +39,18 @@ namespace Cities.Simulation.Vehicles
             Circulating = circulating;
         }
 
+        private Approach(Approach source, bool transitPriority)
+        {
+            Vehicle = source.Vehicle;
+            Rule = source.Rule;
+            Parts = source.Parts;
+            Bearing = source.Bearing;
+            Stopped = source.Stopped;
+            WaitTime = source.WaitTime;
+            Circulating = source.Circulating;
+            TransitPriority = transitPriority;
+        }
+
         public int Vehicle { get; }
 
         public RightOfWay Rule { get; }
@@ -54,6 +66,12 @@ namespace Cities.Simulation.Vehicles
 
         /// <summary>Het voertuig rijdt al in de rotonde en heeft daar voorrang.</summary>
         public bool Circulating { get; }
+
+        /// <summary>Een lijnvoertuig met OV-voorrang (E09-11): gaat voor op de wachtplichtige regels van dit kruispunt.</summary>
+        public bool TransitPriority { get; }
+
+        /// <summary>Kopie van deze aanrijding met OV-voorrang aan of uit.</summary>
+        public Approach WithTransitPriority(bool value = true) => new Approach(this, value);
     }
 
     /// <summary>
@@ -80,6 +98,14 @@ namespace Cities.Simulation.Vehicles
 
             var mine = me;
             var conflicting = others.Where(o => o.Vehicle != mine.Vehicle && o.Parts.Intersect(mine.Parts).Any()).ToList();
+
+            // OV-voorrang: een lijnvoertuig rijdt door tenzij er al iemand in de rotonde rijdt of een ander lijnvoertuig dezelfde voorrang heeft;
+            // in dat laatste geval beslist de gewone regel (en dus de reservering) wie eerst gaat.
+            if (me.TransitPriority && !conflicting.Any(o => o.Circulating || o.TransitPriority))
+            {
+                return true;
+            }
+
             return me.Rule switch
             {
                 RightOfWay.Priority => true,
@@ -102,7 +128,7 @@ namespace Cities.Simulation.Vehicles
             return MayProceed(me, others) && reservations.TryReserve(me.Vehicle, me.Parts);
         }
 
-        private static bool HasPriority(Approach other) => other.Rule == RightOfWay.Priority || other.Circulating;
+        private static bool HasPriority(Approach other) => other.Rule == RightOfWay.Priority || other.Circulating || other.TransitPriority;
 
         private static bool WaitsLonger(Approach other, Approach me)
         {

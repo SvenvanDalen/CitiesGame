@@ -18,9 +18,24 @@ namespace Cities.Simulation.Vehicles
         /// <summary>Aanrijrichtingen binnen deze hoek (graden) van tegenover elkaar horen in dezelfde groep.</summary>
         public const float OppositeTolerance = 30f;
 
+        /// <summary>OV-voorrang (E09-11): een lopende groenfase wordt hoogstens zoveel seconden verlengd.</summary>
+        public const float TransitExtension = 10f;
+
+        /// <summary>OV-voorrang: verlengen kan alleen als het groen binnen zoveel seconden afloopt.</summary>
+        public const float TransitWindow = 6f;
+
+        /// <summary>OV-voorrang: een lopende groenfase wordt nooit korter dan dit afgekapt.</summary>
+        public const float MinGreen = 6f;
+
         private readonly float[] _green;
         private int _phase;
         private float _elapsed;
+
+        // Verlenging (positief) of inkorting (negatief) van de huidige fase; vervalt bij de volgende fase.
+        private float _bonus;
+
+        // Fasewisselingen sinds de laatste OV-ingreep; hoogstens één ingreep per volledige ronde houdt de andere richtingen eerlijk.
+        private int _sinceGrant;
 
         public SignalPlan(int groups, float clearance = DefaultClearance)
         {
@@ -36,6 +51,7 @@ namespace Cities.Simulation.Vehicles
 
             _green = Enumerable.Repeat(DefaultGreen, groups).ToArray();
             Clearance = clearance;
+            _sinceGrant = groups;
         }
 
         public int Groups => _green.Length;
@@ -48,7 +64,7 @@ namespace Cities.Simulation.Vehicles
         /// <summary>De groep die nu aan de beurt is (ook tijdens de ontruiming erna).</summary>
         public int Phase => _phase;
 
-        public bool Clearing => _elapsed >= _green[_phase];
+        public bool Clearing => _elapsed >= CurrentGreen;
 
         public float GreenOf(int group) => _green[CheckGroup(group)];
 
@@ -64,6 +80,45 @@ namespace Cities.Simulation.Vehicles
 
         public bool IsOpen(int group) => !Enabled || (CheckGroup(group) == _phase && !Clearing);
 
+        /// <summary>De groentijd van de lopende fase, inclusief OV-verlenging of -inkorting.</summary>
+        public float CurrentGreen => _green[_phase] + _bonus;
+
+        /// <summary>
+        /// Een lijnvoertuig meldt zich bij de lus voor <paramref name="group"/> (E09-11). Staat de groep open en loopt het groen bijna af,
+        /// dan wordt het groen verlengd; is de groep als volgende aan de beurt, dan wordt het groen van de huidige fase ingekort. Hoogstens
+        /// één ingreep per ronde. Geeft terug of de regeling is aangepast.
+        /// </summary>
+        public bool TryTransitPriority(int group)
+        {
+            CheckGroup(group);
+            if (!Enabled || _sinceGrant < _green.Length)
+            {
+                return false;
+            }
+
+            if (IsOpen(group))
+            {
+                if (CurrentGreen - _elapsed > TransitWindow)
+                {
+                    return false;
+                }
+
+                _bonus += TransitExtension;
+                _sinceGrant = 0;
+                return true;
+            }
+
+            var cutAt = Math.Max(_elapsed, MinGreen);
+            if (Clearing || group != (_phase + 1) % _green.Length || cutAt >= CurrentGreen)
+            {
+                return false;
+            }
+
+            _bonus = cutAt - _green[_phase];
+            _sinceGrant = 0;
+            return true;
+        }
+
         /// <summary>Seconden tot <paramref name="group"/> weer groen krijgt; 0 als de groep nu open is.</summary>
         public float SecondsUntilOpen(int group)
         {
@@ -72,7 +127,7 @@ namespace Cities.Simulation.Vehicles
                 return 0f;
             }
 
-            var seconds = _green[_phase] + Clearance - _elapsed;
+            var seconds = CurrentGreen + Clearance - _elapsed;
             for (var q = (_phase + 1) % _green.Length; q != group; q = (q + 1) % _green.Length)
             {
                 seconds += _green[q] + Clearance;
@@ -89,10 +144,12 @@ namespace Cities.Simulation.Vehicles
             }
 
             _elapsed += dt;
-            while (_elapsed >= _green[_phase] + Clearance)
+            while (_elapsed >= CurrentGreen + Clearance)
             {
-                _elapsed -= _green[_phase] + Clearance;
+                _elapsed -= CurrentGreen + Clearance;
                 _phase = (_phase + 1) % _green.Length;
+                _bonus = 0f;
+                _sinceGrant = Math.Min(_sinceGrant + 1, _green.Length);
             }
         }
 
