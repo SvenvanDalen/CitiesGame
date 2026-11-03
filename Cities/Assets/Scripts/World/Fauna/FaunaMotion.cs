@@ -37,7 +37,9 @@ namespace Cities.World.Fauna
             }
 
             var direction = Path(group, member, time + HeadingLookAhead) - ground;
-            var yaw = math.lengthsq(direction) > 1e-8f ? math.atan2(direction.x, direction.y) : Unit(group, member, 20) * TwoPi;
+            var east = direction.x;
+            var north = direction.y;
+            var yaw = math.lengthsq(direction) > 1e-8f ? math.atan2(east, north) : Unit(group, member, 20) * TwoPi;
             var terrain = habitat.GroundHeight(ground);
             var depth = habitat.WaterDepth(ground);
             switch (group.Kind)

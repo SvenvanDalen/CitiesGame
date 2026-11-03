@@ -119,7 +119,7 @@ namespace Cities.World.Fauna
                         var unit = new float3(math.sin(polar) * math.cos(azimuth), math.cos(polar), math.sin(polar) * math.sin(azimuth));
 
                         // De lange as ligt langs z: wissel y en z, zodat radii.z de lengte is.
-                        var direction = new float3(unit.x, unit.z, unit.y);
+                        var direction = unit.xzy;
                         _vertices.Add(center + (direction * radii));
                         _normals.Add(math.normalize(direction / radii));
                     }

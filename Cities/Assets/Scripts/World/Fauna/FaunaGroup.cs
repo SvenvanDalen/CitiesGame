@@ -20,14 +20,14 @@ namespace Cities.World.Fauna
     /// </summary>
     public readonly struct FaunaGroup
     {
-        public FaunaGroup(FaunaKind kind, ulong seed, float2 anchor, int count, float radius, float speed, float height, bool onWater)
+        public FaunaGroup(FaunaKind kind, ulong seed, float2 anchor, int count, float2 orbit, float height, bool onWater)
         {
             Kind = kind;
             Seed = seed;
             Anchor = anchor;
             Count = count;
-            Radius = radius;
-            Speed = speed;
+            Radius = orbit.x;
+            Speed = orbit.y;
             Height = height;
             OnWater = onWater;
         }

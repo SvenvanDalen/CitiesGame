@@ -169,7 +169,7 @@ namespace Cities.Tests.EditMode.Fauna
             Assert.That(seen, Is.GreaterThan(0));
 
             // Een groep waarvan het meer wegvalt (het ankerpunt ligt dan op het droge) toont geen enkele vis.
-            var dry = new FaunaGroup(FaunaKind.Fish, group.Seed, new float2(100f, 100f), 8, 10f, 0.5f, 0f, true);
+            var dry = new FaunaGroup(FaunaKind.Fish, group.Seed, new float2(100f, 100f), 8, new float2(10f, 0.5f), 0f, true);
             for (var member = 0; member < dry.Count; member++)
             {
                 Assert.That(FaunaMotion.TryPose(dry, member, 5f, habitat, out _), Is.False);
@@ -190,11 +190,11 @@ namespace Cities.Tests.EditMode.Fauna
             Assert.That(math.distance(pose.Position, later.Position), Is.LessThan(1f), "grazen is stapvoets");
 
             // Het bos (z > 3000) is geen open land: een kudde die daar zou staan, is er niet.
-            var forest = new FaunaGroup(FaunaKind.Deer, group.Seed, new float2(500f, 3500f), 4, 12f, 0.2f, 0f, false);
+            var forest = new FaunaGroup(FaunaKind.Deer, group.Seed, new float2(500f, 3500f), 4, new float2(12f, 0.2f), 0f, false);
             Assert.That(FaunaMotion.TryPose(forest, 0, 1f, habitat, out _), Is.False);
 
             // Midden in het meer ook niet.
-            var lake = new FaunaGroup(FaunaKind.Deer, group.Seed, new float2(1500f, 1500f), 4, 12f, 0.2f, 0f, false);
+            var lake = new FaunaGroup(FaunaKind.Deer, group.Seed, new float2(1500f, 1500f), 4, new float2(12f, 0.2f), 0f, false);
             Assert.That(FaunaMotion.TryPose(lake, 0, 1f, habitat, out _), Is.False);
         }
 
@@ -207,14 +207,14 @@ namespace Cities.Tests.EditMode.Fauna
             Assert.That(FaunaMotion.TryPose(group, -1, 0f, habitat, out _), Is.False);
             Assert.That(FaunaMotion.TryPose(group, group.Count, 0f, habitat, out _), Is.False);
 
-            var offMap = new FaunaGroup(FaunaKind.Birds, group.Seed, new float2(-500f, -500f), 6, 50f, 9f, 40f, false);
+            var offMap = new FaunaGroup(FaunaKind.Birds, group.Seed, new float2(-500f, -500f), 6, new float2(50f, 9f), 40f, false);
             Assert.That(FaunaMotion.TryPose(offMap, 0, 0f, habitat, out _), Is.False);
         }
 
         [Test]
         public void ReachCoversTheOrbitPlusMargin()
         {
-            var group = new FaunaGroup(FaunaKind.Birds, 1UL, float2.zero, 5, 60f, 9f, 40f, false);
+            var group = new FaunaGroup(FaunaKind.Birds, 1UL, float2.zero, 5, new float2(60f, 9f), 40f, false);
 
             Assert.That(FaunaGroups.Reach(group), Is.EqualTo(80f));
             Assert.That(FaunaGroups.Unit(1UL, 1), Is.InRange(0f, 0.9999999f));

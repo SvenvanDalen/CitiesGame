@@ -41,7 +41,7 @@ namespace Cities.Presentation.Fauna
         private readonly List<Matrix4x4> _crowWings = new List<Matrix4x4>();
         private readonly List<Matrix4x4> _fish = new List<Matrix4x4>();
         private readonly List<Matrix4x4> _deer = new List<Matrix4x4>();
-        private Matrix4x4[] _batch = new Matrix4x4[BatchSize];
+        private readonly Matrix4x4[] _batch = new Matrix4x4[BatchSize];
         private WorldMap _map;
         private IFaunaHabitat _habitat;
         private Mesh _birdMesh;
@@ -144,11 +144,12 @@ namespace Cities.Presentation.Fauna
             {
                 for (var z = math.max(minZ, 0); z <= maxZ; z++)
                 {
-                    foreach (var group in GroupsOf(kind, x, z))
+                    var groups = GroupsOf(kind, x, z);
+                    for (var i = 0; i < groups.Length; i++)
                     {
-                        if (math.distance(group.Anchor, center) <= distance + FaunaGroups.Reach(group))
+                        if (math.distance(groups[i].Anchor, center) <= distance + FaunaGroups.Reach(groups[i]))
                         {
-                            Pose(group, center, distance, time);
+                            Pose(groups[i], center, distance, time);
                         }
                     }
                 }

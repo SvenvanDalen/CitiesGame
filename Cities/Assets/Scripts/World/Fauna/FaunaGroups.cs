@@ -41,7 +41,16 @@ namespace Cities.World.Fauna
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var attempts = kind == FaunaKind.Fish ? FishAttempts : kind == FaunaKind.Deer ? DeerAttempts : 1;
+            var attempts = 1;
+            if (kind == FaunaKind.Fish)
+            {
+                attempts = FishAttempts;
+            }
+            else if (kind == FaunaKind.Deer)
+            {
+                attempts = DeerAttempts;
+            }
+
             for (var attempt = 0; attempt < attempts; attempt++)
             {
                 var seed = SeedHash.Combine(
@@ -65,15 +74,15 @@ namespace Cities.World.Fauna
                 case FaunaKind.Birds when Unit(seed, 3) < BirdChance:
                     // Meeuwen blijven bij het water, kraaien cirkelen boven het land.
                     count = 5 + (int)(Unit(seed, 4) * 8f);
-                    result.Add(new FaunaGroup(kind, seed, anchor, count, 50f + (Unit(seed, 5) * 80f), 8f + (Unit(seed, 6) * 3f), 35f + (Unit(seed, 7) * 50f), depth > 0.5f));
+                    result.Add(new FaunaGroup(kind, seed, anchor, count, new float2(50f + (Unit(seed, 5) * 80f), 8f + (Unit(seed, 6) * 3f)), 35f + (Unit(seed, 7) * 50f), depth > 0.5f));
                     break;
                 case FaunaKind.Fish when depth >= MinimumFishDepth:
                     count = 5 + (int)(Unit(seed, 4) * 10f);
-                    result.Add(new FaunaGroup(kind, seed, anchor, count, 5f + (Unit(seed, 5) * 12f), 0.4f + (Unit(seed, 6) * 0.5f), 0f, true));
+                    result.Add(new FaunaGroup(kind, seed, anchor, count, new float2(5f + (Unit(seed, 5) * 12f), 0.4f + (Unit(seed, 6) * 0.5f)), 0f, true));
                     break;
                 case FaunaKind.Deer when depth <= 0f && Unit(seed, 3) < DeerChance && habitat.IsOpenLand(anchor):
                     count = 3 + (int)(Unit(seed, 4) * 6f);
-                    result.Add(new FaunaGroup(kind, seed, anchor, count, 10f + (Unit(seed, 5) * 14f), 0.15f + (Unit(seed, 6) * 0.15f), 0f, false));
+                    result.Add(new FaunaGroup(kind, seed, anchor, count, new float2(10f + (Unit(seed, 5) * 14f), 0.15f + (Unit(seed, 6) * 0.15f)), 0f, false));
                     break;
             }
         }
