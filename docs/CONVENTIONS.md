@@ -140,6 +140,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
 
+## Zone-specialisaties
+
+- Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
+- `BuildingSpawner.Policies` en `DistrictOf` koppelen het `PolicyBook` en de districtindeling; zonder beleid groeien alleen gewone gebouwen. De status zit in sectie `PLCY`, er is geen eigen sectie nodig.
+
 ## Tests en dekking
 
 - Logica staat waar mogelijk in gewone C#-klassen en structs. MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
