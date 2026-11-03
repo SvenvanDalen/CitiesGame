@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 namespace Cities.Presentation.Screenshots
 {
     /// <summary>
-    /// Screenshot-modus (F9): verbergt de interface en de bouwghost, zet de tools uit en geeft de camera ruimere grenzen
+    /// Screenshot-modus (F11): verbergt de interface en de bouwghost, zet de tools uit en geeft de camera ruimere grenzen
     /// om vrij te roteren. F12 maakt een opname op minstens <c>_targetWidth</c> pixels breed in
     /// <c>persistentDataPath/Screenshots</c>; buiten de modus verbergt dat de interface alleen voor het moment van de opname.
     /// </summary>

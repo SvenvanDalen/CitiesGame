@@ -184,6 +184,19 @@ namespace Cities.Tests.EditMode.Configuration
         }
 
         [Test]
+        public void SpecializationIsOnlyForGrowableBuildings()
+        {
+            var house = Terrace();
+            house.Specialization = "eco";
+            Assert.That(house.IsSpecialized, Is.True);
+            Assert.That(Errors(house.Validate), Is.Empty);
+
+            house.Zone = ZoneType.None;
+            house.Households = 0;
+            Assert.That(Errors(house.Validate), Has.Some.Contains("zone-specialisatie"));
+        }
+
+        [Test]
         public void BuildingLevelIsLimited()
         {
             var house = Terrace();

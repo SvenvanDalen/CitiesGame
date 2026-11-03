@@ -32,5 +32,15 @@ namespace Cities.Simulation.Utilities
             var f = (speed - WindCutIn) / (WindRated - WindCutIn);
             return f >= 1f ? 1f : f * f * f;
         }
+
+        /// <summary>Zonnetoren met warmteopslag: dezelfde zon, maar gebufferd tot ca. 22 uur en afgevlakt rond de middag.</summary>
+        public static float SolarTower(float timeOfDay)
+        {
+            var t = timeOfDay - math.floor(timeOfDay);
+            return t <= 0.25f || t >= 0.92f ? 0f : math.min(1f, 1.5f * math.sin((t - 0.25f) / 0.67f * math.PI));
+        }
+
+        /// <summary>Waterkracht: evenredig met het debiet tot het ontwerpdebiet, daarboven vlak; onder 10% van het debiet staan de turbines stil.</summary>
+        public static float Hydro(float flow) => flow < 0.1f ? 0f : math.min(1f, flow);
     }
 }

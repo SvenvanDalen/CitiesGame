@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Cities.Gameplay.Zoning;
 using Cities.World.Grid;
+using Cities.World.Tiles;
 using Cities.World.Terrain;
 using Unity.Mathematics;
 using UnityEngine;
@@ -67,6 +68,9 @@ namespace Cities.Gameplay.Tools
 
         public float MaxRise { get; }
 
+        /// <summary>Optioneel: weigert plaatsen op vergrendelde tegels.</summary>
+        public TileUnlocks Tiles { get; set; }
+
         /// <summary>Optioneel: laat de voorkant naar een weg in de buurt wijzen en weigert plaatsen op de weg.</summary>
         public IRoadSnap Roads { get; set; }
 
@@ -127,6 +131,12 @@ namespace Cities.Gameplay.Tools
             if (!footprint.IsInside(_dimensions))
             {
                 return OutsideMap;
+            }
+
+            var locked = Tiles == null ? null : BuildingPlacement.Cells(footprint).Select(Tiles.BuildReason).FirstOrDefault(r => r != null);
+            if (locked != null)
+            {
+                return locked;
             }
 
             if (high - low > MaxRise)

@@ -16,6 +16,9 @@ namespace Cities.Simulation.Network
 
         public RoadNetwork Network { get; private set; }
 
+        /// <summary>De verkeersregels per kruispunt (E04-13), opgeslagen in sectie <c>TRFC</c>.</summary>
+        public TrafficRules Rules { get; } = new TrafficRules();
+
         private void Awake()
         {
             Network = new RoadNetwork();

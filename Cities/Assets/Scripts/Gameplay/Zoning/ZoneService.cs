@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cities.Gameplay.Tools;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
+using Cities.World.Tiles;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -24,6 +25,9 @@ namespace Cities.Gameplay.Zoning
             _network = network ?? throw new ArgumentNullException(nameof(network));
         }
 
+        /// <summary>Optioneel: zones mogen alleen op ontgrendelde tegels.</summary>
+        public TileUnlocks Tiles { get; set; }
+
         /// <summary>Cellen (min inclusief, max exclusief) waarvan de zone veranderd is.</summary>
         public event Action<RectInt> ZonesChanged;
 
@@ -33,6 +37,12 @@ namespace Cities.Gameplay.Zoning
             if (!_map.Zones.Layout.Contains(cell.X, cell.Z))
             {
                 return "Buiten de kaart";
+            }
+
+            var locked = Tiles?.BuildReason(cell);
+            if (locked != null)
+            {
+                return locked;
             }
 
             var size = _map.Dimensions.CellSize;
