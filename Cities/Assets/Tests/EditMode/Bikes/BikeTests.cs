@@ -117,7 +117,7 @@ namespace Cities.Tests.EditMode.Bikes
 
             Assert.That(share.FindNearest(float3.zero, needDock: false), Is.EqualTo(near));
             Assert.That(share.FindNearest(float3.zero, needDock: true), Is.EqualTo(empty));
-            Assert.That(share.FindNearest(new float3(0f, 0f, 380f), needDock: false), Is.EqualTo(-1));
+            Assert.That(share.FindNearest(new float3(0f, 0f, 500f), needDock: false), Is.EqualTo(-1));
             Assert.That(share.FindNearest(float3.zero, needDock: true, maxDistance: 5f), Is.EqualTo(-1));
         }
 
