@@ -121,6 +121,35 @@ namespace Cities.Tests.EditMode.Configuration
             Assert.That(database.TryGet<FakeVehicle>("vehicle.car", out _), Is.True, "Geldige definities blijven bruikbaar");
         }
 
+        private sealed class FakeModelled : FakeDefinition, IPrefabDefinition
+        {
+            public FakeModelled(string id)
+                : base(id)
+            {
+            }
+
+            // Een echt GameObject bestaat buiten Unity niet; het pad met model staat in de UnityRuntime-tests.
+            public UnityEngine.GameObject Prefab => null;
+        }
+
+        [Test]
+        public void DefinitionsWithoutAModelAreListedAndHaveNoPrefab()
+        {
+            var database = new DefinitionDatabase(new IDefinition[]
+            {
+                new FakeModelled("building.b"),
+                new FakeModelled("building.a"),
+                new FakeVehicle("vehicle.car"),
+            });
+
+            Assert.That(database.IdsWithoutPrefab(), Is.EqualTo(new[] { "building.a", "building.b" }), "alleen definities met een model-veld, gesorteerd");
+            Assert.That(database.TryGetPrefab("building.a", out var prefab), Is.False);
+            Assert.That(prefab, Is.Null);
+            Assert.That(database.TryGetPrefab("vehicle.car", out _), Is.False, "geen model-veld");
+            Assert.That(database.TryGetPrefab("building.zzz", out _), Is.False, "onbekend ID");
+            Assert.That(database.TryGetPrefab(null, out _), Is.False);
+        }
+
         [Test]
         public void NullListIsRejected()
         {
