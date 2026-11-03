@@ -1,7 +1,7 @@
 {
     "name": "Cities.Editor",
     "rootNamespace": "Cities.Editor",
-    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Cities.Gameplay", "Cities.Presentation"],
+    "references": ["Cities.Core", "Cities.Simulation", "Cities.World", "Cities.Gameplay", "Cities.Presentation", "Unity.Mathematics"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
