@@ -16,7 +16,7 @@ namespace Cities.Tests.EditMode.Citizens
         {
             Assert.That(HappinessModel.Target(Worker(), Ideal), Is.EqualTo(100));
             var jobless = new Citizen { Age = 30 };
-            Assert.That(HappinessModel.Target(jobless, Dreadful), Is.Zero);
+            Assert.That(HappinessModel.Target(jobless, Dreadful), Is.EqualTo(10), "alleen reistijd telt niet mee zonder werk");
         }
 
         [Test]
