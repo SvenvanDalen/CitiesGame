@@ -40,6 +40,9 @@ namespace Cities.Gameplay.Tools
         /// <summary>Haalt een knooppunt met twee gelijke wegen weg en voegt ze samen.</summary>
         public RoadJunctionTool Merge { get; private set; }
 
+        /// <summary>Plaatst een rotonde op open terrein.</summary>
+        public RoundaboutTool Roundabout { get; private set; }
+
         /// <summary>De sim-inspector voor wegen en (met <c>_placement</c>) gebouwen.</summary>
         public InspectTool Inspect { get; private set; }
 
@@ -56,6 +59,7 @@ namespace Cities.Gameplay.Tools
             Reverse = new RoadEditTool(RoadEdit.Reverse, _network.Network, _world.Map, Tool, overlay);
             Split = new RoadJunctionTool(RoadJunction.Split, _network.Network, overlay);
             Merge = new RoadJunctionTool(RoadJunction.Merge, _network.Network, overlay);
+            Roundabout = new RoundaboutTool(_network.Network, overlay);
             Inspect = new InspectTool(
                 new RoadInspection(_network.Network),
                 _placement != null ? new BuildingInspection(_placement.Occupancy, _world.Map.Dimensions) : null);
@@ -93,6 +97,6 @@ namespace Cities.Gameplay.Tools
 
         /// <summary>Het voorbeeld hoort alleen te staan zolang de wegtool actief is.</summary>
         private void OnActiveChanged(ITool active) =>
-            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool) || ReferenceEquals(active, Demolish) || ReferenceEquals(active, Upgrade) || ReferenceEquals(active, Reverse) || ReferenceEquals(active, Split) || ReferenceEquals(active, Merge));
+            DebugRegistry.Shared.SetEnabled(RoadPreviewOverlay.OverlayName, ReferenceEquals(active, Tool) || ReferenceEquals(active, Demolish) || ReferenceEquals(active, Upgrade) || ReferenceEquals(active, Reverse) || ReferenceEquals(active, Split) || ReferenceEquals(active, Merge) || ReferenceEquals(active, Roundabout));
     }
 }
