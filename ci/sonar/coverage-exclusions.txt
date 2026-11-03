@@ -73,3 +73,4 @@ Cities/Assets/Scripts/Gameplay/Tools/RoundaboutTool.cs
 Cities/Assets/Scripts/Simulation/Network/Interchange.cs
 Cities/Assets/Scripts/Gameplay/Tools/InterchangeTool.cs
 Cities/Assets/Scripts/World/Fauna/WorldMapHabitat.cs
+Cities/Assets/Scripts/Gameplay/Overlays/WorldLayerOverlays.cs
