@@ -535,14 +535,15 @@ namespace Cities.Simulation.Transit
                 throw new ArgumentException("Een knoop met drie sporen mist een wissel.");
             }
 
-            var stationNodes = new HashSet<int>();
-            foreach (var station in snapshot.Stations)
+            var duplicate = snapshot.Stations.GroupBy(s => s.Node).Where(g => g.Count() > 1).Select(g => g.Key).DefaultIfEmpty(-1).First();
+            var invalid = snapshot.Stations
+                .Where(s => !nodeIds.Contains(s.Node) || switchNodes.Contains(s.Node) || snapshot.Tracks.Count(t => t.Touches(s.Node)) > MaxTracksPerStation)
+                .Select(s => s.Node)
+                .DefaultIfEmpty(duplicate)
+                .First();
+            if (invalid >= 0)
             {
-                if (!stationNodes.Add(station.Node) || !nodeIds.Contains(station.Node) || switchNodes.Contains(station.Node)
-                    || snapshot.Tracks.Count(t => t.Touches(station.Node)) > MaxTracksPerStation)
-                {
-                    throw new ArgumentException($"Station op knoop {station.Node} is ongeldig.");
-                }
+                throw new ArgumentException($"Station op knoop {invalid} is ongeldig.");
             }
         }
 
