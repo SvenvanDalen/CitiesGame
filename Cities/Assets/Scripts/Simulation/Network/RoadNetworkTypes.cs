@@ -19,10 +19,18 @@ namespace Cities.Simulation.Network
         public FixedList128Bytes<EntityId<SegmentKind>> Segments { get; }
     }
 
+    /// <summary>Hoe een segment ten opzichte van het terrein ligt (E04-06): op de grond, als brug erboven of als tunnel eronder.</summary>
+    public enum RoadElevation : byte
+    {
+        Ground,
+        Bridge,
+        Tunnel,
+    }
+
     /// <summary>Wegstuk tussen twee knooppunten, met zijn vorm en lanes.</summary>
     public readonly struct RoadSegment
     {
-        public RoadSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, float speedLimit, FixedList128Bytes<EntityId<LaneKind>> lanes)
+        public RoadSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, float speedLimit, FixedList128Bytes<EntityId<LaneKind>> lanes, RoadElevation elevation = RoadElevation.Ground)
         {
             Start = start;
             End = end;
@@ -30,6 +38,7 @@ namespace Cities.Simulation.Network
             Length = curve.Length();
             SpeedLimit = speedLimit;
             Lanes = lanes;
+            Elevation = elevation;
         }
 
         public EntityId<NodeKind> Start { get; }
@@ -46,6 +55,9 @@ namespace Cities.Simulation.Network
 
         /// <summary>Hoogstens <see cref="RoadNetwork.MaxLanes"/> lanes, in de volgorde van het profiel.</summary>
         public FixedList128Bytes<EntityId<LaneKind>> Lanes { get; }
+
+        /// <summary>Het hele segment ligt op de grond, als brug of als tunnel; een deel van een weg overbruggen kan door hem eerst te splitsen.</summary>
+        public RoadElevation Elevation { get; }
 
         public EntityId<NodeKind> Other(EntityId<NodeKind> node) => node == Start ? End : Start;
     }
