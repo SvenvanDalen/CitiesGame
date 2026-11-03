@@ -58,6 +58,9 @@ namespace Cities.World.Buildings
 
         public int FootprintCells => FootprintWidth * FootprintDepth;
 
+        /// <summary>Rij, vrijstaand of blok, afgeleid van kavelgrootte en dichtheid (E05-11).</summary>
+        public BuildingTypology Typology => BuildingVolume.TypologyFor(FootprintCells, Density);
+
         /// <summary>
         /// Arbeidsplaatsen voor <paramref name="level"/>. De drie niveaus tellen altijd op tot <see cref="Workplaces"/>:
         /// hoog en middelbaar worden afgerond, de rest is laag opgeleid.
