@@ -72,7 +72,7 @@ namespace Cities.Editor.Models
             var limbOf = new Limb[vertexCount];
             foreach (var part in parts)
             {
-                for (var i = part.First; i < part.First + part.Count; i++)
+                for (var i = part.First; i < part.First + part.Length; i++)
                 {
                     limbOf[i] = part.Kind;
                 }
@@ -120,18 +120,18 @@ namespace Cities.Editor.Models
 
         private readonly struct Part
         {
-            public Part(Limb limb, int first, int count)
+            public Part(Limb limb, int first, int length)
             {
                 Kind = limb;
                 First = first;
-                Count = count;
+                Length = length;
             }
 
             public Limb Kind { get; }
 
             public int First { get; }
 
-            public int Count { get; }
+            public int Length { get; }
         }
     }
 }
