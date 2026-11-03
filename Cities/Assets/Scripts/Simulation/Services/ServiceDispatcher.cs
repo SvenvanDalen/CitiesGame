@@ -55,6 +55,8 @@ namespace Cities.Simulation.Services
 
         public IReadOnlyList<Incident> Open => _open;
 
+        public IReadOnlyList<ServiceStation> Stations => _stations;
+
         /// <summary>Totale maandelijkse onderhoudskosten van alle dienstgebouwen.</summary>
         public long UpkeepPerMonth => _stations.Sum(s => s.UpkeepPerMonth);
 
@@ -95,7 +97,7 @@ namespace Cities.Simulation.Services
 
             if (incident.Handler != null)
             {
-                incident.Handler.FreeVehicles++;
+                incident.Handler.Busy--;
                 incident.Handler = null;
             }
 
@@ -112,7 +114,7 @@ namespace Cities.Simulation.Services
                 incident.Remaining -= seconds;
                 if (incident.Remaining <= 0f)
                 {
-                    incident.Handler.FreeVehicles++;
+                    incident.Handler.Busy--;
                     done.Add(incident);
                 }
             }
@@ -137,7 +139,7 @@ namespace Cities.Simulation.Services
                     continue;
                 }
 
-                station.FreeVehicles--;
+                station.Busy++;
                 incident.Handler = station;
                 incident.Remaining = (2f * math.distance(station.Position, position) / Speed) + HandlingSeconds;
             }

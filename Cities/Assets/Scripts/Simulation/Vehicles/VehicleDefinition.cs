@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Cities.Simulation.Vehicles
 {
     [CreateAssetMenu(fileName = "Vehicle", menuName = "Cities/Definitions/Vehicle")]
-    public sealed class VehicleDefinition : GameDefinition
+    public sealed class VehicleDefinition : GameDefinition, IPrefabDefinition
     {
         [SerializeField] private VehicleSpec _spec;
         [SerializeField] private GameObject _prefab;

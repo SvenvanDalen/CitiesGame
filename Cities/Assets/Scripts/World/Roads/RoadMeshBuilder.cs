@@ -53,6 +53,9 @@ namespace Cities.World.Roads
         public const float MaxTurnPerStep = 0.1f;
         public const int MaxSamples = 700;
 
+        /// <summary>Dikte (m) van het brugdek onder het wegdek.</summary>
+        public const float DeckThickness = 1.2f;
+
         public static RoadMeshData Build(Bezier3 curve, IReadOnlyList<LaneSpec> lanes)
         {
             if (lanes == null)
@@ -81,6 +84,38 @@ namespace Cities.World.Roads
 
             AddMarkings(data, line, vehicles);
             AddSkirts(data, line, lanes);
+            return data;
+        }
+
+        /// <summary>
+        /// De onderkant van een brugdek (E04-06): twee zijwanden en een onderkant over de breedte van de lanes, <see cref="DeckThickness"/> onder het
+        /// wegdek. Het wegdek zelf komt uit <see cref="Build"/>; pijlers volgen met E04-06b.
+        /// </summary>
+        public static RoadMeshData BuildDeck(Bezier3 curve, IReadOnlyList<LaneSpec> lanes)
+        {
+            if (lanes == null)
+            {
+                throw new ArgumentNullException(nameof(lanes));
+            }
+
+            var left = float.MaxValue;
+            var right = float.MinValue;
+            foreach (var lane in lanes)
+            {
+                left = math.min(left, lane.Offset - (lane.Width * 0.5f));
+                right = math.max(right, lane.Offset + (lane.Width * 0.5f));
+            }
+
+            if (left > right)
+            {
+                throw new ArgumentException("Een brugdek heeft minstens één lane nodig.", nameof(lanes));
+            }
+
+            var data = new RoadMeshData();
+            var line = Sample(curve);
+            AddWall(data, line, left, -DeckThickness, 0f, -1f);
+            AddWall(data, line, right, -DeckThickness, 0f, 1f);
+            AddStrip(data, RoadSurface.Curb, line, left, right, -DeckThickness, -1f);
             return data;
         }
 
@@ -189,8 +224,8 @@ namespace Cities.World.Roads
         private static void AddMarking(RoadMeshData data, RoadSurface surface, Line line, float offset) =>
             AddStrip(data, surface, line, offset - (MarkingWidth * 0.5f), offset + (MarkingWidth * 0.5f), MarkingLift);
 
-        /// <summary>Strook tussen twee zijdelingse standen op hoogte <paramref name="lift"/> boven de hartlijn, met de bovenkant naar boven.</summary>
-        private static void AddStrip(RoadMeshData data, RoadSurface surface, Line line, float from, float to, float lift)
+        /// <summary>Strook tussen twee zijdelingse standen op hoogte <paramref name="lift"/> boven de hartlijn, met de bovenkant naar boven (<paramref name="facing"/> -1 voor een onderkant).</summary>
+        private static void AddStrip(RoadMeshData data, RoadSurface surface, Line line, float from, float to, float lift, float facing = 1f)
         {
             var first = data.Vertices.Count;
             for (var i = 0; i < line.Count; i++)
@@ -198,13 +233,13 @@ namespace Cities.World.Roads
                 var v = line.Distance[i] / TextureMeters;
                 data.Vertices.Add(line.Center[i] + (line.Right[i] * from) + (line.Up[i] * lift));
                 data.Vertices.Add(line.Center[i] + (line.Right[i] * to) + (line.Up[i] * lift));
-                data.Normals.Add(line.Up[i]);
-                data.Normals.Add(line.Up[i]);
+                data.Normals.Add(line.Up[i] * facing);
+                data.Normals.Add(line.Up[i] * facing);
                 data.Uvs.Add(new float2(0f, v));
                 data.Uvs.Add(new float2(1f, v));
             }
 
-            Stitch(data, surface, first, line.Count, line.Up[0]);
+            Stitch(data, surface, first, line.Count, line.Up[0] * facing);
         }
 
         /// <summary>Verticale wand langs de rand op zijdelingse stand <paramref name="offset"/>, tussen twee hoogtes, naar <paramref name="facing"/> (-1 links, 1 rechts).</summary>

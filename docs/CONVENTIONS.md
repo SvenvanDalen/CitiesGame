@@ -62,6 +62,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Elke knopactie en elk deel van een composite heeft twee slots (primair en alternatief); een leeg slot krijgt pad `""`. Een nieuwe actie krijgt een Nederlandse naam in `ControlLabels`; een test controleert dat.
 - `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape en de linkermuisknop zijn vast. Escape annuleert herbinden, breekt een tool af en opent anders het menu; links klikken plaatst.
 
+## Screenshot-modus
+
+- F11 zet de screenshot-modus aan: `ScreenshotBehaviour` verbergt alle `UIDocument`s en de bouwghost, zet de tools uit en geeft `CityCameraBehaviour.FreeLook` ruimere grenzen (`ScreenshotMode.FreeLook`: kantelen van 1° tot 89,9°, vanaf 3 m afstand). F12 maakt een opname op minstens `_targetWidth` pixels (`ScreenshotMode.SuperSize`, hoogstens 16384 per zijde) in `persistentDataPath/Screenshots`. Een nieuw schermvullend UI-element hoeft niets te doen zolang het in een `UIDocument` zit. Testscene: `Scenes/Tests/Camera.unity`.
+
 ## Tools
 
 - Een bouw- of bewerkingstool implementeert `ITool` (`Cities.Gameplay.Tools`): elk frame maakt hij uit de muis (`ToolInput`) een `ToolPreview` met positie, draaiing, maat en eventueel de reden waarom het niet mag. De `ToolController` voert alleen een geldige preview uit.
@@ -70,6 +74,14 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `ToolGhostBehaviour` tekent de preview: het model doorschijnend en de footprint op de grond, blauw als het mag en rood als het niet mag. `ToolbarBehaviour` toont de reden. Testscene: `Scenes/Tests/Tools.unity`.
 - Een tool met `RepeatsWhileHeld` (zoals een penseel) werkt elk frame zolang de knop ingedrukt is; `ToolInput.DeltaTime` geeft de frametijd.
 - Terraformen gaat met `TerraformTool` (omhoog, omlaag, vlak, glad, naar hoogte) via `TerrainBrush`. Het penseel meldt de gewijzigde hoekpunten met `NotifyHeightChanged`, en de terreinshader tekent de rand via `_CityBrush`. Testscene: `Scenes/Tests/Terrain.unity`.
+
+## Camera
+
+- `CameraBookmarks` bewaart vijf standen (`CameraRig`): F5 tot en met F9 roepen er een terug (gedempt), met Ctrl erbij slaan ze de huidige stand op. De toetsen staan in de map `Camera` en zijn herbindbaar. `CameraBookmarksSection` (`CAMB`) neemt ze mee in de save; hang `CityCameraBehaviour` aan `SaveGameBehaviour._camera`.
+
+## Volgcamera
+
+- Burgers en voertuigen worden gevolgd via `IFollowTarget` (geldigheid, positie, richting, ooghoogte). `FollowCameraController` rekent de stand uit (`Chase` achter het doel, `FirstPerson` op ooghoogte, rondkijken met de rechtermuisknop) en `CityCameraBehaviour.Follow/StopFollowing` zet hem aan. Valt het doel weg, dan gaat de vrije camera verder vanaf de laatste stand. Een toets om te wisselen komt zodra burgers/voertuigen een selectie hebben (E02-04 picking).
 
 ## Terrein
 
@@ -104,6 +116,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Kruispunten (knooppunt met 3 tot 8 armen): `RoadJunctionBuilder` rekent uit hoever elke weg van het midden ophoudt (afgeronde hoeken van 6 m) en maakt het mesh met stoep, stoeprand en zebrapaden; `RoadJunctions` koppelt dat aan het netwerk en `RoadRendererBehaviour` tekent het per knooppunt. De afsnijding volgt altijd uit het net, er wordt niets van opgeslagen.
 - Wegtypes zijn definities (`road.<naam>`, `RoadTypeDefinition` onder `Assets/Data/RoadTypes`): rijstroken per richting, eenrichting, fietspad, stoep, snelheidslimiet en kosten per meter. `RoadTypeSpec.Profile()` maakt er het dwarsprofiel van; de `RoadTool` legt wegen aan met `Use(id, spec)` en de werkbalk toont een knop per type uit de catalogus.
 - Wegen slopen doet de `DemolishTool` (Gameplay/Tools): een klik kiest een weg of kruispunt, een tweede klik bevestigt. De economie (E11) betaalt terug door te luisteren op `Demolished` (aantal segmenten en gesloopte lengte).
+- Snelwegknooppunten (E04-11): `InterchangeGeometry` (Simulation/Network) plant drie presets (`Diamond` = op- en afritten, `Cloverleaf`, `Turbine`) als knooppunten en Bezier-wegen in lokale coördinaten (snelweg langs X, kruisende weg langs Z over een brug van 5,5 m, helling max. 6%); `Interchange.Build` zet dat in het net en de `InterchangeTool` plaatst het met één klik (draaien in stappen van 15°). Er is geen eigen opslag: alles zit in `NETW`. De snelweg is één tweerichtingssegment, dus de ramps vertrekken vanaf de hartlijn (gescheiden rijbanen volgen later); de turbine is vereenvoudigd.
+- Verkeersregels (E04-13): `TrafficRules` bewaart per arm (segment bij een knooppunt) alleen wat de speler afwijkend instelt: een eigen voorrangsregel (`RightOfWay`) of een verbod in te rijden; sectie `TRFC`. `RightOfWayResolver.Resolve` geeft de geldende regel (instelling, anders rotonde, anders de drukkere weg heeft voorrang, anders rechts voor links). `LanePathfinder` mijdt een arm met verbod in te rijden als hij de regels meekrijgt. De snelheidslimiet per segment zet je met `RoadNetwork.SetSpeedLimit`.
 - Bouwfeedback: een `ToolPreview` heeft `InvalidReason` (rode ghost en de reden in de werkbalk), `Info` en `Cost` (hele munteenheden); de werkbalk toont de kosten achter de uitleg. Alleen de wegtool vult `Cost` al (lengte x kosten per meter); gebouwen volgen met de economie (E11).
 
 ## Water
@@ -113,6 +127,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - De zee is een vast waterpeil langs de randen in `SeaEdges`; bronnen en afvoerpunten (E03-06) zijn debieten in m³/s in `WaterSources` (negatief is afvoer), geplaatst met `WaterSourceTool` en opgeslagen in `WATR`.
 - Het water wordt getekend door `WaterRendererBehaviour`: blokken van 32 × 32 cellen die om beurten uit `WorldMap.Height` en `WaterDepth` worden gebouwd (`WaterMeshBuilder`, per punt diepte en stroomrichting), met shader `Cities/Water` (dikte uit scènediepte, breking en absorptie, meestromende rimpels, schuim, Fresnel-reflectie; vereist depth en opaque texture in de URP-asset). Blokken zonder water bestaan niet.
 - Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
+
+## Fauna
+
+- Vogels, vissen en herten zijn sfeerleven, geen simulatie: ze hebben geen toestand, staan niet in de save en kosten geen simulatietijd. `FaunaGroups.Spawn` legt per vak van 256 m uit wereldseed en vaknummer vast welke groepen er wonen (meeuwen boven water, kraaien boven land, scholen in water van 2,5 m of meer, kuddes reeën op open land); `FaunaMotion.TryPose` rekent de stand van een dier uit de tijd. Een dier dat op een plek komt waar het niet kan (vis op het droge, ree in het water of in het bos) is er dan niet; terrein of water aanpassen werkt dus meteen door.
+- De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
+- `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
 
 ## Logging en profiling
 
@@ -130,6 +150,16 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `Assets/Data/DefinitionCatalog.asset` wordt automatisch bijgewerkt. **Cities > Definities > Catalogus bijwerken en valideren** meldt fouten.
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
+
+## Wind
+
+- `WindModel.At(seed, tick)` (Simulation/Fields) geeft de wind als `Wind` (richting in radialen, snelheid in m/s, `Strength` 0 tot 1). De wind is een zuivere functie van wereldseed en tick: er is geen status en dus geen eigen save-sectie; de seed zit al in `RAND`. Hij wisselt vloeiend om de `KnotTicks` rond een heersende richting per wereld.
+- `Wind.Vector` (lengte = kracht) is de invoer van `FireSpread.Step`; `Wind.CellsPerStep(max)` is de invoer voor `DiffusionSettings` van de milieulagen.
+
+## Zone-specialisaties
+
+- Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
+- `BuildingSpawner.Policies` en `DistrictOf` koppelen het `PolicyBook` en de districtindeling; zonder beleid groeien alleen gewone gebouwen. De status zit in sectie `PLCY`, er is geen eigen sectie nodig.
 
 ## Tests en dekking
 
@@ -155,3 +185,21 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Eén branch per backlogitem: `feature/<ID>-<korte-naam>`, bijvoorbeeld `feature/E01-03-simulation-clock`.
 - Een PR verwijst naar het issue met `Closes #<nummer>` en wordt pas gemerged als de SonarQube-analyse geen relevante bevindingen meer heeft.
 - Commitberichten in het Engels, in de gebiedende wijs.
+
+## Gezondheid en sterfte
+
+- `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
+
+## Overige inkomsten
+
+- `Tourism` (Simulation/Economy) houdt trekpleisters bij (`Attraction`: toeristen per dag, entree, onderhoud; een unieke kan maar één keer staan). `Settle` boekt bestedingen en entree als `Other`-inkomst en het onderhoud als `Upkeep`; hotelbedden begrenzen de toeristen per week.
+- `Trade` heeft per goed een import- en exportprijs. `Settle` krijgt per goed het overschot of tekort (van de aanroeper, tot de goederenketen E11-08 er is): export is inkomst, import een verplichte uitgave, beide onder `Trade`. Beide staan in sectie `INCM` (`OtherIncomeSection`).
+
+## Vervoerskeuze
+
+- `TravelModeChoice` (Simulation/Citizens, E08-09) kiest per rit lopen, fiets, auto of OV met de laagste gegeneraliseerde kosten (reistijd x tijdswaarde + geld, plus vaste tijd voor fiets en auto). De OV-tijd komt uit `TransitRouter`; fiets en auto vragen bezit uit `TravelOwnership` (afgeleid van huishouden, welvaart en seed, dus zonder eigen status of save-sectie). De smaakfactor komt uit `DeterministicRandom`; geef per burger en tick een verse generator mee.
+
+## Parkeren
+
+- `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
+- Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.

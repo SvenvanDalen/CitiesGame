@@ -11,6 +11,14 @@ namespace Cities.World.Utilities
         Coal = 0,
         Wind = 1,
         Solar = 2,
+        Gas = 3,
+        Oil = 4,
+        Hydro = 5,
+        Geothermal = 6,
+        Nuclear = 7,
+        SolarTower = 8,
+        WasteToEnergy = 9,
+        Battery = 10,
     }
 
     /// <summary>
@@ -47,15 +55,44 @@ namespace Cities.World.Utilities
         [Tooltip("Bouwtijd in speldagen.")]
         public int ConstructionDays;
 
+        [Tooltip("Afvalenergiecentrale: opgewekte megawattuur per ton verbrand afval (ca. 0,6).")]
+        public float MwhPerTonne;
+
+        [Tooltip("Batterij: opslagcapaciteit in megawattuur.")]
+        public float StorageMwh;
+
+        [Tooltip("Batterij: deel van de geladen energie dat er weer uitkomt, van 0 tot 1.")]
+        public float RoundTripEfficiency;
+
+        /// <summary>Verbrandt brandstof (kolen, gas, olie) en kost dus per geleverde megawattuur.</summary>
+        public bool BurnsFuel => Source == PowerSource.Coal || Source == PowerSource.Gas || Source == PowerSource.Oil;
+
+        /// <summary>Gratis energiebron zonder uitstoot: wind, zon, zonnetoren, water en aardwarmte.</summary>
+        public bool IsClean => Source == PowerSource.Wind || Source == PowerSource.Solar || Source == PowerSource.SolarTower
+            || Source == PowerSource.Hydro || Source == PowerSource.Geothermal;
+
+        /// <summary>Kan op commando op- en afschakelen (gas, olie, water en batterij); de rest levert wat de bron geeft.</summary>
+        public bool IsDispatchable => Source == PowerSource.Gas || Source == PowerSource.Oil || Source == PowerSource.Hydro || Source == PowerSource.Battery;
+
         /// <summary>Wat de centrale nu levert in megawatt, bij tijd van de dag (0 tot 1) en windsnelheid in m/s.</summary>
-        public float Output(float timeOfDay, float windSpeed)
+        /// <param name="waterFlow">Debiet van de rivier als fractie van het ontwerpdebiet (0 tot 1+), voor waterkracht.</param>
+        /// <param name="wasteTonnesPerHour">Aanbod van afval per uur, voor afvalenergie.</param>
+        public float Output(float timeOfDay, float windSpeed, float waterFlow = 1f, float wasteTonnesPerHour = 0f)
         {
             switch (Source)
             {
                 case PowerSource.Solar:
                     return CapacityMw * PowerCurves.Solar(timeOfDay);
+                case PowerSource.SolarTower:
+                    return CapacityMw * PowerCurves.SolarTower(timeOfDay);
                 case PowerSource.Wind:
                     return CapacityMw * PowerCurves.Wind(windSpeed);
+                case PowerSource.Hydro:
+                    return CapacityMw * PowerCurves.Hydro(waterFlow);
+                case PowerSource.WasteToEnergy:
+                    return Mathf.Clamp(wasteTonnesPerHour * MwhPerTonne, 0f, CapacityMw);
+                case PowerSource.Battery:
+                    return 0f; // een batterij levert uit zijn lading (PowerBattery), niet uit een bron
                 default:
                     return CapacityMw;
             }
@@ -79,14 +116,29 @@ namespace Cities.World.Utilities
             SpecValidation.NotNegative(errors, nameof(ConstructionCost), ConstructionCost);
             SpecValidation.NotNegative(errors, nameof(UpkeepPerMonth), UpkeepPerMonth);
 
-            if (Source != PowerSource.Coal && (FuelCostPerMwh > 0f || AirPollution > 0f))
+            if (IsClean && (FuelCostPerMwh > 0f || AirPollution > 0f))
             {
-                errors.Add("Wind en zon verbranden niets: geen brandstofkosten en geen luchtvervuiling.");
+                errors.Add("Wind, zon, water en aardwarmte verbranden niets: geen brandstofkosten en geen luchtvervuiling.");
             }
 
-            if (Source == PowerSource.Coal && FuelCostPerMwh <= 0f)
+            if (BurnsFuel && FuelCostPerMwh <= 0f)
             {
-                errors.Add("Een kolencentrale heeft brandstofkosten.");
+                errors.Add("Een brandstofcentrale heeft brandstofkosten.");
+            }
+
+            if (Source == PowerSource.Nuclear && (FuelCostPerMwh <= 0f || AirPollution > 0f))
+            {
+                errors.Add("Een kerncentrale heeft splijtstofkosten en stoot geen lucht vervuilende stoffen uit.");
+            }
+
+            if (Source == PowerSource.WasteToEnergy && !(MwhPerTonne > 0f && FuelCostPerMwh == 0f))
+            {
+                errors.Add("Een afvalenergiecentrale heeft een rendement per ton en geen brandstofkosten.");
+            }
+
+            if (Source == PowerSource.Battery && (!(StorageMwh > 0f) || !(RoundTripEfficiency > 0f && RoundTripEfficiency <= 1f)))
+            {
+                errors.Add("Een batterij heeft opslag en een rendement tussen 0 en 1 nodig.");
             }
         }
     }

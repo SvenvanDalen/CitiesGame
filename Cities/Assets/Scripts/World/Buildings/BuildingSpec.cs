@@ -54,9 +54,17 @@ namespace Cities.World.Buildings
         [Tooltip("Bouwtijd in speldagen (E05-06).")]
         public int ConstructionDays;
 
+        [Tooltip("Zone-specialisatie (E05-12), bijvoorbeeld 'eco'; leeg is een gewoon gebouw. Groeit alleen waar beleid de specialisatie inschakelt.")]
+        public string Specialization;
+
+        public bool IsSpecialized => !string.IsNullOrEmpty(Specialization);
+
         public bool IsGrowable => Zone != ZoneType.None;
 
         public int FootprintCells => FootprintWidth * FootprintDepth;
+
+        /// <summary>Rij, vrijstaand of blok, afgeleid van kavelgrootte en dichtheid (E05-11).</summary>
+        public BuildingTypology Typology => BuildingVolume.TypologyFor(FootprintCells, Density);
 
         /// <summary>
         /// Arbeidsplaatsen voor <paramref name="level"/>. De drie niveaus tellen altijd op tot <see cref="Workplaces"/>:
@@ -94,6 +102,11 @@ namespace Cities.World.Buildings
 
             ValidateHousingAndWork(errors);
             ValidateShopsAndProduction(errors);
+
+            if (IsSpecialized && !IsGrowable)
+            {
+                errors.Add("Alleen groeigebouwen kunnen een zone-specialisatie hebben.");
+            }
 
             if (IsGrowable && ConstructionCost > 0)
             {

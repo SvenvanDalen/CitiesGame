@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Cities.World.Buildings
 {
     [CreateAssetMenu(fileName = "Building", menuName = "Cities/Definitions/Building")]
-    public sealed class BuildingDefinition : GameDefinition
+    public sealed class BuildingDefinition : GameDefinition, IPrefabDefinition
     {
         [SerializeField] private BuildingSpec _spec;
         [SerializeField] private GameObject _prefab;

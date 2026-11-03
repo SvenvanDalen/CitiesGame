@@ -29,12 +29,14 @@ namespace Cities.Simulation.Economy
     }
 
     /// <summary>
-    /// De begroting (E11-04): per dienst een financieringsniveau (0 tot <see cref="MaxFunding"/>, 1 is de normale begroting) dat de onderhoudskosten
-    /// van de dienstgebouwen schaalt, en een weekprognose uit die kosten en de verwachte belastingopbrengst. <see cref="Pay"/> boekt de kosten van een week.
+    /// De begroting (E11-04): per dienst een financieringsniveau (<see cref="MinFunding"/> tot <see cref="MaxFunding"/>, 1 is de normale begroting) dat de onderhoudskosten
+    /// en het aantal voertuigen van de dienstgebouwen schaalt (<see cref="Apply"/>), en een weekprognose uit die kosten en de verwachte belastingopbrengst. <see cref="Pay"/> boekt de kosten van een week.
     /// </summary>
     public sealed class Budget
     {
         public const float DefaultFunding = 1f;
+
+        public const float MinFunding = 0.5f;
 
         public const float MaxFunding = 1.5f;
 
@@ -54,12 +56,26 @@ namespace Cities.Simulation.Economy
 
         public void SetFunding(ServiceKind kind, float funding)
         {
-            if (!(funding >= 0f && funding <= MaxFunding))
+            if (!(funding >= MinFunding && funding <= MaxFunding))
             {
-                throw new ArgumentOutOfRangeException(nameof(funding), funding, "Het financieringsniveau ligt tussen 0 en " + MaxFunding + ".");
+                throw new ArgumentOutOfRangeException(nameof(funding), funding, "Het financieringsniveau ligt tussen " + MinFunding + " en " + MaxFunding + ".");
             }
 
             _funding[IndexOf(kind)] = funding;
+        }
+
+        /// <summary>Zet het ingestelde niveau op de stations, zodat het aantal voertuigen meeschaalt.</summary>
+        public void Apply(IEnumerable<ServiceStation> stations)
+        {
+            if (stations is null)
+            {
+                throw new ArgumentNullException(nameof(stations));
+            }
+
+            foreach (var station in stations)
+            {
+                station.SetFunding(Funding(station.Kind));
+            }
         }
 
         /// <summary>Weekkosten van alle stations van één soort bij het ingestelde niveau, afgerond op hele euro's.</summary>

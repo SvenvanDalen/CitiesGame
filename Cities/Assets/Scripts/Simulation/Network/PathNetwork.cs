@@ -64,6 +64,8 @@ namespace Cities.Simulation.Network
             public float Length;
             public float Rise;
             public PathModes Modes;
+            public int Crossing;
+            public float Wait;
         }
 
         private readonly List<float3> _positions = new List<float3>();
@@ -91,6 +93,45 @@ namespace Cities.Simulation.Network
             var length = math.distance(_positions[a], _positions[b]);
             AddArc(a, b, length, modes);
             AddArc(b, a, length, modes);
+        }
+
+        /// <summary>
+        /// Een oversteek (zebrapad of lichtenregeling) tussen twee knopen, in beide richtingen. <paramref name="wait"/> is de verwachte
+        /// wachttijd in seconden en telt mee in de routering, zodat een route liever een geregelde oversteek kiest dan een lange omweg.
+        /// </summary>
+        public void AddCrossing(int a, int b, PathModes modes, int crossing, float wait)
+        {
+            Check(a);
+            Check(b);
+            if (modes == PathModes.None || crossing < 0 || !(wait >= 0f))
+            {
+                throw new ArgumentException("Een oversteek is voor minstens één soort verplaatsing, heeft een id en een wachttijd van nul of meer.");
+            }
+
+            var length = math.distance(_positions[a], _positions[b]);
+            AddArc(a, b, length, modes, crossing, wait);
+            AddArc(b, a, length, modes, crossing, wait);
+        }
+
+        /// <summary>De lengte en eventuele oversteek (-1 zonder) van de boog van <paramref name="from"/> naar <paramref name="to"/> voor <paramref name="mode"/>.</summary>
+        public bool TryGetArc(int from, int to, PathMode mode, out float length, out int crossing)
+        {
+            Check(from);
+            Check(to);
+            var allowed = mode == PathMode.Walk ? PathModes.Walk : PathModes.Bike;
+            foreach (var arc in _arcs[from])
+            {
+                if (arc.To == to && (arc.Modes & allowed) != PathModes.None)
+                {
+                    length = arc.Length;
+                    crossing = arc.Crossing;
+                    return true;
+                }
+            }
+
+            length = 0f;
+            crossing = -1;
+            return false;
         }
 
         /// <summary>
@@ -208,12 +249,12 @@ namespace Cities.Simulation.Network
         {
             var grade = arc.Length > 0f ? arc.Rise / arc.Length : 0f;
             var slowdown = math.min(1f + (UphillPenalty * math.max(0f, grade)), MaxSlopeFactor);
-            return arc.Length / (mode == PathMode.Walk ? WalkSpeed : BikeSpeed) * slowdown;
+            return (arc.Length / (mode == PathMode.Walk ? WalkSpeed : BikeSpeed) * slowdown) + arc.Wait;
         }
 
-        private void AddArc(int from, int to, float length, PathModes modes)
+        private void AddArc(int from, int to, float length, PathModes modes, int crossing = -1, float wait = 0f)
         {
-            _arcs[from].Add(new Arc { To = to, Length = length, Rise = _positions[to].y - _positions[from].y, Modes = modes });
+            _arcs[from].Add(new Arc { To = to, Length = length, Rise = _positions[to].y - _positions[from].y, Modes = modes, Crossing = crossing, Wait = wait });
         }
 
         private void Check(int node)

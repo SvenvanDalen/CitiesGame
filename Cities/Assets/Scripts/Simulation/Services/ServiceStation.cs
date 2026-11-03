@@ -39,7 +39,6 @@ namespace Cities.Simulation.Services
             Radius = radius;
             Vehicles = vehicles;
             UpkeepPerMonth = upkeepPerMonth;
-            FreeVehicles = vehicles;
         }
 
         public ServiceKind Kind { get; }
@@ -52,8 +51,27 @@ namespace Cities.Simulation.Services
 
         public long UpkeepPerMonth { get; }
 
+        /// <summary>Financieringsniveau uit de begroting (E10-08); schaalt het aantal voertuigen, de kosten zitten in <c>Budget</c>.</summary>
+        public float Funding { get; private set; } = 1f;
+
+        /// <summary>Aantal voertuigen bij het huidige financieringsniveau; minstens één.</summary>
+        public int Capacity => Math.Max(1, (int)Math.Round(Vehicles * (double)Funding));
+
+        /// <summary>Voertuigen die onderweg zijn of ter plaatse bezig.</summary>
+        internal int Busy { get; set; }
+
         /// <summary>Voertuigen die op de kazerne staan en dus kunnen uitrukken.</summary>
-        public int FreeVehicles { get; internal set; }
+        public int FreeVehicles => Math.Max(0, Capacity - Busy);
+
+        public void SetFunding(float funding)
+        {
+            if (!(funding > 0f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(funding), funding, "Het financieringsniveau moet groter dan nul zijn.");
+            }
+
+            Funding = funding;
+        }
 
         public bool Covers(float2 point) => math.lengthsq(point - Position) <= Radius * Radius;
     }

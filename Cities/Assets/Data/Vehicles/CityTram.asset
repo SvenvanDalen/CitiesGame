@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab370cfdfc5a5874299d2d94c9d5f2e9, type: 3}
+  m_Name: CityTram
+  m_EditorClassIdentifier: Cities.Simulation::Cities.Simulation.Vehicles.VehicleDefinition
+  _id: vehicle.city-tram
+  _displayName: Stadstram
+  _description: Dertig meter lange tram in twee delen met plaats voor 200 reizigers.
+  _icon: {fileID: 0}
+  _spec:
+    Category: 4
+    LengthMeters: 30
+    WidthMeters: 2.4
+    MaxSpeedKmh: 70
+    AccelerationMs2: 1.0
+    BrakingMs2: 3.5
+    PassengerCapacity: 200
+    CargoCapacityTonnes: 0
+    PurchaseCost: 2000000
+    UpkeepPerMonth: 30000
+  _prefab: {fileID: 0}

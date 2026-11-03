@@ -1,0 +1,16 @@
+{
+  "name": "Cities (Claude Code, auto-modus)",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "claude",
+  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=cities-claude-config,target=/home/claude/.claude,type=volume",
+    "source=cities-gh-config,target=/home/claude/.config/gh,type=volume"
+  ],
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "customizations": {
+    "vscode": { "extensions": ["anthropic.claude-code", "ms-dotnettools.csharp"] }
+  }
+}
