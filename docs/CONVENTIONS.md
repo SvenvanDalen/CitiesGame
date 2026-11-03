@@ -159,3 +159,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Eén branch per backlogitem: `feature/<ID>-<korte-naam>`, bijvoorbeeld `feature/E01-03-simulation-clock`.
 - Een PR verwijst naar het issue met `Closes #<nummer>` en wordt pas gemerged als de SonarQube-analyse geen relevante bevindingen meer heeft.
 - Commitberichten in het Engels, in de gebiedende wijs.
+
+## Gezondheid en sterfte
+
+- `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
