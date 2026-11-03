@@ -17,13 +17,16 @@ namespace Cities.Simulation.Network
 
         private readonly RoadNetwork _network;
         private readonly Func<EntityId<LaneKind>, float> _congestion;
+        private readonly TrafficRules _rules;
         private readonly List<LaneConnection> _connections = new List<LaneConnection>();
 
         /// <param name="congestion">Factor ≥ 1 per lane; <c>null</c> betekent overal vrij verkeer.</param>
-        public LanePathfinder(RoadNetwork network, Func<EntityId<LaneKind>, float> congestion = null)
+        /// <param name="rules">Verkeersregels; een segment waar verboden in te rijden geldt wordt niet gebruikt. <c>null</c> betekent geen verboden.</param>
+        public LanePathfinder(RoadNetwork network, Func<EntityId<LaneKind>, float> congestion = null, TrafficRules rules = null)
         {
             _network = network ?? throw new ArgumentNullException(nameof(network));
             _congestion = congestion;
+            _rules = rules;
         }
 
         /// <summary>Lanes van begin tot eind (beide inbegrepen) en de totale reistijd; leeg als er geen route is.</summary>
@@ -47,7 +50,8 @@ namespace Cities.Simulation.Network
             foreach (var connection in _connections)
             {
                 var target = _network.GetLane(connection.To);
-                if ((target.Spec.Types & LaneTypes.Vehicles) == LaneTypes.None)
+                if ((target.Spec.Types & LaneTypes.Vehicles) == LaneTypes.None
+                    || (_rules != null && _rules.IsNoEntry(target.Segment, connection.Node)))
                 {
                     continue;
                 }

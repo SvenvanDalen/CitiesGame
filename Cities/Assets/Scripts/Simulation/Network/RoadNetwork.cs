@@ -96,6 +96,19 @@ namespace Cities.Simulation.Network
             ReplaceSegment(id, segment.Start, segment.End, segment.Curve, profile, speedLimit, segment);
         }
 
+        /// <summary>Stelt de maximumsnelheid (m/s) van een segment in (E04-13); de lanes en verbindingen blijven zoals ze waren.</summary>
+        public void SetSpeedLimit(EntityId<SegmentKind> id, float speedLimit)
+        {
+            if (!(speedLimit > 0f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(speedLimit), speedLimit, "De snelheidslimiet moet groter dan nul zijn.");
+            }
+
+            var segment = GetSegment(id);
+            Store(ref _segments, id.Index, new RoadSegment(segment.Start, segment.End, segment.Curve, speedLimit, segment.Lanes, segment.Elevation));
+            SegmentChanged?.Invoke(id);
+        }
+
         /// <summary>Maakt van een bestaand segment een gewone weg, brug of tunnel; de lanes en verbindingen blijven zoals ze waren.</summary>
         public void SetElevation(EntityId<SegmentKind> id, RoadElevation elevation)
         {
