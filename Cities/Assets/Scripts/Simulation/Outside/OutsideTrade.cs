@@ -62,7 +62,7 @@ namespace Cities.Simulation.Outside
             foreach (var good in surplus.Keys.OrderBy(k => k, StringComparer.Ordinal))
             {
                 var units = surplus[good];
-                limited[good] = units > 0f ? units * exportFactor : units < 0f ? units * importFactor : 0f;
+                limited[good] = units * (units > 0f ? exportFactor : importFactor);
             }
 
             var exported = totalExport * exportFactor;
