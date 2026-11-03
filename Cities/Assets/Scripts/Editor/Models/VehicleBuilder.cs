@@ -31,6 +31,8 @@ namespace Cities.Editor.Models
             Save("CityBus", Bus(), new Color(0.95f, 0.75f, 0.1f), new Color(0.1f, 0.1f, 0.12f));
             Save("CityTram", Tram(), new Color(0.75f, 0.1f, 0.12f), new Color(0.9f, 0.9f, 0.9f));
             Save("EmergencyVan", Emergency(), new Color(0.95f, 0.95f, 0.93f), new Color(0.8f, 0.08f, 0.08f));
+            Save("Motorcycle", Motorcycle(), new Color(0.1f, 0.1f, 0.12f), new Color(0.75f, 0.1f, 0.1f));
+            Save("Bicycle", Bicycle(), new Color(0.15f, 0.45f, 0.3f), new Color(0.85f, 0.85f, 0.85f));
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -231,6 +233,33 @@ namespace Cities.Editor.Models
             m.Box(Accent, new Vector3(-0.8f, 2.3f, 0.5f), new Vector3(0.8f, 2.45f, 1.1f));
             m.Box(Glass, new Vector3(-0.5f, 2.45f, 0.55f), new Vector3(0.5f, 2.55f, 1.05f));
             m.Box(Accent, new Vector3(-1.015f, 1.4f, -2.6f), new Vector3(1.015f, 1.7f, 1.2f));
+            return m;
+        }
+
+        /// <summary>Motor: twee wielen, tank, zadel, stuur en koplamp.</summary>
+        private static ModelMesh Motorcycle()
+        {
+            var m = new ModelMesh(Count);
+            Wheel(m, 0f, 0.8f, 0.3f, 0.14f);
+            Wheel(m, 0f, -0.8f, 0.3f, 0.18f);
+            m.Box(Dark, new Vector3(-0.12f, 0.3f, -0.5f), new Vector3(0.12f, 0.6f, 0.5f));
+            m.Box(Body, new Vector3(-0.17f, 0.6f, 0.0f), new Vector3(0.17f, 0.85f, 0.5f));
+            m.Box(Accent, new Vector3(-0.15f, 0.8f, -0.7f), new Vector3(0.15f, 0.9f, 0.0f));
+            m.Box(Dark, new Vector3(-0.4f, 0.95f, 0.5f), new Vector3(0.4f, 1.0f, 0.56f));
+            m.Box(Glass, new Vector3(-0.08f, 0.8f, 0.8f), new Vector3(0.08f, 0.92f, 0.9f));
+            return m;
+        }
+
+        /// <summary>Fiets: twee dunne wielen, frame, zadel en stuur.</summary>
+        private static ModelMesh Bicycle()
+        {
+            var m = new ModelMesh(Count);
+            Wheel(m, 0f, 0.55f, 0.34f, 0.04f);
+            Wheel(m, 0f, -0.55f, 0.34f, 0.04f);
+            m.Box(Body, new Vector3(-0.015f, 0.36f, -0.5f), new Vector3(0.015f, 0.4f, 0.5f));
+            m.Box(Body, new Vector3(-0.015f, 0.4f, 0.4f), new Vector3(0.015f, 1.0f, 0.44f));
+            m.Box(Dark, new Vector3(-0.07f, 0.95f, -0.52f), new Vector3(0.07f, 1.0f, -0.28f));
+            m.Box(Dark, new Vector3(-0.28f, 1.0f, 0.4f), new Vector3(0.28f, 1.04f, 0.44f));
             return m;
         }
     }
