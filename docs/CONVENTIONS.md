@@ -229,6 +229,13 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `MetroNetwork` legt een perrondiepte op haltes van het `TransitNetwork`. Maak stations en metrolijnen met `AddStation` en `AddLine` zodat de regels gelden; een metrolijn is een gewone `TransitLine`. Sectie `METR` (`MetroSection`) bewaart alleen de dieptes; haltes en lijnen staan in `TRNS`. Verwijder stations met `TryRemoveStation`, niet met `TransitNetwork.TryRemoveStop`, anders blijft de diepte achter.
 - `UndergroundView` (Gameplay/Overlays) is de schakelaar voor de ondergrondse weergave: soepele terreindekking (`GroundOpacity`), zichtbaarheid per diepte (`IsVisible`) en een diepte-tint. `UndergroundViewBehaviour` zet de dekking als shaderglobal `_CityGroundOpacity`.
 
+## Trein
+
+- `Train` (Simulation/Transit, E09-07) bevat de rekenregels van de trein: snelheid, optrekken, lengte en capaciteit per `TrainKind` (passagier of goederen), minimale spoor- en perronlengte, stationsafstand (`MinStationSpacing`, 1500 m), `TravelTime` en de sluitregel van een overweg (`ShouldClose`: dicht `CrossingWarningTime` voor aankomst tot de staart voorbij is). Net als `Tram` en `Metro` rijdt de trein nog niet met eigen snelheid in `TransitFleet`.
+- `RailNetwork` is het spoornet: knopen, sporen (`AddTrack`), stations (`AddStation`), wissels, overwegen en treinen. Een knoop met drie sporen is een wissel: de stam is het spoor met het laagste ID, de rest zijn takken (`TrySetSwitch`, `NextTrack`); van tak naar tak kan niet en een verkeerd gelegde wissel blokkeert. `FindPath` houdt daar rekening mee. Een passagiersstation is ook een halte van het `TransitNetwork`; maak lijnen met `RailNetwork.AddLine` en verwijder stations met `TryRemoveStation`.
+- `AddTrain` legt de wissels voor de route goed en weigert te lange treinen voor het perron; `Advance` laat treinen rijden (keren aan het eind) en werkt de overwegen bij (`IsClosed` wordt afgeleid, niet bewaard). Er is nog geen seinstelsel: twee treinen op één spoor botsen niet.
+- Sectie `RAIL` (`RailSection`) bewaart knopen, sporen, stations, wissels, overwegen en treinen; haltes en lijnen staan in `TRNS`.
+
 ## Waterverkeer
 
 - `WaterTraffic` (Simulation/Transit, E09-08) bevat de rekenregels van veerboot (`VesselKind.Ferry`) en vrachtschip (`VesselKind.CargoShip`): diepgang plus `KeelClearance`, breedte, snelheid, capaciteit, tijd aan de kade (`DwellTime`, `HandlingTime` met kranen), kanaalafmetingen (`CanalAdmits`: diep genoeg en drie keer de scheepsbreedte) en `DailyCapacity`. De schepen rijden nog niet als voertuig in `TransitFleet`.
