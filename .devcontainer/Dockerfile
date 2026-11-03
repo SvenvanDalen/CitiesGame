@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN npm install -g @anthropic-ai/claude-code
 
+# OmniRoute (AI-gateway/proxy): alleen geinstalleerd, niet gestart. Versie vastgezet; starten met `omniroute` (dashboard op poort 20128).
+RUN npm install -g omniroute@3.8.52
+
 RUN useradd -m -s /bin/bash ${USERNAME} \
     && echo "${USERNAME} ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/${USERNAME}-firewall \
     && chmod 0440 /etc/sudoers.d/${USERNAME}-firewall
