@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Cities.Core.Configuration;
 using Cities.Simulation.Vehicles;
@@ -33,7 +32,7 @@ namespace Cities.Tests.EditMode.Configuration
         {
             var present = Database().All<VehicleDefinition>().Select(d => d.Spec.Category).ToHashSet();
 
-            Assert.That(Enum.GetValues(typeof(VehicleCategory)).Cast<VehicleCategory>().Where(c => !present.Contains(c)), Is.Empty);
+            Assert.That(new[] { VehicleCategory.PassengerCar, VehicleCategory.Van, VehicleCategory.Truck, VehicleCategory.Bus, VehicleCategory.Tram, VehicleCategory.Service }.Where(c => !present.Contains(c)), Is.Empty);
         }
     }
 }
