@@ -62,6 +62,7 @@ namespace Cities.Gameplay.Persistence
             {
                 sections.Add(new RoadNetworkSection(_network.Network));
                 sections.Add(new TrafficRulesSection(_network.Rules, _network.Network.Contains));
+                sections.Add(new Cities.Simulation.Vehicles.ParkingSection(_network.Parking));
             }
 
             if (_water != null)
