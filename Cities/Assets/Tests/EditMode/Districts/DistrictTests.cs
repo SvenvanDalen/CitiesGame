@@ -82,9 +82,9 @@ namespace Cities.Tests.EditMode.Districts
             var a = map.Book.Create("A");
             var b = map.Book.Create("B");
 
-            var painted = map.Paint(new float2(128f, 128f), 40f, a);
-            var again = map.Paint(new float2(128f, 128f), 40f, a);
-            var over = map.Paint(new float2(128f, 128f), 20f, b);
+            var painted = map.Paint(new float2(128f, 128f), 60f, a);
+            var again = map.Paint(new float2(128f, 128f), 60f, a);
+            var over = map.Paint(new float2(128f, 128f), 30f, b);
 
             Assert.That(painted, Is.GreaterThan(0));
             Assert.That(again, Is.EqualTo(0));
