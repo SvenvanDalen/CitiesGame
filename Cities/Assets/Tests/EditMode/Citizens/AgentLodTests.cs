@@ -19,7 +19,7 @@ namespace Cities.Tests.EditMode.Citizens
 
             public bool TryGetPosition(in Citizen citizen, Destination destination, out float2 position)
             {
-                position = destination == Destination.Home ? new float2(0, 0) : new float2(_workX, 0);
+                position = destination == Destination.Home || destination == Destination.Park ? new float2(0, 0) : new float2(_workX, 0);
                 return destination != Destination.Anywhere;
             }
         }
