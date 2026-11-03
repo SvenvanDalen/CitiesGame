@@ -226,7 +226,7 @@ namespace Cities.Tests.EditMode.Problems
             var icons = new List<ProblemIcon>();
 
             ProblemIconLayout.Build(buildings, id => roofs[id], float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 100, icons);
-            Assert.That(icons.Count, Is.EqualTo(5), "gebouw 3 is te ver weg");
+            Assert.That(icons.Count, Is.EqualTo(4), "gebouw 3 is te ver weg");
             Assert.That(icons[0].Problem, Is.EqualTo(BuildingProblem.Fire));
             Assert.That(icons[1].Problem, Is.EqualTo(BuildingProblem.NoPower));
             Assert.That(icons[0].Position.y, Is.EqualTo(25f));
@@ -234,8 +234,9 @@ namespace Cities.Tests.EditMode.Problems
             Assert.That(icons[2].Position.x, Is.EqualTo(50f), "daarna gebouw 4, dan gebouw 2");
             Assert.That(icons[3].Position.x, Is.EqualTo(100f));
 
-            ProblemIconLayout.Build(buildings, id => roofs[id], float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 3, icons);
+            ProblemIconLayout.Build(buildings, id => roofs[id], float3.zero, new float3(1f, 0f, 0f), 2f, 5f, 1000f, 2, icons);
             Assert.That(icons.Count, Is.EqualTo(2), "een gebouw wordt nooit half getekend");
+            Assert.That(icons[0].Position.x, Is.LessThan(icons[1].Position.x), "alleen gebouw 1 past");
         }
 
         [Test]
