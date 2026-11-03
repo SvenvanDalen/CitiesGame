@@ -65,5 +65,24 @@ namespace Cities.Tests.EditMode.Fields
             Assert.Throws<ArgumentOutOfRangeException>(() => soil.Add(2, 0, 1f));
             Assert.Throws<ArgumentNullException>(() => soil.TryStartCleanup(0, 0, null, 0));
         }
+
+        [Test]
+        public void ConcentrationIsTheInverseOfLevel()
+        {
+            Assert.That(SoilPollution.Concentration(SoilPollution.Level(250f)), Is.EqualTo(250f).Within(0.1f));
+            Assert.That(SoilPollution.Concentration(0f), Is.Zero);
+            Assert.That(SoilPollution.Concentration(5f), Is.GreaterThan(1000f).And.Not.EqualTo(float.PositiveInfinity));
+        }
+
+        [Test]
+        public void SetConcentrationOverwritesACell()
+        {
+            var soil = new SoilPollution(2, 2);
+            soil.Add(1, 1, 5f);
+            soil.SetConcentration(1, 1, 40f);
+
+            Assert.That(soil[1, 1], Is.EqualTo(40f));
+            Assert.Throws<ArgumentOutOfRangeException>(() => soil.SetConcentration(1, 1, -1f));
+        }
     }
 }

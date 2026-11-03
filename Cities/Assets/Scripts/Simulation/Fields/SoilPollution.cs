@@ -68,6 +68,24 @@ namespace Cities.Simulation.Fields
             _values[Index(x, z)] += amount;
         }
 
+        /// <summary>Zet de concentratie van een cel (bijvoorbeeld bij het laden); een lopende sanering blijft ongemoeid.</summary>
+        public void SetConcentration(int x, int z, float concentration)
+        {
+            if (!(concentration >= 0f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(concentration), concentration, "De concentratie kan niet negatief zijn.");
+            }
+
+            _values[Index(x, z)] = concentration;
+        }
+
+        /// <summary>Vervuilingsniveau van 0 tot 1 terug naar concentratie; het omgekeerde van <see cref="Level"/>. Niveau 1 of hoger geeft een zeer hoge, eindige waarde.</summary>
+        public static float Concentration(float level)
+        {
+            var l = math.clamp(level, 0f, 0.999f);
+            return HalfLevel * l / (1f - l);
+        }
+
         /// <summary>Betaalt de sanering van een vervuilde cel en start hem; false als de cel schoon is, al wordt gesaneerd of het geld ontbreekt.</summary>
         public bool TryStartCleanup(int x, int z, Ledger ledger, int week)
         {
