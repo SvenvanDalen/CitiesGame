@@ -190,6 +190,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
 
+## Vervoerskeuze
+
+- `TravelModeChoice` (Simulation/Citizens, E08-09) kiest per rit lopen, fiets, auto of OV met de laagste gegeneraliseerde kosten (reistijd x tijdswaarde + geld, plus vaste tijd voor fiets en auto). De OV-tijd komt uit `TransitRouter`; fiets en auto vragen bezit uit `TravelOwnership` (afgeleid van huishouden, welvaart en seed, dus zonder eigen status of save-sectie). De smaakfactor komt uit `DeterministicRandom`; geef per burger en tick een verse generator mee.
+
 ## Parkeren
 
 - `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
