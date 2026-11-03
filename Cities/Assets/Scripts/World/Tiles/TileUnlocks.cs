@@ -118,6 +118,18 @@ namespace Cities.World.Tiles
             return true;
         }
 
+        /// <summary>Ontgrendelt een tegel gratis en zonder buurcontrole (cheat); <c>false</c> buiten de kaart of als hij al open is.</summary>
+        public bool ForceUnlock(TileCoord tile)
+        {
+            if (!Dimensions.Contains(tile) || _unlocked[Index(tile)])
+            {
+                return false;
+            }
+
+            Unlock(tile);
+            return true;
+        }
+
         /// <summary>Ontgrendelt alle tegels (sandbox, E22-04); <see cref="Unlocked"/> volgt voor elke tegel die nog dicht zat.</summary>
         public void UnlockAll()
         {
