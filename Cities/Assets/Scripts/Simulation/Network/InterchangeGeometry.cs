@@ -163,34 +163,34 @@ namespace Cities.Simulation.Network
             return builder.Finish(center, angle);
         }
 
-        /// <summary>Cirkelboog als kubische Bezier; een negatieve <paramref name="to"/> - <paramref name="from"/> loopt met de klok mee. Nauwkeurig tot ca. 135 graden.</summary>
-        private static Bezier3 Arc(float2 center, float radius, float from, float to)
-        {
-            var handle = 4f / 3f * math.tan((to - from) / 4f) * radius;
-            var start = center + (radius * new float2(math.cos(from), math.sin(from)));
-            var end = center + (radius * new float2(math.cos(to), math.sin(to)));
-            var startTangent = new float2(-math.sin(from), math.cos(from));
-            var endTangent = new float2(-math.sin(to), math.cos(to));
-            return Flat(start, start + (startTangent * handle), end - (endTangent * handle), end);
-        }
-
-        private static Bezier3 Flat(float2 p0, float2 p1, float2 p2, float2 p3) =>
-            new Bezier3(new float3(p0.x, 0f, p0.y), new float3(p1.x, 0f, p1.y), new float3(p2.x, 0f, p2.y), new float3(p3.x, 0f, p3.y));
-
-        private static float2 Rotate(float2 p, int quarterTurns)
-        {
-            for (var i = 0; i < quarterTurns; i++)
-            {
-                p = new float2(-p.y, p.x);
-            }
-
-            return p;
-        }
-
         private sealed class Builder
         {
             private readonly List<float3> _nodes = new List<float3>();
             private readonly List<PlannedRoad> _roads = new List<PlannedRoad>();
+
+            /// <summary>Cirkelboog als kubische Bezier; een negatieve <paramref name="to"/> - <paramref name="from"/> loopt met de klok mee. Nauwkeurig tot ca. 135 graden.</summary>
+            private static Bezier3 Arc(float2 center, float radius, float from, float to)
+            {
+                var handle = 4f / 3f * math.tan((to - from) / 4f) * radius;
+                var start = center + (radius * new float2(math.cos(from), math.sin(from)));
+                var end = center + (radius * new float2(math.cos(to), math.sin(to)));
+                var startTangent = new float2(-math.sin(from), math.cos(from));
+                var endTangent = new float2(-math.sin(to), math.cos(to));
+                return Flat(start, start + (startTangent * handle), end - (endTangent * handle), end);
+            }
+
+            private static Bezier3 Flat(float2 p0, float2 p1, float2 p2, float2 p3) =>
+                new Bezier3(new float3(p0.x, 0f, p0.y), new float3(p1.x, 0f, p1.y), new float3(p2.x, 0f, p2.y), new float3(p3.x, 0f, p3.y));
+
+            private static float2 Rotate(float2 p, int quarterTurns)
+            {
+                for (var i = 0; i < quarterTurns; i++)
+                {
+                    p = p.yx * new float2(-1f, 1f);
+                }
+
+                return p;
+            }
 
             /// <summary>Op de kruisende weg volgt de hoogte uit het profiel, op de snelweg is die nul; tussenpunten van lussen liggen halverwege.</summary>
             private static float Height(float2 p)
