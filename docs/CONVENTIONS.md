@@ -114,6 +114,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Het water wordt getekend door `WaterRendererBehaviour`: blokken van 32 × 32 cellen die om beurten uit `WorldMap.Height` en `WaterDepth` worden gebouwd (`WaterMeshBuilder`, per punt diepte en stroomrichting), met shader `Cities/Water` (dikte uit scènediepte, breking en absorptie, meestromende rimpels, schuim, Fresnel-reflectie; vereist depth en opaque texture in de URP-asset). Blokken zonder water bestaan niet.
 - Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
 
+## Fauna
+
+- Vogels, vissen en herten zijn sfeerleven, geen simulatie: ze hebben geen toestand, staan niet in de save en kosten geen simulatietijd. `FaunaGroups.Spawn` legt per vak van 256 m uit wereldseed en vaknummer vast welke groepen er wonen (meeuwen boven water, kraaien boven land, scholen in water van 2,5 m of meer, kuddes reeën op open land); `FaunaMotion.TryPose` rekent de stand van een dier uit de tijd. Een dier dat op een plek komt waar het niet kan (vis op het droge, ree in het water of in het bos) is er dan niet; terrein of water aanpassen werkt dus meteen door.
+- De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
+- `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
