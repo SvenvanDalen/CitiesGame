@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Cities.Core.Ids;
 using Cities.Core.Persistence;
+using Unity.Collections;
 
 namespace Cities.Simulation.Network
 {
@@ -23,7 +25,8 @@ namespace Cities.Simulation.Network
 
     /// <summary>
     /// Sectie <c>NETW</c>: de ID-allocators en alle slots van knooppunten, segmenten en lanes. De verbindingen tussen
-    /// lanes worden na het laden opnieuw afgeleid. Een save met verwijzingen naar ontbrekende knooppunten, segmenten of
+    /// lanes worden na het laden opnieuw afgeleid. Versie 2 voegt per segment de hoogte toe (grond, brug of tunnel); een
+    /// versie-1-save wordt gelezen als alleen wegen op de grond. Een save met verwijzingen naar ontbrekende knooppunten, segmenten of
     /// lanes wordt geweigerd.
     /// </summary>
     public sealed class RoadNetworkSection : ISaveSection
@@ -39,7 +42,7 @@ namespace Cities.Simulation.Network
 
         public string Id => SectionId;
 
-        public int Version => 1;
+        public int Version => 2;
 
         public void Write(SaveWriter writer) => _network.WriteTo(writer);
 
@@ -52,7 +55,7 @@ namespace Cities.Simulation.Network
                 Lanes = IdAllocatorState.Read(reader, MaxSlots),
             };
             state.NodeSlots = Slots<RoadNode>(reader, state.Nodes);
-            state.SegmentSlots = Slots<RoadSegment>(reader, state.Segments);
+            state.SegmentSlots = version < 2 ? LegacySegments(reader, state.Segments) : Slots<RoadSegment>(reader, state.Segments);
             state.LaneSlots = Slots<Lane>(reader, state.Lanes);
             reader.ExpectEnd();
             Validate(reader, state);
@@ -64,6 +67,26 @@ namespace Cities.Simulation.Network
             var slots = new T[allocator.Generations.Length];
             reader.ReadShuffled<T>(slots);
             return slots;
+        }
+
+        /// <summary>Segmenten zoals versie 1 ze bewaarde, zonder hoogte; de velden staan in dezelfde volgorde als in <see cref="RoadSegment"/>.</summary>
+#pragma warning disable CS0649 // wordt alleen gevuld door het inlezen van de bytes
+        [StructLayout(LayoutKind.Sequential)]
+        private readonly struct SegmentV1
+        {
+            internal readonly EntityId<NodeKind> Start;
+            internal readonly EntityId<NodeKind> End;
+            internal readonly Bezier3 Curve;
+            internal readonly float Length;
+            internal readonly float SpeedLimit;
+            internal readonly FixedList128Bytes<EntityId<LaneKind>> Lanes;
+        }
+#pragma warning restore CS0649
+
+        private static RoadSegment[] LegacySegments(SaveReader reader, IdAllocatorState allocator)
+        {
+            var old = Slots<SegmentV1>(reader, allocator);
+            return old.Select(s => new RoadSegment(s.Start, s.End, s.Curve, s.SpeedLimit, s.Lanes)).ToArray();
         }
 
         private static void Validate(SaveReader reader, RoadNetworkState state)

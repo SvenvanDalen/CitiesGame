@@ -70,12 +70,13 @@ namespace Cities.Simulation.Network
         /// </summary>
         /// <param name="curve">De hartlijn; begint op <paramref name="start"/> en eindigt op <paramref name="end"/>.</param>
         /// <param name="speedLimit">Maximumsnelheid in m/s.</param>
-        public EntityId<SegmentKind> AddSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile, float speedLimit)
+        /// <param name="elevation">Of het segment op de grond, als brug of als tunnel ligt.</param>
+        public EntityId<SegmentKind> AddSegment(EntityId<NodeKind> start, EntityId<NodeKind> end, Bezier3 curve, IReadOnlyList<LaneSpec> profile, float speedLimit, RoadElevation elevation = RoadElevation.Ground)
         {
             ValidateSegment(start, end, curve, profile);
 
             var id = _segmentIds.Allocate();
-            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile)));
+            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile), elevation));
             Attach(start, id);
             Attach(end, id);
             Reconnect(start);
@@ -93,6 +94,14 @@ namespace Cities.Simulation.Network
             var segment = GetSegment(id);
             ValidateProfile(profile);
             ReplaceSegment(id, segment.Start, segment.End, segment.Curve, profile, speedLimit, segment);
+        }
+
+        /// <summary>Maakt van een bestaand segment een gewone weg, brug of tunnel; de lanes en verbindingen blijven zoals ze waren.</summary>
+        public void SetElevation(EntityId<SegmentKind> id, RoadElevation elevation)
+        {
+            var segment = GetSegment(id);
+            Store(ref _segments, id.Index, new RoadSegment(segment.Start, segment.End, segment.Curve, segment.SpeedLimit, segment.Lanes, elevation));
+            SegmentChanged?.Invoke(id);
         }
 
         /// <summary>
@@ -134,7 +143,7 @@ namespace Cities.Simulation.Network
             Detach(segment.End, id);
             Attach(middle, id);
             ReplaceSegment(id, segment.Start, middle, segment.Curve.Slice(0f, t), profile, segment.SpeedLimit, segment);
-            AddSegment(middle, segment.End, segment.Curve.Slice(t, 1f), profile, segment.SpeedLimit);
+            AddSegment(middle, segment.End, segment.Curve.Slice(t, 1f), profile, segment.SpeedLimit, segment.Elevation);
             return middle;
         }
 
@@ -191,6 +200,11 @@ namespace Cities.Simulation.Network
             // Gespiegeld verandert de volgorde van de lanes in het profiel, dus vergelijken op plek, niet op volgorde.
             var same = Ordered(ProfileOf(first, flip: first.Start == node)).SequenceEqual(Ordered(ProfileOf(second, flip: second.End == node)))
                 && Math.Abs(first.SpeedLimit - second.SpeedLimit) <= 1e-4f;
+            if (first.Elevation != second.Elevation)
+            {
+                return "Samenvoegen kan alleen als beide wegen op dezelfde hoogte liggen (grond, brug of tunnel)";
+            }
+
             return same ? null : "Samenvoegen kan alleen als beide wegen hetzelfde type zijn";
         }
 
@@ -440,7 +454,7 @@ namespace Cities.Simulation.Network
         {
             ReleaseSegment(old);
 
-            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile)));
+            Store(ref _segments, id.Index, new RoadSegment(start, end, curve, speedLimit, AllocateLanes(id, curve, profile), old.Elevation));
             Reconnect(start);
             Reconnect(end);
             SegmentChanged?.Invoke(id);
