@@ -111,7 +111,7 @@ namespace Cities.Tests.EditMode.TouristSites
             var sites = new[] { Site(Hotel(80), 1, 0, 0), Site(Attraction(), 2, 0, 0) };
 
             var near = TouristAppeal.At(sites, 0, 0, 8f);
-            var middle = TouristAppeal.At(sites, 20, 0, 8f);
+            var middle = TouristAppeal.At(sites, 50, 0, 8f);
             var far = TouristAppeal.At(sites, 200, 0, 8f);
 
             Assert.That(near.Beds, Is.EqualTo(80));
