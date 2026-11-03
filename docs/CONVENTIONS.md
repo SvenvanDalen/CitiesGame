@@ -217,6 +217,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Een nieuw systeem registreert zijn bron met `OverlayBehaviour.Controller.Register(...)`; `WorldLayerOverlays` doet dat voor hoogte, landwaarde, grondvervuiling en waterdiepte. Kleurverlopen: `Hot` (hoog is slecht), `Good` (hoog is goed), `Terrain`.
 - `CellOverlayBaker` bakt een celoverlay in stukken (budget in cellen per stap; `OverlayBehaviour` geeft `_bakeBudgetMs` per frame) in een achterbuffer en wisselt pas als alles klaar is, zodat wisselen of verversen niet haperen. De terreinshader leest de textuur als `_CityOverlay` (`_CityOverlayParams.x` = dekking). Gebouw- en segmentoverlays worden een lint-mesh (`OverlayRibbonBuilder`). `OverlayPanel` toont de knoppen en de legenda.
 
+## Districten
+
+- `DistrictBook` (`Cities.World.Districts`) bewaart de districten: nummer 1 tot 255, naam (uniek, hoogstens 40 tekens) en kleur (`0xRRGGBB`). Nummer 0 is geen district, dus de hele stad; dezelfde nummering gebruikt `PolicyBook`. Een nieuw district krijgt het laagste vrije nummer.
+- `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
+- `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
+
 ## Metro
 
 - `Metro` (Simulation/Transit, E09-06) bevat de rekenregels van de metro: perrondiepte `MinDepth` tot `MaxDepth` m onder het maaiveld, stationsafstand, maximale tunnelhelling (`MaxGrade`, 4%), `AccessTime` (lopen plus roltrap naar de diepte) en `TravelTime` (optrekken, topsnelheid, remmen). Net als `Tram` rijdt de metro nog niet met eigen snelheid in `TransitFleet`.
