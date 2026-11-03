@@ -40,11 +40,17 @@ namespace Cities.Simulation.Economy
 
         public long Balance { get; private set; }
 
+        /// <summary>
+        /// Sandbox (E22-04): uitgaven worden nog wel geboekt maar kosten niets; het saldo gaat niet omlaag en elke uitgave is toegestaan.
+        /// Inkomsten tellen gewoon mee.
+        /// </summary>
+        public bool UnlimitedMoney { get; set; }
+
         /// <summary>Spelweek (vanaf 0) bij een aantal verstreken dagen.</summary>
         public static int WeekOf(long daysElapsed) => (int)(Math.Max(0L, daysElapsed) / DaysPerWeek);
 
         /// <summary>Of het saldo een uitgave van <paramref name="amount"/> toelaat.</summary>
-        public bool CanAfford(long amount) => amount >= 0 && Balance >= amount;
+        public bool CanAfford(long amount) => amount >= 0 && (UnlimitedMoney || Balance >= amount);
 
         /// <summary>Boekt een inkomst in <paramref name="week"/>.</summary>
         public void Earn(int week, LedgerCategory category, long amount)
@@ -58,7 +64,7 @@ namespace Cities.Simulation.Economy
         public bool TrySpend(int week, LedgerCategory category, long amount)
         {
             CheckAmount(amount);
-            if (Balance < amount)
+            if (!UnlimitedMoney && Balance < amount)
             {
                 return false;
             }
@@ -72,7 +78,10 @@ namespace Cities.Simulation.Economy
         {
             CheckAmount(amount);
             Add(_expenses, week, category, amount);
-            Balance -= amount;
+            if (!UnlimitedMoney)
+            {
+                Balance -= amount;
+            }
         }
 
         public long Income(int week) => Sum(_income, week);
