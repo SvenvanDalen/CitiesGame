@@ -48,6 +48,12 @@ namespace Cities.Gameplay.NewCity
             }
         }
 
+        /// <summary>Zandbak (E22-04): normale startwaarden, maar onbeperkt geld en alles ontgrendeld.</summary>
+        public static DifficultySettings Sandbox => For(Difficulty.Normal, unlimitedMoney: true, allUnlocked: true);
+
+        /// <summary>Of dit een zandbak is: onbeperkt geld én alles ontgrendeld.</summary>
+        public bool IsSandbox => UnlimitedMoney && AllUnlocked;
+
         /// <summary>De kosten in euro na de factor, naar boven afgerond; nul bij onbeperkt geld.</summary>
         public long Cost(long baseCost)
         {
