@@ -74,3 +74,4 @@ Cities/Assets/Scripts/Simulation/Network/Interchange.cs
 Cities/Assets/Scripts/Gameplay/Tools/InterchangeTool.cs
 Cities/Assets/Scripts/World/Fauna/WorldMapHabitat.cs
 Cities/Assets/Scripts/Gameplay/Overlays/WorldLayerOverlays.cs
+Cities/Assets/Scripts/Gameplay/Overlays/RoadOverlays.cs
