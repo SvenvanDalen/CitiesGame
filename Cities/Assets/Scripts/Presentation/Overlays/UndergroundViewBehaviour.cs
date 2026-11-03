@@ -22,6 +22,10 @@ namespace Cities.Presentation.Overlays
             Shader.SetGlobalFloat(GroundOpacityId, View.GroundOpacity);
         }
 
-        private void OnDisable() => Shader.SetGlobalFloat(GroundOpacityId, 1f);
+        private void OnDisable()
+        {
+            View.SetEnabled(false);
+            Shader.SetGlobalFloat(GroundOpacityId, 1f);
+        }
     }
 }

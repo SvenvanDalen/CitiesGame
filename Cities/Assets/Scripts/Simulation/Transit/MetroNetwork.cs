@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 
 namespace Cities.Simulation.Transit
@@ -37,12 +38,13 @@ namespace Cities.Simulation.Transit
                 throw new ArgumentOutOfRangeException(nameof(depth), depth, $"Een perron ligt {Metro.MinDepth} tot {Metro.MaxDepth} m onder het maaiveld.");
             }
 
-            foreach (var station in _depths)
+            var tooClose = _depths.Keys
+                .Where(id => !Metro.IsSpacingOk(_network.PositionOf(id), position))
+                .Select(id => (int?)id)
+                .FirstOrDefault();
+            if (tooClose.HasValue)
             {
-                if (!Metro.IsSpacingOk(_network.PositionOf(station.Key), position))
-                {
-                    throw new ArgumentException($"Een station ligt te dicht bij station {station.Key} (minimaal {Metro.MinStationSpacing} m).", nameof(position));
-                }
+                throw new ArgumentException($"Een station ligt te dicht bij station {tooClose.Value} (minimaal {Metro.MinStationSpacing} m).", nameof(position));
             }
 
             var stop = _network.AddStop(position);
