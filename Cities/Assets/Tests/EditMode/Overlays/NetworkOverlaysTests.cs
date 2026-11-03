@@ -46,7 +46,7 @@ namespace Cities.Tests.EditMode.Overlays
             var node = values.Single(v => v.Id == (ulong)consumer);
             Assert.That(node.Width, Is.EqualTo(NetworkOverlays.NodeSize));
             Assert.That(node.Value, Is.EqualTo(50f).Within(1e-3f));
-            Assert.That(values.Single(v => v.Id == (ulong)supplier).Value, Is.EqualTo(100f), "zonder vraag altijd tevreden");
+            Assert.That(values.Single(v => v.Id == (ulong)supplier).Value, Is.EqualTo(50f).Within(1e-3f), "de tevredenheid geldt voor het hele net");
         }
 
         [Test]
