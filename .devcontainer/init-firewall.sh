@@ -20,14 +20,20 @@ iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
 iptables -A INPUT -p udp --sport 53 -j ACCEPT
+# Lange CNAME-ketens (NuGet) vallen terug op TCP.
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --sport 53 -j ACCEPT
 
 # GitHub publiceert zijn bereiken; de rest wordt per domein opgelost.
 for cidr in $(curl -fsS https://api.github.com/meta | jq -r '(.web + .api + .git)[]' | grep -v ':'); do
     ipset add allowed "$cidr" -exist
 done
+# CDN's (NuGet, npm) wisselen van adres per vraag: meerdere keren oplossen om de meeste adressen te vangen.
 for domain in "${DOMAINS[@]}"; do
-    for ip in $(dig +short A "$domain" | grep -E '^[0-9.]+$'); do
-        ipset add allowed "$ip" -exist
+    for _ in 1 2 3 4 5; do
+        for ip in $(dig +short A "$domain" | grep -E '^[0-9.]+$'); do
+            ipset add allowed "$ip" -exist
+        done
     done
 done
 

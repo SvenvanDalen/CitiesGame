@@ -5,7 +5,12 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0
 ARG USERNAME=claude
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git gh curl ca-certificates jq sudo less procps iptables ipset iproute2 dnsutils nodejs npm \
+        git gh curl ca-certificates jq sudo less procps iptables ipset iproute2 dnsutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node 24 LTS (omniroute vraagt >=22.22.2; de Debian-versie is te oud)
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g @anthropic-ai/claude-code
