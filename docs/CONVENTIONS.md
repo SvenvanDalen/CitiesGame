@@ -223,14 +223,31 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
 - `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
 
+## OV-prioriteit
+
+- Een busbaan is een lane van type `LaneTypes.Bus` (zonder `Car`): `LaneProfiles.Road(..., busLanes: true)` maakt de buitenste rijstrook per richting een busbaan (minstens twee rijstroken per richting; bij een eenrichtingsweg met één strook een busstraat). `TransitPriority.MayUse` en `IsBusLane` beantwoorden wie erop mag.
+- `TransitPriority` (Simulation/Transit, E09-11) bewaart welke lijnen en welke kruispunten OV-voorrang hebben (sectie `TPRI`, `TransitPrioritySection`). `Mark` zet `Approach.TransitPriority` op een aanrijding: `IntersectionRules` laat zo'n voertuig doorrijden tenzij de rotonde of een ander lijnvoertuig voorgaat; de reservering blijft de botsingsgarantie.
+- `SignalPlan.TryTransitPriority` verlengt een bijna aflopend groen (hoogstens `TransitExtension`) of kapt het groen van de lopende fase in (niet onder `MinGreen`) voor de volgende groep; hoogstens één ingreep per ronde. `TransitPriority.RequestSignal` telt toegekende en geweigerde aanvragen.
+
 ## Metro
 
 - `Metro` (Simulation/Transit, E09-06) bevat de rekenregels van de metro: perrondiepte `MinDepth` tot `MaxDepth` m onder het maaiveld, stationsafstand, maximale tunnelhelling (`MaxGrade`, 4%), `AccessTime` (lopen plus roltrap naar de diepte) en `TravelTime` (optrekken, topsnelheid, remmen). Net als `Tram` rijdt de metro nog niet met eigen snelheid in `TransitFleet`.
 - `MetroNetwork` legt een perrondiepte op haltes van het `TransitNetwork`. Maak stations en metrolijnen met `AddStation` en `AddLine` zodat de regels gelden; een metrolijn is een gewone `TransitLine`. Sectie `METR` (`MetroSection`) bewaart alleen de dieptes; haltes en lijnen staan in `TRNS`. Verwijder stations met `TryRemoveStation`, niet met `TransitNetwork.TryRemoveStop`, anders blijft de diepte achter.
 - `UndergroundView` (Gameplay/Overlays) is de schakelaar voor de ondergrondse weergave: soepele terreindekking (`GroundOpacity`), zichtbaarheid per diepte (`IsVisible`) en een diepte-tint. `UndergroundViewBehaviour` zet de dekking als shaderglobal `_CityGroundOpacity`.
 
+## Trein
+
+- `Train` (Simulation/Transit, E09-07) bevat de rekenregels van de trein: snelheid, optrekken, lengte en capaciteit per `TrainKind` (passagier of goederen), minimale spoor- en perronlengte, stationsafstand (`MinStationSpacing`, 1500 m), `TravelTime` en de sluitregel van een overweg (`ShouldClose`: dicht `CrossingWarningTime` voor aankomst tot de staart voorbij is). Net als `Tram` en `Metro` rijdt de trein nog niet met eigen snelheid in `TransitFleet`.
+- `RailNetwork` is het spoornet: knopen, sporen (`AddTrack`), stations (`AddStation`), wissels, overwegen en treinen. Een knoop met drie sporen is een wissel: de stam is het spoor met het laagste ID, de rest zijn takken (`TrySetSwitch`, `NextTrack`); van tak naar tak kan niet en een verkeerd gelegde wissel blokkeert. `FindPath` houdt daar rekening mee. Een passagiersstation is ook een halte van het `TransitNetwork`; maak lijnen met `RailNetwork.AddLine` en verwijder stations met `TryRemoveStation`.
+- `AddTrain` legt de wissels voor de route goed en weigert te lange treinen voor het perron; `Advance` laat treinen rijden (keren aan het eind) en werkt de overwegen bij (`IsClosed` wordt afgeleid, niet bewaard). Er is nog geen seinstelsel: twee treinen op één spoor botsen niet.
+- Sectie `RAIL` (`RailSection`) bewaart knopen, sporen, stations, wissels, overwegen en treinen; haltes en lijnen staan in `TRNS`.
+
 ## Waterverkeer
 
 - `WaterTraffic` (Simulation/Transit, E09-08) bevat de rekenregels van veerboot (`VesselKind.Ferry`) en vrachtschip (`VesselKind.CargoShip`): diepgang plus `KeelClearance`, breedte, snelheid, capaciteit, tijd aan de kade (`DwellTime`, `HandlingTime` met kranen), kanaalafmetingen (`CanalAdmits`: diep genoeg en drie keer de scheepsbreedte) en `DailyCapacity`. De schepen rijden nog niet als voertuig in `TransitFleet`.
 - `WaterNetwork` legt havens (halte plus soort en kadediepte) en kanalen op het `TransitNetwork` en leest de waterdiepte via `IWaterDepthSource` (de wereld levert `WorldMap.WaterDepth`, tests een functie). Maak havens, kanalen en lijnen met `AddPort`, `AddCanal` en `AddLine`; een lijn heeft havens van één soort en elk stuk moet bevaarbaar zijn (kanaal of open water, bemonsterd elke `SampleStep` m). `RoundTripTime` en `DailyCapacity` geven de rondrit en capaciteit. Verwijder havens met `TryRemovePort`.
 - Sectie `WATR` (`WaterSection`) bewaart havens en kanalen; haltes en lijnen staan in `TRNS`.
+
+## Handelsvoorkeuren
+
+- `TradePreferences` (Simulation/Economy, E14-09) laat per goed de prijs- en vraagfactor van buiten wekelijks schuiven met seedgebonden ruis (`DeterministicRandom` uit seed, goed en week) en terugtrekking naar 1. Een gesloten of verdwenen verbinding (via `ITradeConnections`, de abstractie voor E14-04/E14-05) is een tegenvaller voor de goederen van die `ConnectionKind`: hogere importprijs, lagere exportprijs en minder vraag, wegebbend per week. `Apply` zet de prijzen in `Trade`, `Tradeable` begrenst het te exporteren overschot. Status in sectie `TRDP`.
