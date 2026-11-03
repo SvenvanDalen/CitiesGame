@@ -18,6 +18,8 @@ Cities/Assets/Scripts/World/Terrain/WorldMapTerrain.cs
 Cities/Assets/Scripts/Presentation/UI/CityButton.cs
 Cities/Assets/Scripts/Presentation/UI/CityPanel.cs
 Cities/Assets/Scripts/Presentation/UI/CityMeter.cs
+Cities/Assets/Scripts/Presentation/UI/BudgetPanel.cs
+Cities/Assets/Scripts/Presentation/UI/PolicyPanel.cs
 Cities/Assets/Scripts/Gameplay/Controls/InputControlBindings.cs
 Cities/Assets/Scripts/Presentation/Settings/ControlsSettingsPanel.cs
 Cities/Assets/Scripts/World/Grid/WorldMapSection.cs
@@ -75,3 +77,4 @@ Cities/Assets/Scripts/Gameplay/Tools/InterchangeTool.cs
 Cities/Assets/Scripts/World/Fauna/WorldMapHabitat.cs
 Cities/Assets/Scripts/Gameplay/Overlays/WorldLayerOverlays.cs
 Cities/Assets/Scripts/Gameplay/Pollution/GroundPollutionLayer.cs
+Cities/Assets/Scripts/Gameplay/Overlays/RoadOverlays.cs

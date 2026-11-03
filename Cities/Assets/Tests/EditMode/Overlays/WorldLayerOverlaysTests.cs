@@ -17,6 +17,7 @@ namespace Cities.Tests.EditMode.Overlays
                 map.LandValue[1, 1] = 250f;
                 map.GroundPollution[0, 0] = 0.5f;
                 map.WaterDepth[2, 3] = 4f;
+                map.Zones[1, 2] = new ZoneCell(ZoneType.Commercial, ZoneDensity.High);
                 var sources = WorldLayerOverlays.Create(map).ToDictionary(s => s.Id);
 
                 Assert.That(sources.Keys, Is.EquivalentTo(new[]
@@ -25,6 +26,7 @@ namespace Cities.Tests.EditMode.Overlays
                     WorldLayerOverlays.LandValueId,
                     WorldLayerOverlays.GroundPollutionId,
                     WorldLayerOverlays.WaterDepthId,
+                    WorldLayerOverlays.ZonesId,
                 }));
                 var height = (ICellOverlaySource)sources[WorldLayerOverlays.HeightId];
                 Assert.That(height.CellsX, Is.EqualTo(8));
@@ -32,6 +34,9 @@ namespace Cities.Tests.EditMode.Overlays
                 Assert.That(((ICellOverlaySource)sources[WorldLayerOverlays.LandValueId]).Value(5, 5), Is.EqualTo(250f), "blok 1,1 van 4×4 cellen");
                 Assert.That(((ICellOverlaySource)sources[WorldLayerOverlays.GroundPollutionId]).Value(0, 3), Is.EqualTo(50f));
                 Assert.That(((ICellOverlaySource)sources[WorldLayerOverlays.WaterDepthId]).Value(2, 3), Is.EqualTo(4f));
+                var zones = (ICellOverlaySource)sources[WorldLayerOverlays.ZonesId];
+                Assert.That(zones.Value(1, 2), Is.EqualTo(2f));
+                Assert.That(zones.Value(0, 0), Is.NaN, "zonder zone geen gegevens");
             }
         }
 

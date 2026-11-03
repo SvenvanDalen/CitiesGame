@@ -46,7 +46,7 @@ namespace Cities.Gameplay.Overlays
                 var along = entity.To.xz - entity.From.xz;
                 var length = math.length(along);
                 var forward = length > 1e-4f ? along / length : new float2(1f, 0f);
-                var side = new float2(-forward.y, forward.x) * half;
+                var side = (forward.yx * new float2(-1f, 1f)) * half;
                 var extend = length > 1e-4f ? float2.zero : forward * half;
                 var packed = color.Pack();
                 var start = vertices.Count;
