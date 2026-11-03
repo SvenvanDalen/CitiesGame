@@ -4,23 +4,9 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0
 
 ARG USERNAME=claude
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git gh curl ca-certificates jq sudo less procps iptables ipset iproute2 dnsutils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node 24 LTS (omniroute vraagt >=22.22.2; de Debian-versie is te oud)
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN npm install -g @anthropic-ai/claude-code
-
+# Node 24 LTS (omniroute vraagt >=22.22.2; de Debian-versie is te oud).
 # OmniRoute (AI-gateway/proxy): alleen geinstalleerd, niet gestart. Versie vastgezet; starten met `omniroute` (dashboard op poort 20128).
-RUN npm install -g omniroute@3.8.52
-
-RUN useradd -m -s /bin/bash ${USERNAME} \
-    && echo "${USERNAME} ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/${USERNAME}-firewall \
-    && chmod 0440 /etc/sudoers.d/${USERNAME}-firewall
+RUN apt-get update && apt-get install -y --no-install-recommends         git gh curl ca-certificates jq sudo less procps iptables ipset iproute2 dnsutils     && curl -fsSL https://deb.nodesource.com/setup_24.x | bash -     && apt-get install -y --no-install-recommends nodejs     && rm -rf /var/lib/apt/lists/*     && npm install -g @anthropic-ai/claude-code omniroute@3.8.52     && useradd -m -s /bin/bash ${USERNAME}     && echo "${USERNAME} ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/${USERNAME}-firewall     && chmod 0440 /etc/sudoers.d/${USERNAME}-firewall
 
 COPY init-firewall.sh /usr/local/bin/init-firewall.sh
 RUN chmod 0755 /usr/local/bin/init-firewall.sh
