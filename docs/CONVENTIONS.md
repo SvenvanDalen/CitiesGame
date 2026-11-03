@@ -140,6 +140,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
 
+## Wind
+
+- `WindModel.At(seed, tick)` (Simulation/Fields) geeft de wind als `Wind` (richting in radialen, snelheid in m/s, `Strength` 0 tot 1). De wind is een zuivere functie van wereldseed en tick: er is geen status en dus geen eigen save-sectie; de seed zit al in `RAND`. Hij wisselt vloeiend om de `KnotTicks` rond een heersende richting per wereld.
+- `Wind.Vector` (lengte = kracht) is de invoer van `FireSpread.Step`; `Wind.CellsPerStep(max)` is de invoer voor `DiffusionSettings` van de milieulagen.
+
 ## Zone-specialisaties
 
 - Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
