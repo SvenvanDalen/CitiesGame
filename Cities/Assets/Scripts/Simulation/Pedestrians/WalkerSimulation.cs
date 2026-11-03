@@ -140,6 +140,18 @@ namespace Cities.Simulation.Pedestrians
             }
         }
 
+        private bool TryEnter(int crossing, PathMode mode, Func<int, float> vehicleSeconds)
+        {
+            var gap = vehicleSeconds is null ? float.PositiveInfinity : vehicleSeconds(crossing);
+            if (!_crossings[crossing].MayEnter(mode, gap))
+            {
+                return false;
+            }
+
+            _crossings[crossing].Occupants++;
+            return true;
+        }
+
         // Geeft true terug als de wandelaar is aangekomen.
         private bool Advance(int slot, float dt, Func<int, float> vehicleSeconds)
         {
@@ -152,18 +164,12 @@ namespace Cities.Simulation.Pedestrians
             while (!arrived && remaining > 0f)
             {
                 _network.TryGetArc(walker.Nodes[index], walker.Nodes[index + 1], walker.Mode, out var length, out var crossing);
-                if (crossing >= 0 && !onCrossing)
+                if (crossing >= 0 && !onCrossing && !TryEnter(crossing, walker.Mode, vehicleSeconds))
                 {
-                    var gap = vehicleSeconds is null ? float.PositiveInfinity : vehicleSeconds(crossing);
-                    if (!_crossings[crossing].MayEnter(walker.Mode, gap))
-                    {
-                        break;
-                    }
-
-                    _crossings[crossing].Occupants++;
-                    onCrossing = true;
+                    break;
                 }
 
+                onCrossing = crossing >= 0;
                 var step = Math.Min(remaining, length - offset);
                 offset += step;
                 remaining -= step;
