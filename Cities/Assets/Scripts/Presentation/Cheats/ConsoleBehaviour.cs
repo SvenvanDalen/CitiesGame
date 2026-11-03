@@ -126,7 +126,6 @@ namespace Cities.Presentation.Cheats
             }
 
             evt.StopPropagation();
-            evt.PreventDefault();
         }
 
         private void Submit()

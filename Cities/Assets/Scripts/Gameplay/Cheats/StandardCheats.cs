@@ -84,16 +84,7 @@ namespace Cities.Gameplay.Cheats
 
             if (args.Count == 1 && string.Equals(args[0], "alles", StringComparison.OrdinalIgnoreCase))
             {
-                var opened = 0;
-                for (var z = 0; z < unlocks.Dimensions.TilesZ; z++)
-                {
-                    for (var x = 0; x < unlocks.Dimensions.TilesX; x++)
-                    {
-                        opened += unlocks.ForceUnlock(new TileCoord(x, z)) ? 1 : 0;
-                    }
-                }
-
-                return ConsoleResult.Ok($"{opened} tegels ontgrendeld.");
+                return ConsoleResult.Ok($"{UnlockAll(unlocks)} tegels ontgrendeld.");
             }
 
             if (args.Count != 2 || !CheatConsole.TryParseInt(args[0], out var tileX) || !CheatConsole.TryParseInt(args[1], out var tileZ))
@@ -110,6 +101,20 @@ namespace Cities.Gameplay.Cheats
             return unlocks.ForceUnlock(tile)
                 ? ConsoleResult.Ok($"Tegel {tileX},{tileZ} ontgrendeld.")
                 : ConsoleResult.Error(TileUnlocks.AlreadyUnlocked);
+        }
+
+        private static int UnlockAll(TileUnlocks unlocks)
+        {
+            var opened = 0;
+            for (var z = 0; z < unlocks.Dimensions.TilesZ; z++)
+            {
+                for (var x = 0; x < unlocks.Dimensions.TilesX; x++)
+                {
+                    opened += unlocks.ForceUnlock(new TileCoord(x, z)) ? 1 : 0;
+                }
+            }
+
+            return opened;
         }
 
         private static ConsoleResult Time(CheatContext context, IReadOnlyList<string> args)
