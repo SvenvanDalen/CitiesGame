@@ -18,15 +18,15 @@ namespace Cities.Presentation.UI
     /// <summary>Eén regel in de beleidslijst: wat het kost, of het geldt en waarom het niet kan.</summary>
     public readonly struct PolicyEntry
     {
-        public PolicyEntry(string id, string name, long activationCost, long monthlyCost, bool active, int unlockPopulation, bool locked, bool canAfford)
+        public PolicyEntry(string id, string name, PolicySpec spec, int citizens, bool active, bool canAfford)
         {
             Id = id;
             Name = name;
-            ActivationCost = activationCost;
-            MonthlyCost = monthlyCost;
+            ActivationCost = spec.ActivationCost;
+            MonthlyCost = spec.MonthlyCostFor(citizens);
             Active = active;
-            UnlockPopulation = unlockPopulation;
-            Locked = locked;
+            UnlockPopulation = spec.UnlockPopulation;
+            Locked = citizens < spec.UnlockPopulation;
             CanAfford = canAfford;
         }
 
@@ -143,11 +143,9 @@ namespace Cities.Presentation.UI
             new PolicyEntry(
                 id,
                 NameOf(id),
-                spec.ActivationCost,
-                spec.MonthlyCostFor(citizens),
+                spec,
+                citizens,
                 _book.IsActive(id, district),
-                spec.UnlockPopulation,
-                citizens < spec.UnlockPopulation,
                 _ledger.CanAfford(spec.ActivationCost));
     }
 }
