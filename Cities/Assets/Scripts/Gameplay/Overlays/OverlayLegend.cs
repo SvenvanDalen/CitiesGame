@@ -6,7 +6,8 @@ namespace Cities.Gameplay.Overlays
     /// <summary>Titel, eenheid, bereik en kleurverloop van een overlay: alles wat de legenda en de schaal nodig hebben.</summary>
     public sealed class OverlayLegend
     {
-        private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
+        // Geen CultureInfo("nl-NL"): die bestaat niet in globalization-invariant mode (CI, containers).
+        private static readonly NumberFormatInfo Dutch = new NumberFormatInfo { NumberDecimalSeparator = ",", NumberGroupSeparator = "." };
 
         public OverlayLegend(string title, string unit, float min, float max, OverlayColorScale scale, string format = "0.#")
         {
