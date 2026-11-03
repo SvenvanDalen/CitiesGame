@@ -91,7 +91,7 @@ namespace Cities.Simulation.Animation
         /// <summary>0 = alleen <see cref="From"/>, 1 = alleen <see cref="To"/>.</summary>
         public float Weight { get; }
 
-        public bool Equals(FrameBlend other) => From == other.From && To == other.To && Weight.Equals(other.Weight);
+        public bool Equals(FrameBlend other) => From == other.From && To == other.To && Weight.CompareTo(other.Weight) == 0;
 
         public override bool Equals(object obj) => obj is FrameBlend other && Equals(other);
 

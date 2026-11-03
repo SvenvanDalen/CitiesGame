@@ -74,7 +74,7 @@ namespace Cities.Editor.Models
             {
                 for (var i = part.First; i < part.First + part.Count; i++)
                 {
-                    limbOf[i] = part.Limb;
+                    limbOf[i] = part.Kind;
                 }
             }
 
@@ -122,12 +122,12 @@ namespace Cities.Editor.Models
         {
             public Part(Limb limb, int first, int count)
             {
-                Limb = limb;
+                Kind = limb;
                 First = first;
                 Count = count;
             }
 
-            public Limb Limb { get; }
+            public Limb Kind { get; }
 
             public int First { get; }
 
