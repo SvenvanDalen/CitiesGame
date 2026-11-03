@@ -55,7 +55,7 @@ namespace Cities.Simulation.Citizens
             {
                 if (!(share >= 0f))
                 {
-                    throw new ArgumentOutOfRangeException(nameof(shares), share, "Een aandeel kan niet negatief zijn.");
+                    throw new ArgumentOutOfRangeException(nameof(low), share, "Een aandeel kan niet negatief zijn.");
                 }
 
                 sum += share;
@@ -63,7 +63,7 @@ namespace Cities.Simulation.Citizens
 
             if (sum <= 0f)
             {
-                throw new ArgumentException("Minstens één aandeel moet groter dan nul zijn.", nameof(shares));
+                throw new ArgumentException("Minstens één aandeel moet groter dan nul zijn.", nameof(low));
             }
 
             var jobs = new int[shares.Length];
