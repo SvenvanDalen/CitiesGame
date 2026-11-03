@@ -75,15 +75,23 @@ namespace Cities.Gameplay.Overlays
             }
 
             var list = new List<IOverlaySource>();
-            AddCell(list, cellsX, cellsZ, version, sources.AirConcentration, AirId, "Luchtvervuiling",
+            void AddCell(Func<int, int, float> raw, string id, string name, OverlayLegend legend, Func<float, float> convert)
+            {
+                if (raw != null)
+                {
+                    list.Add(new DelegateCellOverlaySource(id, name, cellsX, cellsZ, legend, (x, z) => convert(raw(x, z)), version));
+                }
+            }
+
+            AddCell(sources.AirConcentration, AirId, "Luchtvervuiling",
                 new OverlayLegend("Luchtvervuiling", "%", 0f, 100f, OverlayColorScale.Hot, "0"), c => AirPollution.Level(c) * 100f);
-            AddCell(list, cellsX, cellsZ, version, sources.NoiseDecibel, NoiseId, "Geluid",
+            AddCell(sources.NoiseDecibel, NoiseId, "Geluid",
                 new OverlayLegend("Geluid", "dB", NoiseMin, NoiseMax, OverlayColorScale.Hot, "0"), db => db);
-            AddCell(list, cellsX, cellsZ, version, sources.SoilConcentration, SoilId, "Bodemvervuiling",
+            AddCell(sources.SoilConcentration, SoilId, "Bodemvervuiling",
                 new OverlayLegend("Bodemvervuiling", "%", 0f, 100f, OverlayColorScale.Hot, "0"), c => SoilPollution.Level(c) * 100f);
-            AddCell(list, cellsX, cellsZ, version, sources.WaterLevel, WaterId, "Watervervuiling",
+            AddCell(sources.WaterLevel, WaterId, "Watervervuiling",
                 new OverlayLegend("Watervervuiling", "%", 0f, 100f, OverlayColorScale.Hot, "0"), l => float.IsNaN(l) ? float.NaN : math.saturate(l) * 100f);
-            AddCell(list, cellsX, cellsZ, version, sources.WindSpeed, WindId, "Wind",
+            AddCell(sources.WindSpeed, WindId, "Wind",
                 new OverlayLegend("Wind", "m/s", 0f, WindModel.MaxSpeed, OverlayColorScale.Hot, "0.#"), s => s);
             AddBuilding(list, version, sources.Happiness, HappinessId, "Geluk",
                 new OverlayLegend("Geluk", "%", 0f, 100f, OverlayColorScale.Good, "0"));
@@ -98,14 +106,6 @@ namespace Cities.Gameplay.Overlays
             AddBuilding(list, version, sources.Parking, ParkingId, "Parkeren",
                 new OverlayLegend("Parkeerbezetting", "%", 0f, 100f, OverlayColorScale.Hot, "0"));
             return list;
-        }
-
-        private static void AddCell(List<IOverlaySource> list, int cellsX, int cellsZ, Func<long> version, Func<int, int, float> raw, string id, string name, OverlayLegend legend, Func<float, float> convert)
-        {
-            if (raw != null)
-            {
-                list.Add(new DelegateCellOverlaySource(id, name, cellsX, cellsZ, legend, (x, z) => convert(raw(x, z)), version));
-            }
         }
 
         private static void AddBuilding(List<IOverlaySource> list, Func<long> version, Action<List<OverlayEntityValue>> collect, string id, string name, OverlayLegend legend)
