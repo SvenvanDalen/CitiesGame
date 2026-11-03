@@ -123,6 +123,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Het water wordt getekend door `WaterRendererBehaviour`: blokken van 32 × 32 cellen die om beurten uit `WorldMap.Height` en `WaterDepth` worden gebouwd (`WaterMeshBuilder`, per punt diepte en stroomrichting), met shader `Cities/Water` (dikte uit scènediepte, breking en absorptie, meestromende rimpels, schuim, Fresnel-reflectie; vereist depth en opaque texture in de URP-asset). Blokken zonder water bestaan niet.
 - Budget: 0,6 ms per tick voor het watersysteem op de referentiemachine (nog te meten in Unity).
 
+## Fauna
+
+- Vogels, vissen en herten zijn sfeerleven, geen simulatie: ze hebben geen toestand, staan niet in de save en kosten geen simulatietijd. `FaunaGroups.Spawn` legt per vak van 256 m uit wereldseed en vaknummer vast welke groepen er wonen (meeuwen boven water, kraaien boven land, scholen in water van 2,5 m of meer, kuddes reeën op open land); `FaunaMotion.TryPose` rekent de stand van een dier uit de tijd. Een dier dat op een plek komt waar het niet kan (vis op het droge, ree in het water of in het bos) is er dan niet; terrein of water aanpassen werkt dus meteen door.
+- De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
+- `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
@@ -139,6 +145,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `Assets/Data/DefinitionCatalog.asset` wordt automatisch bijgewerkt. **Cities > Definities > Catalogus bijwerken en valideren** meldt fouten.
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
+
+## Wind
+
+- `WindModel.At(seed, tick)` (Simulation/Fields) geeft de wind als `Wind` (richting in radialen, snelheid in m/s, `Strength` 0 tot 1). De wind is een zuivere functie van wereldseed en tick: er is geen status en dus geen eigen save-sectie; de seed zit al in `RAND`. Hij wisselt vloeiend om de `KnotTicks` rond een heersende richting per wereld.
+- `Wind.Vector` (lengte = kracht) is de invoer van `FireSpread.Step`; `Wind.CellsPerStep(max)` is de invoer voor `DiffusionSettings` van de milieulagen.
 
 ## Zone-specialisaties
 
@@ -178,3 +189,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `Tourism` (Simulation/Economy) houdt trekpleisters bij (`Attraction`: toeristen per dag, entree, onderhoud; een unieke kan maar één keer staan). `Settle` boekt bestedingen en entree als `Other`-inkomst en het onderhoud als `Upkeep`; hotelbedden begrenzen de toeristen per week.
 - `Trade` heeft per goed een import- en exportprijs. `Settle` krijgt per goed het overschot of tekort (van de aanroeper, tot de goederenketen E11-08 er is): export is inkomst, import een verplichte uitgave, beide onder `Trade`. Beide staan in sectie `INCM` (`OtherIncomeSection`).
+
+## Parkeren
+
+- `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
+- Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.

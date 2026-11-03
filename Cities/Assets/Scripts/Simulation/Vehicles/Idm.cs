@@ -41,7 +41,7 @@ namespace Cities.Simulation.Vehicles
 
         /// <summary>Het model voor een voertuigtype; de wensnelheid is de laagste van topsnelheid en <paramref name="speedLimit"/> (m/s).</summary>
         public static Idm For(in VehicleSpec spec, float speedLimit) =>
-            new Idm(Math.Min(spec.MaxSpeedMetersPerSecond, speedLimit), spec.AccelerationMs2, spec.BrakingMs2);
+            new Idm(Math.Min(spec.MaxSpeedMetersPerSecond, speedLimit), spec.AccelerationMs2, spec.BrakingMs2, spec.TimeHeadwaySeconds, spec.MinGapMeters);
 
         /// <summary>Gewenste opening bij snelheid <paramref name="speed"/> en naderingssnelheid <paramref name="closing"/>.</summary>
         public float DesiredGap(float speed, float closing) =>

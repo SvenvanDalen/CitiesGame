@@ -32,7 +32,7 @@ namespace Cities.Tests.EditMode.Configuration
         {
             var present = Database().All<VehicleDefinition>().Select(d => d.Spec.Category).ToHashSet();
 
-            Assert.That(new[] { VehicleCategory.PassengerCar, VehicleCategory.Van, VehicleCategory.Truck, VehicleCategory.Bus, VehicleCategory.Tram, VehicleCategory.Service }.Where(c => !present.Contains(c)), Is.Empty);
+            Assert.That(new[] { VehicleCategory.PassengerCar, VehicleCategory.Van, VehicleCategory.Truck, VehicleCategory.Bus, VehicleCategory.Tram, VehicleCategory.Service, VehicleCategory.Motorcycle, VehicleCategory.Bicycle }.Where(c => !present.Contains(c)), Is.Empty);
         }
     }
 }
