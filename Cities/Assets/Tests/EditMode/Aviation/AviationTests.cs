@@ -118,11 +118,11 @@ namespace Cities.Tests.EditMode.Aviation
         [Test]
         public void TheRunwayRunsAlongTheHeading()
         {
-            var airport = new Airport(1, "A", new float2(100f, 200f), math.PI / 2f, 2000f, 1000f, Narrow);
+            var airport = new Airport(1, "A", new float2(100f, 200f), math.PI / 2f, 2400f, 1000f, Narrow);
 
             Assert.That(airport.RunwayStart.x, Is.EqualTo(100f).Within(1e-2f));
-            Assert.That(airport.RunwayStart.y, Is.EqualTo(-800f).Within(1e-2f));
-            Assert.That(airport.RunwayEnd.y, Is.EqualTo(1200f).Within(1e-2f));
+            Assert.That(airport.RunwayStart.y, Is.EqualTo(-1000f).Within(1e-2f));
+            Assert.That(airport.RunwayEnd.y, Is.EqualTo(1400f).Within(1e-2f));
         }
 
         [Test]
