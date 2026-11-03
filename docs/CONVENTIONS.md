@@ -62,6 +62,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Elke knopactie en elk deel van een composite heeft twee slots (primair en alternatief); een leeg slot krijgt pad `""`. Een nieuwe actie krijgt een Nederlandse naam in `ControlLabels`; een test controleert dat.
 - `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape en de linkermuisknop zijn vast. Escape annuleert herbinden, breekt een tool af en opent anders het menu; links klikken plaatst.
 
+## Screenshot-modus
+
+- F11 zet de screenshot-modus aan: `ScreenshotBehaviour` verbergt alle `UIDocument`s en de bouwghost, zet de tools uit en geeft `CityCameraBehaviour.FreeLook` ruimere grenzen (`ScreenshotMode.FreeLook`: kantelen van 1° tot 89,9°, vanaf 3 m afstand). F12 maakt een opname op minstens `_targetWidth` pixels (`ScreenshotMode.SuperSize`, hoogstens 16384 per zijde) in `persistentDataPath/Screenshots`. Een nieuw schermvullend UI-element hoeft niets te doen zolang het in een `UIDocument` zit. Testscene: `Scenes/Tests/Camera.unity`.
+
 ## Tools
 
 - Een bouw- of bewerkingstool implementeert `ITool` (`Cities.Gameplay.Tools`): elk frame maakt hij uit de muis (`ToolInput`) een `ToolPreview` met positie, draaiing, maat en eventueel de reden waarom het niet mag. De `ToolController` voert alleen een geldige preview uit.
@@ -112,6 +116,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Kruispunten (knooppunt met 3 tot 8 armen): `RoadJunctionBuilder` rekent uit hoever elke weg van het midden ophoudt (afgeronde hoeken van 6 m) en maakt het mesh met stoep, stoeprand en zebrapaden; `RoadJunctions` koppelt dat aan het netwerk en `RoadRendererBehaviour` tekent het per knooppunt. De afsnijding volgt altijd uit het net, er wordt niets van opgeslagen.
 - Wegtypes zijn definities (`road.<naam>`, `RoadTypeDefinition` onder `Assets/Data/RoadTypes`): rijstroken per richting, eenrichting, fietspad, stoep, snelheidslimiet en kosten per meter. `RoadTypeSpec.Profile()` maakt er het dwarsprofiel van; de `RoadTool` legt wegen aan met `Use(id, spec)` en de werkbalk toont een knop per type uit de catalogus.
 - Wegen slopen doet de `DemolishTool` (Gameplay/Tools): een klik kiest een weg of kruispunt, een tweede klik bevestigt. De economie (E11) betaalt terug door te luisteren op `Demolished` (aantal segmenten en gesloopte lengte).
+- Snelwegknooppunten (E04-11): `InterchangeGeometry` (Simulation/Network) plant drie presets (`Diamond` = op- en afritten, `Cloverleaf`, `Turbine`) als knooppunten en Bezier-wegen in lokale coördinaten (snelweg langs X, kruisende weg langs Z over een brug van 5,5 m, helling max. 6%); `Interchange.Build` zet dat in het net en de `InterchangeTool` plaatst het met één klik (draaien in stappen van 15°). Er is geen eigen opslag: alles zit in `NETW`. De snelweg is één tweerichtingssegment, dus de ramps vertrekken vanaf de hartlijn (gescheiden rijbanen volgen later); de turbine is vereenvoudigd.
 - Verkeersregels (E04-13): `TrafficRules` bewaart per arm (segment bij een knooppunt) alleen wat de speler afwijkend instelt: een eigen voorrangsregel (`RightOfWay`) of een verbod in te rijden; sectie `TRFC`. `RightOfWayResolver.Resolve` geeft de geldende regel (instelling, anders rotonde, anders de drukkere weg heeft voorrang, anders rechts voor links). `LanePathfinder` mijdt een arm met verbod in te rijden als hij de regels meekrijgt. De snelheidslimiet per segment zet je met `RoadNetwork.SetSpeedLimit`.
 - Bouwfeedback: een `ToolPreview` heeft `InvalidReason` (rode ghost en de reden in de werkbalk), `Info` en `Cost` (hele munteenheden); de werkbalk toont de kosten achter de uitleg. Alleen de wegtool vult `Cost` al (lengte x kosten per meter); gebouwen volgen met de economie (E11).
 
@@ -189,6 +194,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `Tourism` (Simulation/Economy) houdt trekpleisters bij (`Attraction`: toeristen per dag, entree, onderhoud; een unieke kan maar één keer staan). `Settle` boekt bestedingen en entree als `Other`-inkomst en het onderhoud als `Upkeep`; hotelbedden begrenzen de toeristen per week.
 - `Trade` heeft per goed een import- en exportprijs. `Settle` krijgt per goed het overschot of tekort (van de aanroeper, tot de goederenketen E11-08 er is): export is inkomst, import een verplichte uitgave, beide onder `Trade`. Beide staan in sectie `INCM` (`OtherIncomeSection`).
+
+## Vervoerskeuze
+
+- `TravelModeChoice` (Simulation/Citizens, E08-09) kiest per rit lopen, fiets, auto of OV met de laagste gegeneraliseerde kosten (reistijd x tijdswaarde + geld, plus vaste tijd voor fiets en auto). De OV-tijd komt uit `TransitRouter`; fiets en auto vragen bezit uit `TravelOwnership` (afgeleid van huishouden, welvaart en seed, dus zonder eigen status of save-sectie). De smaakfactor komt uit `DeterministicRandom`; geef per burger en tick een verse generator mee.
 
 ## Parkeren
 

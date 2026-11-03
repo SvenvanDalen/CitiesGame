@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cities.Simulation.Network;
 using Cities.Gameplay.Tools;
 using Cities.Gameplay.Zoning;
 using Cities.Presentation.UI;
@@ -196,6 +197,12 @@ namespace Cities.Presentation.Tools
             AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
             AddBrush(toolbar, "Splitsen", _roads.Split, () => { }, () => true);
             AddBrush(toolbar, "Samenvoegen", _roads.Merge, () => { }, () => true);
+            foreach (var preset in InterchangeGeometry.Presets)
+            {
+                var chosen = preset;
+                AddBrush(toolbar, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
+            }
+
             AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
             AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
             AddSettings(road,
