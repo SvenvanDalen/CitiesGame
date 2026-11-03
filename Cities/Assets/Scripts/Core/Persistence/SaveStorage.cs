@@ -12,6 +12,8 @@ namespace Cities.Core.Persistence
     {
         public const int MaxNameLength = 64;
 
+        public const string ThumbnailExtension = ".png";
+
         private const string TemporarySuffix = ".tmp";
 
         public SaveStorage(string directory)
@@ -77,6 +79,46 @@ namespace Cities.Core.Persistence
             {
                 File.Delete(path);
             }
+
+            var thumbnail = ThumbnailPathFor(name);
+            if (File.Exists(thumbnail))
+            {
+                File.Delete(thumbnail);
+            }
+        }
+
+        /// <summary>Pad van de miniatuur (PNG) naast de save.</summary>
+        public string ThumbnailPathFor(string name) => Path.Combine(Directory, ValidateName(name) + ThumbnailExtension);
+
+        /// <summary>Schrijft de miniatuur naast de save; een lege of ontbrekende afbeelding verwijdert een oude.</summary>
+        public void WriteThumbnail(string name, byte[] png)
+        {
+            var path = ThumbnailPathFor(name);
+            if (png is null || png.Length == 0)
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                return;
+            }
+
+            System.IO.Directory.CreateDirectory(Directory);
+            File.WriteAllBytes(path, png);
+        }
+
+        public bool TryReadThumbnail(string name, out byte[] png)
+        {
+            var path = ThumbnailPathFor(name);
+            if (!File.Exists(path))
+            {
+                png = null;
+                return false;
+            }
+
+            png = File.ReadAllBytes(path);
+            return png.Length > 0;
         }
 
         /// <summary>Namen van alle saves, nieuwste eerst.</summary>
