@@ -154,6 +154,43 @@ namespace Cities.Core.Persistence
             }
         }
 
+        /// <summary>
+        /// Controleert het hele bestand (kop, lengtes, compressie en het controlegetal van elke sectie) zonder secties
+        /// toe te passen. Geeft de id's van de secties terug, metadata eerst; gooit <see cref="SaveFormatException"/>
+        /// bij een beschadigd bestand.
+        /// </summary>
+        public static IReadOnlyList<string> ReadSectionIds(Stream input)
+        {
+            if (input is null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            var ids = new List<string>();
+            using (var reader = new BinaryReader(input, Encoding.ASCII, leaveOpen: true))
+            {
+                var count = ReadHeader(reader);
+                var first = ReadBlock(reader);
+                if (first.Id != SaveMetadata.SectionId)
+                {
+                    throw new SaveFormatException($"De save begint met sectie {first.Id} in plaats van {SaveMetadata.SectionId}.");
+                }
+
+                ids.Add(first.Id);
+                for (var block = 1; block < count; block++)
+                {
+                    ids.Add(ReadBlock(reader).Id);
+                }
+
+                if (input.CanSeek && input.Position != input.Length)
+                {
+                    throw new SaveFormatException("Onverwachte gegevens na de laatste sectie.");
+                }
+            }
+
+            return ids;
+        }
+
         /// <summary>Of een sectie-id geldig is: precies vier ASCII-letters of -cijfers.</summary>
         public static bool IsValidId(string id)
         {

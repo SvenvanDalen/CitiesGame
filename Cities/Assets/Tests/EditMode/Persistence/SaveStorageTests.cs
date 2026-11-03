@@ -91,6 +91,27 @@ namespace Cities.Tests.EditMode.Persistence
         }
 
         [Test]
+        public void ThumbnailsLiveNextToTheSaveAndGoWithIt()
+        {
+            Write("Havenstad", 1);
+            Assert.That(_storage.TryReadThumbnail("Havenstad", out _), Is.False);
+
+            _storage.WriteThumbnail("Havenstad", new byte[] { 9, 8, 7 });
+            Assert.That(_storage.TryReadThumbnail("Havenstad", out var png), Is.True);
+            Assert.That(png, Is.EqualTo(new byte[] { 9, 8, 7 }));
+            Assert.That(_storage.List(), Is.EqualTo(new[] { "Havenstad" }), "De miniatuur is geen save");
+
+            _storage.WriteThumbnail("Havenstad", null);
+            Assert.That(_storage.TryReadThumbnail("Havenstad", out _), Is.False, "Zonder afbeelding verdwijnt de oude");
+            _storage.WriteThumbnail("Havenstad", Array.Empty<byte>());
+
+            _storage.WriteThumbnail("Havenstad", new byte[] { 1 });
+            _storage.Delete("Havenstad");
+            Assert.That(File.Exists(_storage.ThumbnailPathFor("Havenstad")), Is.False);
+            Assert.Throws<ArgumentException>(() => _storage.ThumbnailPathFor("bad..name"));
+        }
+
+        [Test]
         public void ArgumentsAreChecked()
         {
             Assert.Throws<ArgumentException>(() => new SaveStorage(string.Empty));

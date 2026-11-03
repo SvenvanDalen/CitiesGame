@@ -45,6 +45,10 @@ Shader "Cities/Terrain"
         float4 _CityWorldSize;
         // Terreinpenseel (E03-03): x, z en straal in meters; w > 0 geldig, w < 0 ongeldig, 0 = geen penseel.
         float4 _CityBrush;
+        // Overlay (E17-01): één pixel per cel, RGBA; _CityOverlayParams.x is de dekking (0 = uit).
+        TEXTURE2D(_CityOverlay);
+        SAMPLER(sampler_CityOverlay);
+        float4 _CityOverlayParams;
         ENDHLSL
 
         Pass
@@ -139,6 +143,18 @@ Shader "Cities/Terrain"
                 float inner = (1.0 - t * t) * (1.0 - t * t) * 0.18;
                 half3 tint = _CityBrush.w > 0 ? half3(0.35, 0.72, 1.0) : half3(1.0, 0.22, 0.18);
                 return lerp(color, tint, saturate(ring * 0.85 + inner));
+            }
+
+            // Kleur per cel uit de actieve overlay, nearest-gefilterd zodat elke cel een vlak blijft.
+            half3 CellOverlay(half3 color, float2 xz)
+            {
+                if (_CityOverlayParams.x <= 0)
+                {
+                    return color;
+                }
+
+                half4 overlay = SAMPLE_TEXTURE2D(_CityOverlay, sampler_CityOverlay, xz * _CityWorldSize.zw);
+                return lerp(color, overlay.rgb, overlay.a * _CityOverlayParams.x);
             }
 
             void Rock(float3 positionWS, float3 geometric, out float4 albedo, out float3 normalWS)
@@ -240,6 +256,7 @@ Shader "Cities/Terrain"
                 surface.alpha = 1;
 
                 half4 result = UniversalFragmentPBR(inputData, surface);
+                result.rgb = CellOverlay(result.rgb, input.positionWS.xz);
                 result.rgb = BrushOverlay(result.rgb, input.positionWS.xz);
                 result.rgb = MixFog(result.rgb, inputData.fogCoord);
                 return result;

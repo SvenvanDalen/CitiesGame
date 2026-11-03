@@ -130,6 +130,22 @@ namespace Cities.World.Tiles
             return true;
         }
 
+        /// <summary>Ontgrendelt alle tegels (sandbox, E22-04); <see cref="Unlocked"/> volgt voor elke tegel die nog dicht zat.</summary>
+        public void UnlockAll()
+        {
+            for (var z = 0; z < Dimensions.TilesZ; z++)
+            {
+                for (var x = 0; x < Dimensions.TilesX; x++)
+                {
+                    var tile = new TileCoord(x, z);
+                    if (!_unlocked[Index(tile)])
+                    {
+                        Unlock(tile);
+                    }
+                }
+            }
+        }
+
         /// <summary>Zet een tegel zonder voorwaarden (laden); geen controle op buren.</summary>
         internal void Set(TileCoord tile, bool unlocked)
         {

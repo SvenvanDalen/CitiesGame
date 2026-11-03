@@ -203,3 +203,28 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `ParkingRegistry` (Simulation/Vehicles) bewaart de parkeerlots van de stad: straatplekken per segment (`ParkingSlots`), gebouwparkeren en garages (`ParkingKind`). Een lot heeft capaciteit en bezetting; een gesloopt gebouw of segment sluit zijn lots met `Close` zodat ID's stabiel blijven. Sectie `PARK`, via `RoadNetworkHostBehaviour.Parking`.
 - Een voertuig zoekt met `ParkingSearch.TryPark`: het dichtstbijzijnde lot met een vrije plek binnen de straal rond de bestemming. Is alles vol, dan telt het een rondje en wordt de straal groter; na `MaxRounds` rondjes geeft het op. De voertuig-agent rijdt in de tussentijd rond en roept `Leave` aan als hij wegrijdt.
+
+## Geanimeerde voertuigen en burgers
+
+- Animatie loopt op de GPU, zonder skinning (E21-05). `WheelSpin` (Simulation/Animation) rekent de wielhoek uit afstand en wielstraal; `WalkCycle` laat de looppas oplopen met de afgelegde afstand gedeeld door de staplengte (`StrideMeters`), zodat voeten niet glijden. `AnimationPhase.Offset(id)` geeft elke burger een eigen, deterministische startfase.
+- `AgentAnimationTracker` houdt per agent-id de wielhoek of looppas bij uit de verplaatsing sinds de vorige verversing (`Begin`, `Update` per zichtbare agent, `End` vergeet verdwenen agents). De stand is afgeleid en zit niet in de save.
+- Voertuigen: `ModelMesh.TagWheel` markeert wielhoekpunten in UV2 (1, scharnier-y, scharnier-z); shader `Cities/CityAgent` draait ze om de X-as. Burgers: `CitizenBuilder` bakt één looppascyclus naar een textuur (`BakedClipLayout`: breedte = hoekpunten, hoogte = frames, RGBAHalf met de verplaatsing t.o.v. de rustpose); de shader mengt twee frames (`ClipSampler.Loop`) met keyword `_AGENT_CLIP`.
+- `AgentRendererBehaviour` (Presentation/Agents) tekent één model met één `RenderMeshPrimitives` per submesh uit twee structured buffers (`_AgentPose`: x, y, z, draaiing; `_AgentAnim`: animatiestand, schaal). Aanroepen: `BeginFrame`, `Submit(id, positie, draaiing)` voor elke agent die `VehicleLod` (Full) of `AgentLod` kiest, `EndFrame`. Menu `Cities > Modellen > Voertuigen bouwen` en `Burgers bouwen` maken de renderer-prefabs in `Assets/Art/Agents`.
+
+## Overlays
+
+- Een overlay is een `IOverlaySource` (`Cities.Gameplay.Overlays`) met een `OverlayLegend` (titel, eenheid, bereik, `OverlayColorScale`) en een `Version` die oploopt als de gegevens veranderen. Een celoverlay (`ICellOverlaySource`) geeft één waarde per cel, een gebouw- of segmentoverlay (`IEntityOverlaySource`) vult een lijst `OverlayEntityValue` (lint van `From` naar `To`, gebouw = vierkant). `float.NaN` betekent geen gegevens en wordt niet getekend.
+- Een nieuw systeem registreert zijn bron met `OverlayBehaviour.Controller.Register(...)`; `WorldLayerOverlays` doet dat voor hoogte, landwaarde, grondvervuiling en waterdiepte. Kleurverlopen: `Hot` (hoog is slecht), `Good` (hoog is goed), `Terrain`.
+- `CellOverlayBaker` bakt een celoverlay in stukken (budget in cellen per stap; `OverlayBehaviour` geeft `_bakeBudgetMs` per frame) in een achterbuffer en wisselt pas als alles klaar is, zodat wisselen of verversen niet haperen. De terreinshader leest de textuur als `_CityOverlay` (`_CityOverlayParams.x` = dekking). Gebouw- en segmentoverlays worden een lint-mesh (`OverlayRibbonBuilder`). `OverlayPanel` toont de knoppen en de legenda.
+
+## Districten
+
+- `DistrictBook` (`Cities.World.Districts`) bewaart de districten: nummer 1 tot 255, naam (uniek, hoogstens 40 tekens) en kleur (`0xRRGGBB`). Nummer 0 is geen district, dus de hele stad; dezelfde nummering gebruikt `PolicyBook`. Een nieuw district krijgt het laagste vrije nummer.
+- `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
+- `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
+
+## Metro
+
+- `Metro` (Simulation/Transit, E09-06) bevat de rekenregels van de metro: perrondiepte `MinDepth` tot `MaxDepth` m onder het maaiveld, stationsafstand, maximale tunnelhelling (`MaxGrade`, 4%), `AccessTime` (lopen plus roltrap naar de diepte) en `TravelTime` (optrekken, topsnelheid, remmen). Net als `Tram` rijdt de metro nog niet met eigen snelheid in `TransitFleet`.
+- `MetroNetwork` legt een perrondiepte op haltes van het `TransitNetwork`. Maak stations en metrolijnen met `AddStation` en `AddLine` zodat de regels gelden; een metrolijn is een gewone `TransitLine`. Sectie `METR` (`MetroSection`) bewaart alleen de dieptes; haltes en lijnen staan in `TRNS`. Verwijder stations met `TryRemoveStation`, niet met `TransitNetwork.TryRemoveStop`, anders blijft de diepte achter.
+- `UndergroundView` (Gameplay/Overlays) is de schakelaar voor de ondergrondse weergave: soepele terreindekking (`GroundOpacity`), zichtbaarheid per diepte (`IsVisible`) en een diepte-tint. `UndergroundViewBehaviour` zet de dekking als shaderglobal `_CityGroundOpacity`.
