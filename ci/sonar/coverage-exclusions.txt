@@ -69,3 +69,5 @@ Cities/Assets/Scripts/Simulation/Fields/DiffusionField.cs
 Cities/Assets/Scripts/World/Terrain/EarthworksTool.cs
 Cities/Assets/Scripts/Simulation/Network/Roundabout.cs
 Cities/Assets/Scripts/Gameplay/Tools/RoundaboutTool.cs
+Cities/Assets/Scripts/Simulation/Network/Interchange.cs
+Cities/Assets/Scripts/Gameplay/Tools/InterchangeTool.cs
