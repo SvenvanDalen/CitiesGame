@@ -25,18 +25,23 @@ namespace Cities.Gameplay.Tools
             {
                 var road = _network.GetSegment(target.Segment.Value);
                 report = new InspectionReport(
+                    InspectionKind.Road,
                     road.Curve.Position(0.5f),
                     "Weg",
-                    $"{road.Length:0} m",
-                    $"max {road.SpeedLimit * 3.6f:0} km/u",
-                    Lanes(road));
+                    new[] { $"{road.Length:0} m", $"max {road.SpeedLimit * 3.6f:0} km/u", Lanes(road) },
+                    null);
                 return true;
             }
 
             if (target.Node.HasValue)
             {
                 var node = _network.GetNode(target.Node.Value);
-                report = new InspectionReport(node.Position, "Kruispunt", $"{node.Segments.Length} wegen", $"{Connections(target.Node.Value, node)} verbindingen");
+                report = new InspectionReport(
+                    InspectionKind.Junction,
+                    node.Position,
+                    "Kruispunt",
+                    new[] { $"{node.Segments.Length} wegen", $"{Connections(target.Node.Value, node)} verbindingen" },
+                    null);
                 return true;
             }
 

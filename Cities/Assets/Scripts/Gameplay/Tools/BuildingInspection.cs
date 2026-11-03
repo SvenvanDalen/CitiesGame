@@ -32,11 +32,16 @@ namespace Cities.Gameplay.Tools
             var center = footprint.Center(_world);
             var size = _world.CellSize;
             report = new InspectionReport(
+                InspectionKind.Building,
                 new float3(center.x, point.y, center.y),
                 "Gebouw",
-                $"{footprint.SizeX * size:0} × {footprint.SizeZ * size:0} m",
-                $"{footprint.SizeX * footprint.SizeZ} cellen",
-                $"gedraaid {footprint.YawDegrees:0}°");
+                new[]
+                {
+                    $"{footprint.SizeX * size:0} × {footprint.SizeZ * size:0} m",
+                    $"{footprint.SizeX * footprint.SizeZ} cellen",
+                    $"gedraaid {footprint.YawDegrees:0}°",
+                },
+                null);
             return true;
         }
     }
