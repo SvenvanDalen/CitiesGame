@@ -131,6 +131,7 @@ namespace Cities.Tests.EditMode.Persistence
         [Test]
         public void FailedLoadIsLoggedAsError()
         {
+            Directory.CreateDirectory(_directory);
             File.WriteAllText(_storage.PathFor("Kapot"), "dit is geen save");
             var service = new SaveGameService(_storage, new ISaveSection[] { new TestSection("CLCK", null) }, m => { });
 
