@@ -62,6 +62,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Elke knopactie en elk deel van een composite heeft twee slots (primair en alternatief); een leeg slot krijgt pad `""`. Een nieuwe actie krijgt een Nederlandse naam in `ControlLabels`; een test controleert dat.
 - `ControlBindingsBehaviour` laadt de toetsen van de speler uit `persistentDataPath/Settings/controls.json` en zet de maps aan. Herbinden gaat via `InputControlBindings`; een toets die al in gebruik is ruilt met de andere actie. Escape en de linkermuisknop zijn vast. Escape annuleert herbinden, breekt een tool af en opent anders het menu; links klikken plaatst.
 
+## Screenshot-modus
+
+- F9 zet de screenshot-modus aan: `ScreenshotBehaviour` verbergt alle `UIDocument`s en de bouwghost, zet de tools uit en geeft `CityCameraBehaviour.FreeLook` ruimere grenzen (`ScreenshotMode.FreeLook`: kantelen van 1° tot 89,9°, vanaf 3 m afstand). F12 maakt een opname op minstens `_targetWidth` pixels (`ScreenshotMode.SuperSize`, hoogstens 16384 per zijde) in `persistentDataPath/Screenshots`. Een nieuw schermvullend UI-element hoeft niets te doen zolang het in een `UIDocument` zit. Testscene: `Scenes/Tests/Camera.unity`.
+
 ## Tools
 
 - Een bouw- of bewerkingstool implementeert `ITool` (`Cities.Gameplay.Tools`): elk frame maakt hij uit de muis (`ToolInput`) een `ToolPreview` met positie, draaiing, maat en eventueel de reden waarom het niet mag. De `ToolController` voert alleen een geldige preview uit.
