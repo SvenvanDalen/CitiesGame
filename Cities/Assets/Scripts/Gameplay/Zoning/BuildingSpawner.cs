@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cities.Core.Randomness;
 using Cities.Gameplay.Tools;
+using Cities.Simulation.Policies;
 using Cities.World.Buildings;
 using Cities.World.Grid;
 using Unity.Mathematics;
@@ -64,6 +65,12 @@ namespace Cities.Gameplay.Zoning
             _zones.ZonesChanged += Rescan;
         }
 
+        /// <summary>Het beleid dat zone-specialisaties inschakelt (E05-12); zonder beleid groeien alleen gewone gebouwen.</summary>
+        public PolicyBook Policies { get; set; }
+
+        /// <summary>Het district van een cel; zonder deze functie ligt alles in <see cref="PolicyBook.CityWide"/>.</summary>
+        public Func<CellCoord, int> DistrictOf { get; set; }
+
         /// <summary>Het aantal gezoneerde cellen waaruit gekozen wordt.</summary>
         public int ZonedCells => _cells.Count;
 
@@ -100,11 +107,18 @@ namespace Cities.Gameplay.Zoning
             }
 
             var turns = BuildingPlacement.QuarterTurnsToFace(roadPoint.xz - centre.xz);
-            var fits = new List<(BuildingDefinition Definition, Footprint Footprint)>();
+            var district = DistrictOf?.Invoke(anchor) ?? PolicyBook.CityWide;
+            var fits = new List<(BuildingDefinition Definition, Footprint Footprint, float Factor)>();
             foreach (var definition in _definitions)
             {
                 var spec = definition.Spec;
                 if (spec.Zone != zone.Type || spec.Density != zone.Density)
+                {
+                    continue;
+                }
+
+                var factor = ZoneSpecialization.Weight(Policies, spec.Specialization, district);
+                if (factor <= 0f)
                 {
                     continue;
                 }
@@ -116,13 +130,13 @@ namespace Cities.Gameplay.Zoning
                     var footprint = candidates[(start + i) % candidates.Count];
                     if (Fits(footprint, zone, out _))
                     {
-                        fits.Add((definition, footprint));
+                        fits.Add((definition, footprint, factor));
                         break;
                     }
                 }
             }
 
-            var chosen = BuildingPlacement.PickWeighted(fits, f => f.Definition.Spec.FootprintCells, _random.NextDouble());
+            var chosen = BuildingPlacement.PickWeighted(fits, f => f.Definition.Spec.FootprintCells * f.Factor, _random.NextDouble());
             if (chosen.Definition == null)
             {
                 return false;

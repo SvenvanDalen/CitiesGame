@@ -29,3 +29,5 @@ MonoBehaviour:
       Multiplier: 1.08
     - Key: traffic.capacity
       Multiplier: 0.95
+    - Key: zone.specialization.eco
+      Multiplier: 3

@@ -27,3 +27,5 @@ MonoBehaviour:
       Multiplier: 1.5
     - Key: traffic.density
       Multiplier: 1.1
+    - Key: zone.specialization.tourist-shopping
+      Multiplier: 3

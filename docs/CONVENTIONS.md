@@ -71,6 +71,14 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Een tool met `RepeatsWhileHeld` (zoals een penseel) werkt elk frame zolang de knop ingedrukt is; `ToolInput.DeltaTime` geeft de frametijd.
 - Terraformen gaat met `TerraformTool` (omhoog, omlaag, vlak, glad, naar hoogte) via `TerrainBrush`. Het penseel meldt de gewijzigde hoekpunten met `NotifyHeightChanged`, en de terreinshader tekent de rand via `_CityBrush`. Testscene: `Scenes/Tests/Terrain.unity`.
 
+## Camera
+
+- `CameraBookmarks` bewaart vijf standen (`CameraRig`): F5 tot en met F9 roepen er een terug (gedempt), met Ctrl erbij slaan ze de huidige stand op. De toetsen staan in de map `Camera` en zijn herbindbaar. `CameraBookmarksSection` (`CAMB`) neemt ze mee in de save; hang `CityCameraBehaviour` aan `SaveGameBehaviour._camera`.
+
+## Volgcamera
+
+- Burgers en voertuigen worden gevolgd via `IFollowTarget` (geldigheid, positie, richting, ooghoogte). `FollowCameraController` rekent de stand uit (`Chase` achter het doel, `FirstPerson` op ooghoogte, rondkijken met de rechtermuisknop) en `CityCameraBehaviour.Follow/StopFollowing` zet hem aan. Valt het doel weg, dan gaat de vrije camera verder vanaf de laatste stand. Een toets om te wisselen komt zodra burgers/voertuigen een selectie hebben (E02-04 picking).
+
 ## Terrein
 
 - De hoogte staat in `WorldMap.Height`: één waarde per hoekpunt van het celraster (8 m). Tegels en chunks delen hun randhoekpunten, dus elke tegel heeft zijn eigen heightmap van 257 × 257 hoekpunten zonder naad met de buren.
@@ -105,6 +113,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Wegtypes zijn definities (`road.<naam>`, `RoadTypeDefinition` onder `Assets/Data/RoadTypes`): rijstroken per richting, eenrichting, fietspad, stoep, snelheidslimiet en kosten per meter. `RoadTypeSpec.Profile()` maakt er het dwarsprofiel van; de `RoadTool` legt wegen aan met `Use(id, spec)` en de werkbalk toont een knop per type uit de catalogus.
 - Wegen slopen doet de `DemolishTool` (Gameplay/Tools): een klik kiest een weg of kruispunt, een tweede klik bevestigt. De economie (E11) betaalt terug door te luisteren op `Demolished` (aantal segmenten en gesloopte lengte).
 - Snelwegknooppunten (E04-11): `InterchangeGeometry` (Simulation/Network) plant drie presets (`Diamond` = op- en afritten, `Cloverleaf`, `Turbine`) als knooppunten en Bezier-wegen in lokale coördinaten (snelweg langs X, kruisende weg langs Z over een brug van 5,5 m, helling max. 6%); `Interchange.Build` zet dat in het net en de `InterchangeTool` plaatst het met één klik (draaien in stappen van 15°). Er is geen eigen opslag: alles zit in `NETW`. De snelweg is één tweerichtingssegment, dus de ramps vertrekken vanaf de hartlijn (gescheiden rijbanen volgen later); de turbine is vereenvoudigd.
+- Verkeersregels (E04-13): `TrafficRules` bewaart per arm (segment bij een knooppunt) alleen wat de speler afwijkend instelt: een eigen voorrangsregel (`RightOfWay`) of een verbod in te rijden; sectie `TRFC`. `RightOfWayResolver.Resolve` geeft de geldende regel (instelling, anders rotonde, anders de drukkere weg heeft voorrang, anders rechts voor links). `LanePathfinder` mijdt een arm met verbod in te rijden als hij de regels meekrijgt. De snelheidslimiet per segment zet je met `RoadNetwork.SetSpeedLimit`.
 - Bouwfeedback: een `ToolPreview` heeft `InvalidReason` (rode ghost en de reden in de werkbalk), `Info` en `Cost` (hele munteenheden); de werkbalk toont de kosten achter de uitleg. Alleen de wegtool vult `Cost` al (lengte x kosten per meter); gebouwen volgen met de economie (E11).
 
 ## Water
@@ -132,6 +141,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Geldbedragen zijn `long` in hele munteenheden.
 - Overrides zonder editor gaan als JSON in `StreamingAssets/Config/Overrides/<id>.json` met dezelfde veldnamen als de asset, bijvoorbeeld `{ "_spec": { "MaxSpeedKmh": 70 } }`. Velden die niet genoemd worden, blijven staan; het ID is niet te wijzigen.
 
+## Zone-specialisaties
+
+- Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
+- `BuildingSpawner.Policies` en `DistrictOf` koppelen het `PolicyBook` en de districtindeling; zonder beleid groeien alleen gewone gebouwen. De status zit in sectie `PLCY`, er is geen eigen sectie nodig.
+
 ## Tests en dekking
 
 - Logica staat waar mogelijk in gewone C#-klassen en structs. MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
@@ -156,3 +170,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Eén branch per backlogitem: `feature/<ID>-<korte-naam>`, bijvoorbeeld `feature/E01-03-simulation-clock`.
 - Een PR verwijst naar het issue met `Closes #<nummer>` en wordt pas gemerged als de SonarQube-analyse geen relevante bevindingen meer heeft.
 - Commitberichten in het Engels, in de gebiedende wijs.
+
+## Gezondheid en sterfte
+
+- `CitizenHealthModel` (Simulation/Citizens) is zuiver: de gezondheidsscore van een burger beweegt per jaar naar een doel dat daalt door lucht-, water- en bodemvervuiling en hoge leeftijd en stijgt door zorg binnen bereik (`HealthEnvironment`). Zonder zorg of met overvolle bedden (`Beds`, `Patients`, `BedLoad`) loopt de sterftekans op (`CareFactor`, maximaal 2x). `Yearly` voegt dat samen met `CitizenLife.AgeOneYear`. Er is geen eigen status; `Citizen.Health` zit al in de burgers-opslag.
