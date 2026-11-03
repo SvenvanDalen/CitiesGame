@@ -98,9 +98,47 @@ namespace Cities.Gameplay.Cameras
 
         private void OnDisable() => _controls.FindActionMap("Camera", true).Disable();
 
+        public FollowCameraController Follower { get; } = new FollowCameraController();
+
+        /// <summary>Volgt een burger of voertuig; de vrije camera pauzeert tot <see cref="StopFollowing"/> of het doel wegvalt.</summary>
+        public void Follow(IFollowTarget target, FollowMode mode) => Follower.Follow(target, mode);
+
+        /// <summary>Stopt met volgen; de vrije camera gaat verder vanaf de huidige stand.</summary>
+        public void StopFollowing()
+        {
+            if (Follower.IsFollowing)
+            {
+                EndFollow();
+            }
+        }
+
+        private void EndFollow()
+        {
+            var rig = Follower.Current;
+            Follower.Stop();
+
+            // Vanaf straatniveau terug naar de stadscamera: het draaipunt ligt dan een stuk voor de camera.
+            var distance = math.max(rig.Distance, _settings.MinDistance);
+            var pitch = math.max(rig.Pitch, _settings.MinPitch);
+            var pivot = rig.Position + (new CameraRig(rig.Pivot, rig.Yaw, pitch, 1f).Forward * distance);
+            Controller.Teleport(new CameraRig(pivot, rig.Yaw, pitch, distance));
+        }
+
         private void LateUpdate()
         {
             var pointerDelta = (float2)_pointerDelta.ReadValue<Vector2>();
+            if (Follower.IsFollowing)
+            {
+                var look = _orbitDrag.IsPressed() ? new float2(pointerDelta.x, -pointerDelta.y) * _settings.MouseOrbitSensitivity : float2.zero;
+                if (Follower.Update(look, UnityEngine.Time.unscaledDeltaTime))
+                {
+                    Apply(Follower.Current);
+                    return;
+                }
+
+                EndFollow();
+            }
+
             var pointer = _pointer.ReadValue<Vector2>();
             var scroll = _scroll.ReadValue<float>() * _scrollScale;
             var zoom = _zoom.ReadValue<float>();

@@ -75,6 +75,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - `CameraBookmarks` bewaart vijf standen (`CameraRig`): F5 tot en met F9 roepen er een terug (gedempt), met Ctrl erbij slaan ze de huidige stand op. De toetsen staan in de map `Camera` en zijn herbindbaar. `CameraBookmarksSection` (`CAMB`) neemt ze mee in de save; hang `CityCameraBehaviour` aan `SaveGameBehaviour._camera`.
 
+## Volgcamera
+
+- Burgers en voertuigen worden gevolgd via `IFollowTarget` (geldigheid, positie, richting, ooghoogte). `FollowCameraController` rekent de stand uit (`Chase` achter het doel, `FirstPerson` op ooghoogte, rondkijken met de rechtermuisknop) en `CityCameraBehaviour.Follow/StopFollowing` zet hem aan. Valt het doel weg, dan gaat de vrije camera verder vanaf de laatste stand. Een toets om te wisselen komt zodra burgers/voertuigen een selectie hebben (E02-04 picking).
+
 ## Terrein
 
 - De hoogte staat in `WorldMap.Height`: één waarde per hoekpunt van het celraster (8 m). Tegels en chunks delen hun randhoekpunten, dus elke tegel heeft zijn eigen heightmap van 257 × 257 hoekpunten zonder naad met de buren.
