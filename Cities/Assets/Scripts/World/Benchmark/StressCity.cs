@@ -112,9 +112,20 @@ namespace Cities.World.Benchmark
                 throw new ArgumentNullException(nameof(map));
             }
 
+            Apply(plan, (x, z, cell) => map.Zones[x, z] = cell);
+        }
+
+        /// <summary>Roept <paramref name="set"/> aan voor elke cel van elke kavel van <paramref name="plan"/>.</summary>
+        public static void Apply(StressCityPlan plan, Action<int, int, ZoneCell> set)
+        {
             if (plan is null)
             {
                 throw new ArgumentNullException(nameof(plan));
+            }
+
+            if (set is null)
+            {
+                throw new ArgumentNullException(nameof(set));
             }
 
             foreach (var lot in plan.Lots)
@@ -124,7 +135,7 @@ namespace Cities.World.Benchmark
                 {
                     for (var x = 0; x < LotCells; x++)
                     {
-                        map.Zones[lot.X + x, lot.Z + z] = cell;
+                        set(lot.X + x, lot.Z + z, cell);
                     }
                 }
             }

@@ -45,6 +45,19 @@ namespace Cities.Tests.EditMode.Benchmark
         }
 
         [Test]
+        public void ApplyCoversEveryLotCellOnce()
+        {
+            var plan = StressCity.Generate(Big, 500, 2, Households);
+            var painted = new System.Collections.Generic.Dictionary<(int, int), ZoneType>();
+            StressCity.Apply(plan, (x, z, cell) => painted.Add((x, z), cell.Type));
+            Assert.That(painted.Count, Is.EqualTo(plan.Lots.Count * StressCity.LotCells * StressCity.LotCells));
+            Assert.That(painted[(plan.Lots[0].X, plan.Lots[0].Z)], Is.EqualTo(plan.Lots[0].Zone));
+            Assert.That(painted.ContainsKey((StressCity.BlockCells, 0)), Is.False);
+            Assert.Throws<ArgumentNullException>(() => StressCity.Apply(plan, null));
+            Assert.Throws<ArgumentNullException>(() => StressCity.Apply((StressCityPlan)null, (x, z, c) => { }));
+        }
+
+        [Test]
         [Category("UnityRuntime")]
         public void ApplyPaintsLotZones()
         {
@@ -74,7 +87,7 @@ namespace Cities.Tests.EditMode.Benchmark
         public void RejectsBadArguments()
         {
             Assert.Throws<ArgumentException>(() => StressCity.Generate(Big, 10, 1, null));
-            Assert.Throws<ArgumentNullException>(() => StressCity.Apply(null, null));
+            Assert.Throws<ArgumentNullException>(() => StressCity.Apply((WorldMap)null, null));
             Assert.Throws<ArgumentOutOfRangeException>(() => StressCity.Generate(Big, 0, 1, Households));
             Assert.Throws<ArgumentException>(() => StressCity.Generate(Big, 10, 1, Array.Empty<int>()));
         }
