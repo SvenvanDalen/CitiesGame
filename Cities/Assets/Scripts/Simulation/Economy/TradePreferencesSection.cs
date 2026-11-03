@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Core.Persistence;
 
 namespace Cities.Simulation.Economy
@@ -90,16 +91,7 @@ namespace Cities.Simulation.Economy
 
         private static bool HasDuplicates<T, TKey>(List<T> items, Func<T, TKey> key)
         {
-            var seen = new HashSet<TKey>();
-            foreach (var item in items)
-            {
-                if (!seen.Add(key(item)))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return items.Select(key).Distinct().Count() != items.Count;
         }
 
         private static KeyValuePair<string, TradeGoodState> ReadGood(SaveReader reader)

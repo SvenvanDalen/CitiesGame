@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Core.Randomness;
 
 namespace Cities.Simulation.Economy
@@ -192,12 +193,9 @@ namespace Cities.Simulation.Economy
         private void SyncConnections(ITradeConnections connections)
         {
             var open = new SortedDictionary<int, ConnectionKind>();
-            foreach (var c in connections.Connections)
+            foreach (var c in connections.Connections.Where(c => c.IsOpen))
             {
-                if (c.IsOpen)
-                {
-                    open[c.Id] = c.Kind;
-                }
+                open[c.Id] = c.Kind;
             }
 
             var openBefore = new int[_setback.Length];
