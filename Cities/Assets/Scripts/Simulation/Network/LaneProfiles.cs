@@ -31,29 +31,7 @@ namespace Cities.Simulation.Network
             }
 
             var lanes = new List<LaneSpec>();
-            var edge = oneWay ? -carLanes * CarLaneWidth * 0.5f : 0f;
-            if (oneWay)
-            {
-                for (var i = 0; i < carLanes; i++)
-                {
-                    var kind = busLanes && i == carLanes - 1 ? LaneTypes.Bus : LaneTypes.Vehicles;
-                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, edge + ((i + 0.5f) * CarLaneWidth), CarLaneWidth));
-                }
-
-                edge = -edge;
-            }
-            else
-            {
-                for (var i = 0; i < carLanes; i++)
-                {
-                    var offset = (i + 0.5f) * CarLaneWidth;
-                    var kind = busLanes && i == carLanes - 1 ? LaneTypes.Bus : LaneTypes.Vehicles;
-                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, offset, CarLaneWidth));
-                    lanes.Add(new LaneSpec(kind, LaneDirection.Backward, -offset, CarLaneWidth));
-                }
-
-                edge = carLanes * CarLaneWidth;
-            }
+            var edge = AddCarLanes(lanes, carLanes, oneWay, busLanes);
 
             if (parking && carLanes > 0)
             {
@@ -76,6 +54,28 @@ namespace Cities.Simulation.Network
             }
 
             return lanes;
+        }
+
+        // Voegt de rijstroken toe (de buitenste per richting is een busbaan als dat gevraagd is) en geeft de rand van het wegdek terug.
+        private static float AddCarLanes(List<LaneSpec> lanes, int carLanes, bool oneWay, bool busLanes)
+        {
+            var start = oneWay ? -carLanes * CarLaneWidth * 0.5f : 0f;
+            for (var i = 0; i < carLanes; i++)
+            {
+                var kind = busLanes && i == carLanes - 1 ? LaneTypes.Bus : LaneTypes.Vehicles;
+                var offset = (i + 0.5f) * CarLaneWidth;
+                if (oneWay)
+                {
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, start + offset, CarLaneWidth));
+                }
+                else
+                {
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Forward, offset, CarLaneWidth));
+                    lanes.Add(new LaneSpec(kind, LaneDirection.Backward, -offset, CarLaneWidth));
+                }
+            }
+
+            return oneWay ? -start : carLanes * CarLaneWidth;
         }
     }
 }
