@@ -64,6 +64,8 @@ namespace Cities.Presentation.UI
         private readonly Ledger _ledger;
         private readonly Func<int> _week;
         private readonly Func<int, int> _population;
+        private readonly IReadOnlyDictionary<string, string> _effectNames;
+        private readonly Func<string, long?> _dailyBaseline;
 
         /// <param name="names">Weergavenaam per beleids-id; ontbreekt die, dan wordt het id getoond.</param>
         /// <param name="population">Inwoners per district; bij <see cref="PolicyBook.CityWide"/> van de hele stad.</param>
@@ -73,7 +75,9 @@ namespace Cities.Presentation.UI
             IReadOnlyDictionary<string, string> names,
             Ledger ledger,
             Func<int> week,
-            Func<int, int> population)
+            Func<int, int> population,
+            IReadOnlyDictionary<string, string> effectNames = null,
+            Func<string, long?> dailyBaseline = null)
         {
             _book = book ?? throw new ArgumentNullException(nameof(book));
             _specs = specs ?? throw new ArgumentNullException(nameof(specs));
@@ -81,6 +85,8 @@ namespace Cities.Presentation.UI
             _ledger = ledger ?? throw new ArgumentNullException(nameof(ledger));
             _week = week ?? throw new ArgumentNullException(nameof(week));
             _population = population ?? throw new ArgumentNullException(nameof(population));
+            _effectNames = effectNames;
+            _dailyBaseline = dailyBaseline;
         }
 
         public event Action Changed;
@@ -133,6 +139,10 @@ namespace Cities.Presentation.UI
             Changed?.Invoke();
             return PolicyToggleResult.Activated;
         }
+
+        /// <summary>De tooltip met kosten, effecten en dagelijkse bijdrage (E13-07); leeg bij onbekend beleid.</summary>
+        public string TooltipFor(string id, int district = PolicyBook.CityWide) =>
+            _book.IsKnown(id) ? PolicyTooltip.Build(NameOf(id), _specs[id], _population(district), _effectNames, _dailyBaseline) : string.Empty;
 
         public string NameOf(string id) => id != null && _names.TryGetValue(id, out var name) ? name : id;
 

@@ -15,11 +15,17 @@ namespace Cities.Simulation.Disasters
     public sealed class DisasterManager
     {
         private readonly List<DisasterSpec> _specs = new List<DisasterSpec>();
-        private readonly HashSet<string> _disabled = new HashSet<string>();
         private readonly List<Disaster> _running = new List<Disaster>();
 
+        /// <summary>De instellingen van de speler (E15-13): aan of uit, frequentie en schadefactor per type.</summary>
+        public DisasterSettings Settings { get; } = new DisasterSettings();
+
         /// <summary>Of rampen vanzelf mogen optreden.</summary>
-        public bool RandomEnabled { get; set; } = true;
+        public bool RandomEnabled
+        {
+            get => Settings.RandomEnabled;
+            set => Settings.RandomEnabled = value;
+        }
 
         public IReadOnlyList<DisasterSpec> Specs => _specs;
 
@@ -43,20 +49,10 @@ namespace Cities.Simulation.Disasters
             _specs.Add(spec);
         }
 
-        public bool IsEnabled(string name) => !_disabled.Contains(name);
+        public bool IsEnabled(string name) => Settings.IsEnabled(name);
 
         /// <summary>Zet het willekeurig optreden van één type aan of uit.</summary>
-        public void SetEnabled(string name, bool enabled)
-        {
-            if (enabled)
-            {
-                _disabled.Remove(name);
-            }
-            else
-            {
-                _disabled.Add(name);
-            }
-        }
+        public void SetEnabled(string name, bool enabled) => Settings.SetEnabled(name, enabled);
 
         /// <summary>Laat een ramp van het gegeven type nu beginnen.</summary>
         public Disaster Trigger(string name, float2 position)
@@ -70,14 +66,15 @@ namespace Cities.Simulation.Disasters
 
         /// <summary>
         /// Eén dag: rekent de kosten van de lopende rampen af, schuift ze op en laat daarna nieuwe vanzelf ontstaan op een willekeurige
-        /// plek in een gebied van <paramref name="area"/> meter. Geeft de totale kosten van vandaag.
+        /// plek in een gebied van <paramref name="area"/> meter. De kosten volgen de schadefactor en de kans de frequentiefactor van de
+        /// <see cref="Settings"/>. Geeft de totale kosten van vandaag.
         /// </summary>
         public long Step(ref DeterministicRandom random, float2 area)
         {
             var cost = 0L;
             foreach (var disaster in _running.ToArray())
             {
-                cost += disaster.CostToday;
+                cost += Settings.ScaledCost(disaster.Spec.Name, disaster.CostToday);
                 if (disaster.Advance())
                 {
                     PhaseChanged?.Invoke(disaster);
@@ -89,7 +86,7 @@ namespace Cities.Simulation.Disasters
             {
                 foreach (var spec in _specs.Where(s => IsEnabled(s.Name) && _running.All(d => d.Spec != s)).ToArray())
                 {
-                    if (random.NextFloat() < spec.ChancePerDay)
+                    if (random.NextFloat() < Settings.ChancePerDay(spec))
                     {
                         Trigger(spec.Name, new float2(random.NextFloat(0f, area.x), random.NextFloat(0f, area.y)));
                     }
