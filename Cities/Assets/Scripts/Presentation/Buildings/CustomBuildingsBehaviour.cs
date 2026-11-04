@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Cities.Gameplay.Zoning;
 using Cities.World.Buildings;
 using UnityEngine;
@@ -81,12 +82,9 @@ namespace Cities.Presentation.Buildings
         private void OnDestroy()
         {
             CustomBuildingRegistry.Replace(new BuildingDefinition[0]);
-            foreach (var owned in _owned)
+            foreach (var owned in _owned.Where(o => o != null))
             {
-                if (owned != null)
-                {
-                    Destroy(owned);
-                }
+                Destroy(owned);
             }
         }
     }

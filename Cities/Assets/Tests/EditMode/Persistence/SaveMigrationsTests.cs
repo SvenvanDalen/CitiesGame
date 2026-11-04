@@ -55,7 +55,7 @@ namespace Cities.Tests.EditMode.Persistence
         {
             var migrations = new SaveMigrations().Add("TEST", 1, _ => throw new InvalidOperationException("mag niet"));
 
-            migrations.Upgrade("TEST", 2, 2, new byte[0], out var reached);
+            migrations.Upgrade("TEST", 2, 2, System.Array.Empty<byte>(), out var reached);
 
             Assert.That(reached, Is.EqualTo(2));
         }
@@ -65,7 +65,7 @@ namespace Cities.Tests.EditMode.Persistence
         {
             var migrations = new SaveMigrations().Add("TEST", 1, _ => throw new InvalidOperationException("stuk"));
 
-            var exception = Assert.Throws<SaveFormatException>(() => migrations.Upgrade("TEST", 1, 2, new byte[0], out _));
+            var exception = Assert.Throws<SaveFormatException>(() => migrations.Upgrade("TEST", 1, 2, System.Array.Empty<byte>(), out _));
             Assert.That(exception.Message, Does.Contain("TEST").And.Contain("stuk"));
         }
 
@@ -74,7 +74,7 @@ namespace Cities.Tests.EditMode.Persistence
         {
             var migrations = new SaveMigrations().Add("TEST", 1, _ => null);
 
-            Assert.Throws<SaveFormatException>(() => migrations.Upgrade("TEST", 1, 2, new byte[0], out _));
+            Assert.Throws<SaveFormatException>(() => migrations.Upgrade("TEST", 1, 2, System.Array.Empty<byte>(), out _));
         }
 
         [Test]

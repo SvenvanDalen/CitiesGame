@@ -112,7 +112,16 @@ namespace Cities.Gameplay.Recording
                 return;
             }
 
-            var phase = context.started ? RecordedPhase.Started : context.performed ? RecordedPhase.Performed : RecordedPhase.Canceled;
+            var phase = RecordedPhase.Canceled;
+            if (context.started)
+            {
+                phase = RecordedPhase.Started;
+            }
+            else if (context.performed)
+            {
+                phase = RecordedPhase.Performed;
+            }
+
             float x = 0f, y = 0f;
             if (context.valueType == typeof(Vector2))
             {

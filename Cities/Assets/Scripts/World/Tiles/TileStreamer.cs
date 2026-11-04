@@ -190,7 +190,7 @@ namespace Cities.World.Tiles
             foreach (var tile in _resident)
             {
                 var d = DistanceTo(tile, focus);
-                if (d > farthestDistance || (found && d == farthestDistance && CompareTiles(tile, farthest) > 0))
+                if (d > farthestDistance || (found && d.CompareTo(farthestDistance) == 0 && CompareTiles(tile, farthest) > 0))
                 {
                     farthest = tile;
                     farthestDistance = d;
@@ -214,15 +214,15 @@ namespace Cities.World.Tiles
             return byZ != 0 ? byZ : a.X.CompareTo(b.X);
         }
 
-        private static int CompareAscending((float Distance, TileCoord Tile) a, (float Distance, TileCoord Tile) b)
+        private static int CompareAscending((float Distance, TileCoord Tile) first, (float Distance, TileCoord Tile) second)
         {
-            var byDistance = a.Distance.CompareTo(b.Distance);
+            var byDistance = first.Distance.CompareTo(second.Distance);
             if (byDistance != 0)
             {
                 return byDistance;
             }
 
-            return CompareTiles(a.Tile, b.Tile);
+            return CompareTiles(first.Tile, second.Tile);
         }
 
         private static int CompareDescending((float Distance, TileCoord Tile) a, (float Distance, TileCoord Tile) b) =>

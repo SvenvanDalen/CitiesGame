@@ -77,7 +77,7 @@ namespace Cities.World.Maps
         }
 
         public bool Equals(MapResource other) =>
-            Kind == other.Kind && X == other.X && Z == other.Z && Radius == other.Radius && Richness.Equals(other.Richness);
+            Kind == other.Kind && X == other.X && Z == other.Z && Radius == other.Radius && Richness.CompareTo(other.Richness) == 0;
 
         public override bool Equals(object obj) => obj is MapResource other && Equals(other);
 
@@ -344,7 +344,7 @@ namespace Cities.World.Maps
             var water = Array.Empty<float>();
             var resources = new List<MapResource>();
             var connections = new List<MapConnection>();
-            var read = new List<string>();
+            var read = new SectionCounter();
 
             SaveFile.Read(input, new ISaveSection[]
             {
@@ -353,7 +353,7 @@ namespace Cities.World.Maps
                     dimensions = new WorldDimensions(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadSingle());
                     name = reader.ReadString();
                     reader.ExpectEnd();
-                    return () => read.Add(DataSection);
+                    return () => read.Mark();
                 }),
                 new Section(HeightSection, null, reader =>
                 {
@@ -361,7 +361,7 @@ namespace Cities.World.Maps
                     return () =>
                     {
                         heights = values;
-                        read.Add(HeightSection);
+                        read.Mark();
                     };
                 }),
                 new Section(WaterSection, null, reader =>
@@ -370,7 +370,7 @@ namespace Cities.World.Maps
                     return () =>
                     {
                         water = values;
-                        read.Add(WaterSection);
+                        read.Mark();
                     };
                 }),
                 new Section(ResourceSection, null, reader =>
@@ -379,7 +379,7 @@ namespace Cities.World.Maps
                     return () =>
                     {
                         resources = list;
-                        read.Add(ResourceSection);
+                        read.Mark();
                     };
                 }),
                 new Section(ConnectionSection, null, reader =>
@@ -388,12 +388,12 @@ namespace Cities.World.Maps
                     return () =>
                     {
                         connections = list;
-                        read.Add(ConnectionSection);
+                        read.Mark();
                     };
                 }),
             });
 
-            if (read.Count != 5)
+            if (!read.IsComplete(5))
             {
                 throw new SaveFormatException("De kaart mist een onderdeel.");
             }
@@ -569,6 +569,15 @@ namespace Cities.World.Maps
             public void Write(SaveWriter writer) => _write(writer);
 
             public Action Read(SaveReader reader, int version) => _read(reader);
+        }
+
+        private sealed class SectionCounter
+        {
+            private int _count;
+
+            public void Mark() => _count++;
+
+            public bool IsComplete(int expected) => _count == expected;
         }
     }
 }

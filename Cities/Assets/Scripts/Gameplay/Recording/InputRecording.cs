@@ -37,7 +37,7 @@ namespace Cities.Gameplay.Recording
         public float Y { get; }
 
         public bool Equals(RecordedAction other) =>
-            Tick == other.Tick && Action == other.Action && Phase == other.Phase && X.Equals(other.X) && Y.Equals(other.Y);
+            Tick == other.Tick && Action == other.Action && Phase == other.Phase && X.CompareTo(other.X) == 0 && Y.CompareTo(other.Y) == 0;
 
         public override bool Equals(object obj) => obj is RecordedAction other && Equals(other);
 

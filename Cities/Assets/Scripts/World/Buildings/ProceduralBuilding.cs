@@ -244,7 +244,7 @@ namespace Cities.World.Buildings
 
         private static BuildingModuleKind PickKind(ProceduralBuildingSpec spec, int floor, int side, int index)
         {
-            var hash = SeedHash.Combine(spec.Seed, (ulong)floor, ((ulong)side << 20) | (ulong)index);
+            var hash = SeedHash.Combine(spec.Seed, (ulong)floor, ((ulong)side << 20) | (uint)index);
             var roll = (hash % 1000UL) / 1000f;
             return roll < spec.WindowChance ? BuildingModuleKind.Window : BuildingModuleKind.Wall;
         }
@@ -262,6 +262,17 @@ namespace Cities.World.Buildings
             }
         }
 
+        // Dakvlak en puntgevel staan haaks op elkaar: dezelfde tabel, met de as omgedraaid.
+        private static float SlopeYaw(bool alongX, int side)
+        {
+            if (alongX)
+            {
+                return side < 0 ? 180f : 0f;
+            }
+
+            return side < 0 ? 270f : 90f;
+        }
+
         private static void AddGabledRoof(List<BuildingModule> modules, float halfX, float halfZ, float wallHeight)
         {
             // De nok loopt langs de langste zijde; de helling gaat over de korte zijde.
@@ -275,7 +286,7 @@ namespace Cities.World.Buildings
             for (var s = -1; s <= 1; s += 2)
             {
                 var along = s * halfSpan * 0.5f;
-                var yaw = ridgeAlongX ? (s < 0 ? 180f : 0f) : (s < 0 ? 270f : 90f);
+                var yaw = SlopeYaw(ridgeAlongX, s);
                 modules.Add(new BuildingModule(
                     BuildingModuleKind.RoofSlope,
                     -1,
@@ -286,7 +297,7 @@ namespace Cities.World.Buildings
                     halfLength * 2f,
                     slope,
                     RoofThickness));
-                var gableYaw = ridgeAlongX ? (s < 0 ? 270f : 90f) : (s < 0 ? 180f : 0f);
+                var gableYaw = SlopeYaw(!ridgeAlongX, s);
                 modules.Add(new BuildingModule(
                     BuildingModuleKind.Gable,
                     -1,
