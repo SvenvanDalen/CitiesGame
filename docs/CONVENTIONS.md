@@ -258,3 +258,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Handelsvoorkeuren
 
 - `TradePreferences` (Simulation/Economy, E14-09) laat per goed de prijs- en vraagfactor van buiten wekelijks schuiven met seedgebonden ruis (`DeterministicRandom` uit seed, goed en week) en terugtrekking naar 1. Een gesloten of verdwenen verbinding (via `ITradeConnections`, de abstractie voor E14-04/E14-05) is een tegenvaller voor de goederen van die `ConnectionKind`: hogere importprijs, lagere exportprijs en minder vraag, wegebbend per week. `Apply` zet de prijzen in `Trade`, `Tradeable` begrenst het te exporteren overschot. Status in sectie `TRDP`.
+
+## Ontgrendelen
+
+- `UnlockService` (Simulation/Milestones, E16-02) beantwoordt `IsUnlocked(definitieId)` (gebouw, tool, weg, voertuig, beleid). De data staat in `UnlockTable` (regels `UnlockRule`: definitie-ID naar mijlpaal-ID; standaard `UnlockCatalog`); een ID zonder regel is vanaf het begin open. Een definitie is open zodra `MilestoneTracker.IsAchieved` voor zijn mijlpaal geldt, dus ontgrendelen volgt uit `MILE`. Roep na `MilestoneTracker.Update` `OnMilestonesAchieved` aan voor de melding (`Unlocked`-event); `LockedReason` geeft de werkbaktekst. `SetAllUnlocked` is de sandbox-schakelaar (sectie `UNLK`). Kaarttegels blijven bij `TileUnlocks`.
