@@ -20,14 +20,17 @@ namespace Cities.Gameplay.Persistence
         private readonly Action<SaveMetadata> _describe;
         private readonly Action _synchronize;
         private readonly Func<DateTime> _utcNow;
+        private readonly SaveMigrations _migrations;
 
         public SaveGameService(
             SaveStorage storage,
             IReadOnlyList<ISaveSection> sections,
             Action<SaveMetadata> describe,
             Action synchronize = null,
-            Func<DateTime> utcNow = null)
+            Func<DateTime> utcNow = null,
+            SaveMigrations migrations = null)
         {
+            _migrations = migrations;
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _sections = sections ?? throw new ArgumentNullException(nameof(sections));
             _describe = describe ?? throw new ArgumentNullException(nameof(describe));
@@ -88,7 +91,7 @@ namespace Cities.Gameplay.Persistence
             {
                 using (var stream = _storage.OpenRead(name))
                 {
-                    result = SaveFile.Read(stream, _sections);
+                    result = SaveFile.Read(stream, _sections, _migrations);
                 }
             }
             catch (Exception exception) when (exception is SaveFormatException || exception is IOException)
@@ -102,6 +105,11 @@ namespace Cities.Gameplay.Persistence
             if (result.MissingSections.Count > 0)
             {
                 Log.Warning("Save {0} mist secties; die onderdelen blijven zoals ze waren.", $"{name}: {string.Join(", ", result.MissingSections)}");
+            }
+
+            if (result.UpgradedSections.Count > 0)
+            {
+                Log.Info("Save {0} is omgezet naar de huidige versie.", $"{name}: {string.Join(", ", result.UpgradedSections)}");
             }
 
             if (result.SkippedSections.Count > 0)

@@ -65,7 +65,7 @@ namespace Cities.Core.Persistence
         /// Leest een save en past de secties toe in de volgorde van <paramref name="sections"/>. Onbekende secties
         /// worden overgeslagen; secties die in de save ontbreken worden gemeld en niet aangeraakt.
         /// </summary>
-        public static SaveLoadResult Read(Stream input, IReadOnlyList<ISaveSection> sections)
+        public static SaveLoadResult Read(Stream input, IReadOnlyList<ISaveSection> sections, SaveMigrations migrations = null)
         {
             if (input is null)
             {
@@ -81,6 +81,7 @@ namespace Cities.Core.Persistence
 
             var apply = new Action[sections.Count];
             var skipped = new List<string>();
+            var upgraded = new List<string>();
             SaveMetadata metadata;
             using (var reader = new BinaryReader(input, Encoding.ASCII, leaveOpen: true))
             {
@@ -91,7 +92,7 @@ namespace Cities.Core.Persistence
                     var entry = ReadBlock(reader);
                     if (byId.TryGetValue(entry.Id, out var index))
                     {
-                        apply[index] = PrepareSection(sections[index], entry, apply[index]);
+                        apply[index] = PrepareSection(sections[index], entry, apply[index], migrations, upgraded);
                     }
                     else
                     {
@@ -118,11 +119,11 @@ namespace Cities.Core.Persistence
                 }
             }
 
-            return new SaveLoadResult(metadata, missing, skipped);
+            return new SaveLoadResult(metadata, missing, skipped, upgraded);
         }
 
         /// <summary>Leest één sectie van de save; de teruggegeven toepassing wordt pas uitgevoerd als alles goed is.</summary>
-        private static Action PrepareSection(ISaveSection section, Block entry, Action alreadyRead)
+        private static Action PrepareSection(ISaveSection section, Block entry, Action alreadyRead, SaveMigrations migrations, List<string> upgraded)
         {
             if (alreadyRead != null)
             {
@@ -135,7 +136,19 @@ namespace Cities.Core.Persistence
                     $"Sectie {entry.Id} heeft versie {entry.Version}; deze versie van het spel leest tot en met {section.Version}.");
             }
 
-            return section.Read(new SaveReader(entry.Data, entry.Id), entry.Version)
+            var data = entry.Data;
+            var version = entry.Version;
+            if (migrations != null && version < section.Version)
+            {
+                data = migrations.Upgrade(section.Id, version, section.Version, data, out var reached);
+                if (reached != version)
+                {
+                    upgraded.Add($"{section.Id} v{version}->v{reached}");
+                    version = reached;
+                }
+            }
+
+            return section.Read(new SaveReader(data, entry.Id), version)
                 ?? throw new InvalidOperationException($"Sectie {entry.Id} gaf geen toepassing terug.");
         }
 
@@ -438,8 +451,9 @@ namespace Cities.Core.Persistence
     /// <summary>Uitkomst van <see cref="SaveFile.Read"/>.</summary>
     public sealed class SaveLoadResult
     {
-        public SaveLoadResult(SaveMetadata metadata, IReadOnlyList<string> missingSections, IReadOnlyList<string> skippedSections)
+        public SaveLoadResult(SaveMetadata metadata, IReadOnlyList<string> missingSections, IReadOnlyList<string> skippedSections, IReadOnlyList<string> upgradedSections = null)
         {
+            UpgradedSections = upgradedSections ?? Array.Empty<string>();
             Metadata = metadata;
             MissingSections = missingSections;
             SkippedSections = skippedSections;
@@ -449,6 +463,9 @@ namespace Cities.Core.Persistence
 
         /// <summary>Secties van het spel die niet in de save staan (bijvoorbeeld een systeem dat nieuwer is dan de save).</summary>
         public IReadOnlyList<string> MissingSections { get; }
+
+        /// <summary>Secties die uit een oudere versie zijn omgezet, bijvoorbeeld <c>WMAP v2->v3</c>.</summary>
+        public IReadOnlyList<string> UpgradedSections { get; }
 
         /// <summary>Secties in de save die dit spel niet kent; ze worden genegeerd.</summary>
         public IReadOnlyList<string> SkippedSections { get; }
