@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Core.Randomness;
 using Unity.Mathematics;
 
@@ -123,9 +124,9 @@ namespace Cities.Simulation.Disasters
 
             var down = new List<int>();
             var chance = OutagePerStrength * Strength;
-            foreach (var line in lines)
+            foreach (var line in lines.Where(l => Contains(l.Position) && !_linesDown.Contains(l.Id)))
             {
-                if (Contains(line.Position) && !_linesDown.Contains(line.Id) && Unit(SeedHash.Combine(Seed, day, (ulong)line.Id)) < chance)
+                if (Unit(SeedHash.Combine(Seed, day, (ulong)line.Id)) < chance)
                 {
                     down.Add(line.Id);
                 }
