@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cities.Core.Persistence
 {
@@ -52,11 +53,31 @@ namespace Cities.Core.Persistence
                 metadata.Write(meta);
                 WriteBlock(writer, SaveMetadata.SectionId, SaveMetadata.Version, meta.ToSegment(), CompressionLevel.NoCompression);
 
-                foreach (var section in sections)
+                // Secties worden achter elkaar geserialiseerd (ze lezen spelstatus op de aanroepende thread); het
+                // comprimeren, het duurste deel, gebeurt daarna parallel per sectie.
+                var blocks = new PreparedBlock[sections.Count];
+                for (var i = 0; i < blocks.Length; i++)
                 {
                     var content = new SaveWriter(4096);
-                    section.Write(content);
-                    WriteBlock(writer, section.Id, section.Version, content.ToSegment(), level);
+                    sections[i].Write(content);
+                    blocks[i] = new PreparedBlock(sections[i].Id, sections[i].Version, content.ToSegment());
+                }
+
+                if (blocks.Length > 1 && level != CompressionLevel.NoCompression)
+                {
+                    Parallel.For(0, blocks.Length, i => blocks[i] = Prepare(blocks[i], level));
+                }
+                else
+                {
+                    for (var i = 0; i < blocks.Length; i++)
+                    {
+                        blocks[i] = Prepare(blocks[i], level);
+                    }
+                }
+
+                foreach (var block in blocks)
+                {
+                    Emit(writer, block);
                 }
             }
         }
@@ -65,7 +86,7 @@ namespace Cities.Core.Persistence
         /// Leest een save en past de secties toe in de volgorde van <paramref name="sections"/>. Onbekende secties
         /// worden overgeslagen; secties die in de save ontbreken worden gemeld en niet aangeraakt.
         /// </summary>
-        public static SaveLoadResult Read(Stream input, IReadOnlyList<ISaveSection> sections)
+        public static SaveLoadResult Read(Stream input, IReadOnlyList<ISaveSection> sections, SaveMigrations migrations = null)
         {
             if (input is null)
             {
@@ -81,6 +102,7 @@ namespace Cities.Core.Persistence
 
             var apply = new Action[sections.Count];
             var skipped = new List<string>();
+            var upgraded = new List<string>();
             SaveMetadata metadata;
             using (var reader = new BinaryReader(input, Encoding.ASCII, leaveOpen: true))
             {
@@ -91,7 +113,7 @@ namespace Cities.Core.Persistence
                     var entry = ReadBlock(reader);
                     if (byId.TryGetValue(entry.Id, out var index))
                     {
-                        apply[index] = PrepareSection(sections[index], entry, apply[index]);
+                        apply[index] = PrepareSection(sections[index], entry, apply[index], migrations, upgraded);
                     }
                     else
                     {
@@ -118,11 +140,11 @@ namespace Cities.Core.Persistence
                 }
             }
 
-            return new SaveLoadResult(metadata, missing, skipped);
+            return new SaveLoadResult(metadata, missing, skipped, upgraded);
         }
 
         /// <summary>Leest één sectie van de save; de teruggegeven toepassing wordt pas uitgevoerd als alles goed is.</summary>
-        private static Action PrepareSection(ISaveSection section, Block entry, Action alreadyRead)
+        private static Action PrepareSection(ISaveSection section, Block entry, Action alreadyRead, SaveMigrations migrations, List<string> upgraded)
         {
             if (alreadyRead != null)
             {
@@ -135,7 +157,19 @@ namespace Cities.Core.Persistence
                     $"Sectie {entry.Id} heeft versie {entry.Version}; deze versie van het spel leest tot en met {section.Version}.");
             }
 
-            return section.Read(new SaveReader(entry.Data, entry.Id), entry.Version)
+            var data = entry.Data;
+            var version = entry.Version;
+            if (migrations != null && version < section.Version)
+            {
+                data = migrations.Upgrade(section.Id, version, section.Version, data, out var reached);
+                if (reached != version)
+                {
+                    upgraded.Add($"{section.Id} v{version}->v{reached}");
+                    version = reached;
+                }
+            }
+
+            return section.Read(new SaveReader(data, entry.Id), version)
                 ?? throw new InvalidOperationException($"Sectie {entry.Id} gaf geen toepassing terug.");
         }
 
@@ -243,32 +277,66 @@ namespace Cities.Core.Persistence
             }
         }
 
-        private static void WriteBlock(BinaryWriter writer, string id, int version, ArraySegment<byte> raw, CompressionLevel level)
+        private static void WriteBlock(BinaryWriter writer, string id, int version, ArraySegment<byte> raw, CompressionLevel level) =>
+            Emit(writer, Prepare(new PreparedBlock(id, version, raw), level));
+
+        /// <summary>Controleert de grootte en comprimeert als dat loont; thread-safe omdat het alleen eigen data leest.</summary>
+        private static PreparedBlock Prepare(PreparedBlock block, CompressionLevel level)
         {
+            var raw = block.Raw;
             if (raw.Count > MaxSectionBytes)
             {
-                throw new InvalidOperationException($"Sectie {id} is {raw.Count} bytes; het maximum is {MaxSectionBytes}.");
+                throw new InvalidOperationException($"Sectie {block.Id} is {raw.Count} bytes; het maximum is {MaxSectionBytes}.");
             }
 
-            var stored = raw;
-            var storage = StoredRaw;
             if (level != CompressionLevel.NoCompression && raw.Count >= MinBytesToCompress)
             {
                 var compressed = Compress(raw, level);
                 if (compressed.Count < raw.Count)
                 {
-                    stored = compressed;
-                    storage = StoredDeflate;
+                    return new PreparedBlock(block.Id, block.Version, raw, compressed, StoredDeflate);
                 }
             }
 
-            writer.Write(Encoding.ASCII.GetBytes(id));
-            writer.Write(version);
-            writer.Write(storage);
-            writer.Write(raw.Count);
-            writer.Write(stored.Count);
-            writer.Write(Crc32.Compute(raw.AsSpan()));
-            writer.Write(stored.Array, stored.Offset, stored.Count);
+            return new PreparedBlock(block.Id, block.Version, raw, raw, StoredRaw);
+        }
+
+        private static void Emit(BinaryWriter writer, PreparedBlock block)
+        {
+            writer.Write(Encoding.ASCII.GetBytes(block.Id));
+            writer.Write(block.Version);
+            writer.Write(block.Storage);
+            writer.Write(block.Raw.Count);
+            writer.Write(block.Stored.Count);
+            writer.Write(Crc32.Compute(block.Raw.AsSpan()));
+            writer.Write(block.Stored.Array, block.Stored.Offset, block.Stored.Count);
+        }
+
+        private readonly struct PreparedBlock
+        {
+            public PreparedBlock(string id, int version, ArraySegment<byte> raw)
+                : this(id, version, raw, raw, StoredRaw)
+            {
+            }
+
+            public PreparedBlock(string id, int version, ArraySegment<byte> raw, ArraySegment<byte> stored, byte storage)
+            {
+                Id = id;
+                Version = version;
+                Raw = raw;
+                Stored = stored;
+                Storage = storage;
+            }
+
+            public string Id { get; }
+
+            public int Version { get; }
+
+            public ArraySegment<byte> Raw { get; }
+
+            public ArraySegment<byte> Stored { get; }
+
+            public byte Storage { get; }
         }
 
         private static ArraySegment<byte> Compress(ArraySegment<byte> raw, CompressionLevel level)
@@ -438,8 +506,9 @@ namespace Cities.Core.Persistence
     /// <summary>Uitkomst van <see cref="SaveFile.Read"/>.</summary>
     public sealed class SaveLoadResult
     {
-        public SaveLoadResult(SaveMetadata metadata, IReadOnlyList<string> missingSections, IReadOnlyList<string> skippedSections)
+        public SaveLoadResult(SaveMetadata metadata, IReadOnlyList<string> missingSections, IReadOnlyList<string> skippedSections, IReadOnlyList<string> upgradedSections = null)
         {
+            UpgradedSections = upgradedSections ?? Array.Empty<string>();
             Metadata = metadata;
             MissingSections = missingSections;
             SkippedSections = skippedSections;
@@ -449,6 +518,9 @@ namespace Cities.Core.Persistence
 
         /// <summary>Secties van het spel die niet in de save staan (bijvoorbeeld een systeem dat nieuwer is dan de save).</summary>
         public IReadOnlyList<string> MissingSections { get; }
+
+        /// <summary>Secties die uit een oudere versie zijn omgezet, bijvoorbeeld <c>WMAP v2->v3</c>.</summary>
+        public IReadOnlyList<string> UpgradedSections { get; }
 
         /// <summary>Secties in de save die dit spel niet kent; ze worden genegeerd.</summary>
         public IReadOnlyList<string> SkippedSections { get; }

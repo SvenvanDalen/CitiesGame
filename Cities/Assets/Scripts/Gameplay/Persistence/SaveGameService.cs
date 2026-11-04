@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.IO.Compression;
 using Cities.Core.Diagnostics;
 using Cities.Core.Persistence;
@@ -20,14 +21,17 @@ namespace Cities.Gameplay.Persistence
         private readonly Action<SaveMetadata> _describe;
         private readonly Action _synchronize;
         private readonly Func<DateTime> _utcNow;
+        private readonly SaveMigrations _migrations;
 
         public SaveGameService(
             SaveStorage storage,
             IReadOnlyList<ISaveSection> sections,
             Action<SaveMetadata> describe,
             Action synchronize = null,
-            Func<DateTime> utcNow = null)
+            Func<DateTime> utcNow = null,
+            SaveMigrations migrations = null)
         {
+            _migrations = migrations;
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _sections = sections ?? throw new ArgumentNullException(nameof(sections));
             _describe = describe ?? throw new ArgumentNullException(nameof(describe));
@@ -50,6 +54,9 @@ namespace Cities.Gameplay.Persistence
         /// <summary>Speeltijd van deze stad in seconden, ook over eerdere sessies.</summary>
         public double PlayTimeSeconds { get; private set; }
 
+        /// <summary>Duur en grootte van het laatste opslaan en laden, voor de budgetcontrole van E23-09.</summary>
+        public SaveTimings Timings { get; } = new SaveTimings();
+
         public IReadOnlyList<string> List() => _storage.List();
 
         public void AddPlayTime(double seconds)
@@ -71,7 +78,14 @@ namespace Cities.Gameplay.Persistence
                 PlayTimeSeconds = PlayTimeSeconds,
             };
             _describe(metadata);
-            _storage.Write(name, stream => SaveFile.Write(stream, metadata, _sections, Compression));
+            var stopwatch = Stopwatch.StartNew();
+            long written = 0;
+            _storage.Write(name, stream =>
+            {
+                SaveFile.Write(stream, metadata, _sections, Compression);
+                written = stream.CanSeek ? stream.Length : 0;
+            });
+            Timings.RecordSave(stopwatch.Elapsed, written);
             Log.Info("Opgeslagen als {0}.", name);
             return metadata;
         }
@@ -83,12 +97,13 @@ namespace Cities.Gameplay.Persistence
         public SaveLoadResult Load(string name)
         {
             _synchronize();
+            var stopwatch = Stopwatch.StartNew();
             SaveLoadResult result;
             try
             {
                 using (var stream = _storage.OpenRead(name))
                 {
-                    result = SaveFile.Read(stream, _sections);
+                    result = SaveFile.Read(stream, _sections, _migrations);
                 }
             }
             catch (Exception exception) when (exception is SaveFormatException || exception is IOException)
@@ -97,11 +112,17 @@ namespace Cities.Gameplay.Persistence
                 throw;
             }
 
+            Timings.RecordLoad(stopwatch.Elapsed);
             CityName = result.Metadata.CityName;
             PlayTimeSeconds = result.Metadata.PlayTimeSeconds;
             if (result.MissingSections.Count > 0)
             {
                 Log.Warning("Save {0} mist secties; die onderdelen blijven zoals ze waren.", $"{name}: {string.Join(", ", result.MissingSections)}");
+            }
+
+            if (result.UpgradedSections.Count > 0)
+            {
+                Log.Info("Save {0} is omgezet naar de huidige versie.", $"{name}: {string.Join(", ", result.UpgradedSections)}");
             }
 
             if (result.SkippedSections.Count > 0)
