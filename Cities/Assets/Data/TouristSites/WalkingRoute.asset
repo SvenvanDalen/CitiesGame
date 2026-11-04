@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa09e1daa5d410b9b0ed776b974a4b5, type: 3}
+  m_Name: WalkingRoute
+  m_EditorClassIdentifier: Cities.World::Cities.World.Tourism.TouristSiteDefinition
+  _id: tourist-site.walking-route.park
+  _displayName: Wandelroute
+  _description: Wandelpad door groen en langs water.
+  _icon: {fileID: 0}
+  _spec:
+    Kind: 3
+    FootprintWidth: 2
+    FootprintDepth: 8
+    Attractiveness: 45
+    Beds: 0
+    ReachMeters: 700
+    ConstructionCost: 800000
+    UpkeepPerMonth: 6000
+    Noise: 5
+    NeedsWater: 0
