@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 
 namespace Cities.Simulation.Disasters
@@ -168,24 +169,18 @@ namespace Cities.Simulation.Disasters
             AgeDays++;
             var newBuildings = new List<int>();
             var value = 0L;
-            foreach (var building in buildings)
+            foreach (var building in buildings.Where(b => !_lostBuildings.Contains(b.Id) && Swallows(b)))
             {
-                if (!_lostBuildings.Contains(building.Id) && Swallows(building))
-                {
-                    newBuildings.Add(building.Id);
-                    value += building.Value;
-                }
+                newBuildings.Add(building.Id);
+                value += building.Value;
             }
 
             var newSegments = new List<int>();
             var length = 0f;
-            foreach (var segment in segments)
+            foreach (var segment in segments.Where(sg => !_lostSegments.Contains(sg.Id) && Swallows(sg)))
             {
-                if (!_lostSegments.Contains(segment.Id) && Swallows(segment))
-                {
-                    newSegments.Add(segment.Id);
-                    length += segment.Length;
-                }
+                newSegments.Add(segment.Id);
+                length += segment.Length;
             }
 
             _lostBuildings.AddRange(newBuildings);
