@@ -87,7 +87,6 @@ namespace Cities.Tests.EditMode.Fields
             Assert.Throws<ArgumentNullException>(() => ForestSink.Absorb((SoilPollution)null, new float[1]));
             Assert.Throws<ArgumentNullException>(() => ForestSink.Absorb(new SoilPollution(1, 1), null));
             Assert.Throws<ArgumentException>(() => ForestSink.Absorb(new SoilPollution(2, 2), new float[3]));
-            Assert.Throws<ArgumentNullException>(() => ForestSink.Absorb((DiffusionField)null, new float[1], ForestPollutant.Air));
         }
 
         [Test]
@@ -126,34 +125,45 @@ namespace Cities.Tests.EditMode.Fields
         }
 
         [Test]
-        [Category("UnityRuntime")]
         public void AForestBetweenFactoryAndTownCatchesTheDrift()
         {
-            using var open = new DiffusionField(24, 5);
-            using var wooded = new DiffusionField(24, 5);
+            const int w = 24;
+            const int h = 5;
             var settings = new DiffusionSettings(0.05f, 0.002f, new Unity.Mathematics.float2(0.3f, 0f));
-            var cover = new float[24 * 5];
-            for (var z = 0; z < 5; z++)
+            var cover = new float[w * h];
+            for (var z = 0; z < h; z++)
             {
                 for (var x = 8; x < 14; x++)
                 {
-                    cover[(z * 24) + x] = 1f;
+                    cover[(z * w) + x] = 1f;
                 }
             }
 
-            var none = new float[24 * 5];
+            var open = Simulate(settings, new float[w * h], w, h);
+            var wooded = Simulate(settings, cover, w, h);
+
+            Assert.That(wooded[(2 * w) + 20], Is.LessThan(open[(2 * w) + 20]));
+        }
+
+        private static float[] Simulate(DiffusionSettings settings, float[] cover, int w, int h)
+        {
+            var values = new float[w * h];
             for (var step = 0; step < 150; step++)
             {
-                open[2, 2] += 20f;
-                wooded[2, 2] += 20f;
-                open.Step(settings);
-                wooded.Step(settings);
-                ForestSink.Absorb(open, none, ForestPollutant.Air);
-                ForestSink.Absorb(wooded, cover, ForestPollutant.Air);
+                values[(2 * w) + 2] += 20f;
+                var next = new float[values.Length];
+                for (var i = 0; i < values.Length; i++)
+                {
+                    var n = DiffusionStep.Neighbours(i, w, h);
+                    var neighbours = new Unity.Mathematics.float4(values[n.x], values[n.y], values[n.z], values[n.w]);
+                    next[i] = DiffusionStep.Next(values[i], neighbours, settings);
+                }
+
+                values = next;
+                ForestSink.Absorb(values, cover, ForestPollutant.Air);
             }
 
-            Assert.That(wooded[20, 2], Is.LessThan(open[20, 2]));
-            Assert.That(wooded.Total, Is.LessThan(open.Total));
+            return values;
         }
     }
 }

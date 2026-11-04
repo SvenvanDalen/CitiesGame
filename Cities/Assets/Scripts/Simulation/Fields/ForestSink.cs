@@ -52,7 +52,7 @@ namespace Cities.Simulation.Fields
         public static float NoiseFactor(float cover) => 1f - (MaxNoiseReduction * Response(cover));
 
         /// <summary>
-        /// Laat elke cel zijn deel opnemen; <paramref name="values"/> en <paramref name="cover"/> zijn even lang. Geeft de totale opgenomen hoeveelheid,
+        /// Laat elke cel zijn deel opnemen (voor het veld van <see cref="DiffusionField"/> geef je een kopie van <c>Values</c> en schrijf je het terug); <paramref name="values"/> en <paramref name="cover"/> zijn even lang. Geeft de totale opgenomen hoeveelheid,
         /// voor de statistieken.
         /// </summary>
         public static float Absorb(float[] values, float[] cover, ForestPollutant pollutant)
@@ -74,36 +74,6 @@ namespace Cities.Simulation.Fields
 
             var absorbed = 0f;
             for (var i = 0; i < values.Length; i++)
-            {
-                var taken = values[i] * Absorption(pollutant, cover[i]);
-                values[i] -= taken;
-                absorbed += taken;
-            }
-
-            return absorbed;
-        }
-
-        /// <summary>Als de variant voor arrays, voor het veld van <see cref="DiffusionField"/> (lucht).</summary>
-        public static float Absorb(DiffusionField field, float[] cover, ForestPollutant pollutant)
-        {
-            if (field is null)
-            {
-                throw new ArgumentNullException(nameof(field));
-            }
-
-            if (cover is null)
-            {
-                throw new ArgumentNullException(nameof(cover));
-            }
-
-            var values = field.Values;
-            if (values.Length != cover.Length)
-            {
-                throw new ArgumentException("De bedekkingskaart past niet op het veld.", nameof(cover));
-            }
-
-            var absorbed = 0f;
-            for (var i = 0; i < cover.Length; i++)
             {
                 var taken = values[i] * Absorption(pollutant, cover[i]);
                 values[i] -= taken;
