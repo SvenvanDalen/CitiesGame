@@ -258,3 +258,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Handelsvoorkeuren
 
 - `TradePreferences` (Simulation/Economy, E14-09) laat per goed de prijs- en vraagfactor van buiten wekelijks schuiven met seedgebonden ruis (`DeterministicRandom` uit seed, goed en week) en terugtrekking naar 1. Een gesloten of verdwenen verbinding (via `ITradeConnections`, de abstractie voor E14-04/E14-05) is een tegenvaller voor de goederen van die `ConnectionKind`: hogere importprijs, lagere exportprijs en minder vraag, wegebbend per week. `Apply` zet de prijzen in `Trade`, `Tradeable` begrenst het te exporteren overschot. Status in sectie `TRDP`.
+
+## Evenementen
+
+- `EventPlanner` (Simulation/Events, E10-12) beheert locaties (`EventVenue`: stadion, concertzaal, markt, met capaciteit en kaartprijs) en geplande evenementen (`PlannedEvent`: datum uit `GameDate`, beginuur, aantrekkingskracht 1-100; één per locatie per dag). `Forecast` splitst het publiek in inwoners (promille van de bevolking via `Func<int>`) en gasten van buiten (aandeel van de capaciteit, begrensd door de `IOutsideConnections` van het bezoekersmodel, per dag gedeeld). `Settle(vandaag, week, ledger)` houdt de evenementen die aan de beurt zijn en boekt kaartjes (Overig), belasting op bestedingen (Belastingen) en organisatiekosten (Diensten); sectie `EVNT`.
+- Voor het verkeer (E08-17): `IEventDemandSource.DemandOn(datum)` geeft per evenement `EventTrafficDemand` (beginuur, inwoners, gasten van buiten). De planner moet nog aan een dagtik en `SaveGameBehaviour` gehangen worden.
