@@ -227,6 +227,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `DistrictBook` (`Cities.World.Districts`) bewaart de districten: nummer 1 tot 255, naam (uniek, hoogstens 40 tekens) en kleur (`0xRRGGBB`). Nummer 0 is geen district, dus de hele stad; dezelfde nummering gebruikt `PolicyBook`. Een nieuw district krijgt het laagste vrije nummer.
 - `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
 - `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
+- `DistrictStatistics.Compute` (E13-02) telt per district bevolking, beroepsbevolking en werkloosheid, banen en vacatures, vervuiling (gemiddeld en piek per blok, via een `Func<x, z, niveau>`) en weekinkomsten. Invoer zijn kleine waardetypes (`DistrictResident`, `DistrictWorkplace`, `DistrictIncome`) zodat de telling los staat van burgers, gebouwen en `Ledger`; rij 0 is alles buiten districten. Geen eigen toestand, dus geen save-sectie.
 
 ## OV-prioriteit
 
@@ -239,6 +240,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `Metro` (Simulation/Transit, E09-06) bevat de rekenregels van de metro: perrondiepte `MinDepth` tot `MaxDepth` m onder het maaiveld, stationsafstand, maximale tunnelhelling (`MaxGrade`, 4%), `AccessTime` (lopen plus roltrap naar de diepte) en `TravelTime` (optrekken, topsnelheid, remmen). Net als `Tram` rijdt de metro nog niet met eigen snelheid in `TransitFleet`.
 - `MetroNetwork` legt een perrondiepte op haltes van het `TransitNetwork`. Maak stations en metrolijnen met `AddStation` en `AddLine` zodat de regels gelden; een metrolijn is een gewone `TransitLine`. Sectie `METR` (`MetroSection`) bewaart alleen de dieptes; haltes en lijnen staan in `TRNS`. Verwijder stations met `TryRemoveStation`, niet met `TransitNetwork.TryRemoveStop`, anders blijft de diepte achter.
 - `UndergroundView` (Gameplay/Overlays) is de schakelaar voor de ondergrondse weergave: soepele terreindekking (`GroundOpacity`), zichtbaarheid per diepte (`IsVisible`) en een diepte-tint. `UndergroundViewBehaviour` zet de dekking als shaderglobal `_CityGroundOpacity`.
+
+## Luchtvaart
+
+- `AviationRules` (Simulation/Aviation, E09-09) bevat de rekenregels: baanlengte per `AircraftClass` (regionaal, smalrompvliegtuig, breedrompvliegtuig), stoelen, gate-omlooptijd en baanbezetting. `Airport` is een onveranderlijke luchthaven met één baan, een terminal en gates; de capaciteit is het knelpunt van baan, gates en terminal. Een gate waarvoor de baan te kort is, blijft ongebruikt.
+- `AirportNetwork` beheert de luchthavens (minimaal `MinAirportSpacing` uit elkaar), de vraag per luchthaven (`SetDemand`) en `Step`, dat passagiers en bewegingen optelt. Sectie `AIRP` (`AirportSection`) bewaart alles.
+- `AirportNoise.Sources` / `AirportNetwork.NoiseSources` zetten luchthavens om in `NoiseSource`s met `NoiseKind.Airport` voor `NoiseModel` (baanuiteinden, baanmidden en aanvliegroute; zwaardere toestellen en drukte tellen meer mee). Een luchthaven zonder vraag maakt geen lawaai.
 
 ## Trein
 
