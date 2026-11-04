@@ -140,16 +140,16 @@ namespace Cities.Gameplay.Audio
             var used = new HashSet<int>(_slots.Values);
             var started = new List<int>();
             var nextFree = 0;
-            foreach (var winner in winners.Where(w => !_slots.ContainsKey(w.Id)).OrderBy(w => w.Id))
+            foreach (var winnerId in winners.Where(w => !_slots.ContainsKey(w.Id)).Select(w => w.Id).OrderBy(id => id))
             {
                 while (used.Contains(nextFree))
                 {
                     nextFree++;
                 }
 
-                _slots[winner.Id] = nextFree;
+                _slots[winnerId] = nextFree;
                 used.Add(nextFree);
-                started.Add(winner.Id);
+                started.Add(winnerId);
             }
 
             var culled = audible.Where(r => !winnerIds.Contains(r.Id)).Select(r => r.Id).OrderBy(id => id).ToList();

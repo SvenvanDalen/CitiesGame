@@ -128,7 +128,15 @@ namespace Cities.Gameplay.Visuals
             return hour <= 5 ? 0.08f : 0.15f;
         }
 
-        private static float OfficeChance(int hour) => hour >= 8 && hour <= 18 ? 0.85f : hour >= 19 && hour <= 21 ? 0.25f : 0.05f;
+        private static float OfficeChance(int hour)
+        {
+            if (hour >= 8 && hour <= 18)
+            {
+                return 0.85f;
+            }
+
+            return hour >= 19 && hour <= 21 ? 0.25f : 0.05f;
+        }
 
         // Vaste waarde van -1 tot 1 per lantaarn.
         private static float Offset(ulong id) => (((SeedHash.Mix(id ^ 0x9E3779B97F4A7C15UL) >> 40) / (float)(1 << 24)) * 2f) - 1f;

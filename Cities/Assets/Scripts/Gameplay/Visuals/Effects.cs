@@ -250,6 +250,21 @@ namespace Cities.Gameplay.Visuals
             return result;
         }
 
+        private static PropKind KindFor(float roll)
+        {
+            if (roll < 0.6f)
+            {
+                return PropKind.Grass;
+            }
+
+            if (roll < 0.85f)
+            {
+                return PropKind.Bush;
+            }
+
+            return roll < 0.95f ? PropKind.Rock : PropKind.Tree;
+        }
+
         private static PropInstance? Place(ulong seed, int cx, int cz, Func<float2, float> density, float quality)
         {
             var random = new DeterministicRandom(SeedHash.Combine(seed, (ulong)(uint)cx, (ulong)(uint)cz));
@@ -268,8 +283,7 @@ namespace Cities.Gameplay.Visuals
                 return null;
             }
 
-            var kind = kindRoll < 0.6f ? PropKind.Grass : kindRoll < 0.85f ? PropKind.Bush : kindRoll < 0.95f ? PropKind.Rock : PropKind.Tree;
-            return new PropInstance(kind, position, scale, rotation);
+            return new PropInstance(KindFor(kindRoll), position, scale, rotation);
         }
     }
 

@@ -176,7 +176,7 @@ namespace Cities.Gameplay.Statistics
         /// <summary>Verschil met het vorige punt; positief is stijgend.</summary>
         public float Change { get; }
 
-        public int Trend => Change > 0f ? 1 : Change < 0f ? -1 : 0;
+        public int Trend => Math.Sign(Change);
     }
 
     /// <summary>

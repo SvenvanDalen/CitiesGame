@@ -15,6 +15,7 @@ namespace Cities.Gameplay.Visuals
     /// <summary>Alle grafische knoppen op één plek (E19-10): wat een kwaliteitsniveau vastlegt.</summary>
     public sealed class QualityProfile
     {
+#pragma warning disable S107 // Gegevensklasse: elke parameter is een eigen eigenschap
         public QualityProfile(
             float shadowDistance,
             int shadowResolution,
@@ -42,6 +43,7 @@ namespace Cities.Gameplay.Visuals
             ParticleDensity = particleDensity;
             CloudShadows = cloudShadows;
         }
+#pragma warning restore S107
 
         public float ShadowDistance { get; }
 
@@ -65,6 +67,7 @@ namespace Cities.Gameplay.Visuals
 
         public bool CloudShadows { get; }
 
+#pragma warning disable S107 // Gegevensklasse: elke parameter is een eigen eigenschap
         public QualityProfile With(
             float? shadowDistance = null,
             int? shadowResolution = null,
@@ -85,6 +88,7 @@ namespace Cities.Gameplay.Visuals
                 propDensity ?? PropDensity,
                 particleDensity ?? ParticleDensity,
                 cloudShadows ?? CloudShadows);
+#pragma warning restore S107
     }
 
     /// <summary>De toestand van de nabewerking op een moment (E19-07).</summary>
@@ -213,6 +217,16 @@ namespace Cities.Gameplay.Visuals
         public const float TiltShiftStartHeight = 200f;
         public const float TiltShiftFullHeight = 1500f;
 
+        private static int AoSamples(QualityProfile profile, QualityLevel level)
+        {
+            if (!profile.AmbientOcclusion || level == QualityLevel.Low)
+            {
+                return 0;
+            }
+
+            return level == QualityLevel.Medium ? 6 : 12;
+        }
+
         public static PostProcessState For(QualityProfile profile, QualityLevel level, bool tiltShiftEnabled, float cameraHeight, float sunElevation, float cloudCover)
         {
             if (profile is null)
@@ -220,7 +234,7 @@ namespace Cities.Gameplay.Visuals
                 throw new ArgumentNullException(nameof(profile));
             }
 
-            var samples = !profile.AmbientOcclusion ? 0 : level == QualityLevel.Low ? 0 : level == QualityLevel.Medium ? 6 : 12;
+            var samples = AoSamples(profile, level);
             var night = 1f - math.smoothstep(-6f, 10f, sunElevation);
             var exposure = -0.6f * night;
             var saturation = math.lerp(1.05f, 0.75f, math.saturate(cloudCover) * 0.5f + (night * 0.2f));

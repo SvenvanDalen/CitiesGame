@@ -121,7 +121,9 @@ namespace Cities.Gameplay.Audio
 
             var forward = math.normalize(listenerForward);
             var toSource = (source - listener) / distance;
-            var right = new float2(forward.y, -forward.x);
+            var rightX = forward.y;
+            var rightY = -forward.x;
+            var right = new float2(rightX, rightY);
             return new SpatialSound(math.clamp(math.dot(toSource, right), -1f, 1f), gain, math.dot(toSource, forward) < 0f);
         }
 

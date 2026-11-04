@@ -315,7 +315,7 @@ namespace Cities.Tests.EditMode.Audio
             solo.Update(20f, MusicContext.Day);
             Assert.That(solo.Current.Id, Is.EqualTo("a"));
             Assert.That(solo.Outgoing, Is.Null);
-            var silent = new MusicDirector(new MusicTrack[0], 1);
+            var silent = new MusicDirector(Array.Empty<MusicTrack>(), 1);
             silent.Update(1f, MusicContext.Day);
             Assert.That(silent.Current, Is.Null);
             Assert.That(silent.CurrentGain, Is.Zero);

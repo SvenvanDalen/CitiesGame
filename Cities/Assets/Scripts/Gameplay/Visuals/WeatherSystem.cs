@@ -78,7 +78,7 @@ namespace Cities.Gameplay.Visuals
                 throw new ArgumentOutOfRangeException(nameof(month), month, "Een maand ligt tussen 1 en 12.");
             }
 
-            var season = month == 12 || month <= 2 ? 0 : month <= 5 ? 1 : month <= 8 ? 2 : 3;
+            var season = (month % 12) / 3;
             return (int[])SeasonWeights[season].Clone();
         }
 

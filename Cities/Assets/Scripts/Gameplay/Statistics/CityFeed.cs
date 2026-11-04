@@ -374,10 +374,20 @@ namespace Cities.Gameplay.Statistics
 
             var load = flowPerHour / capacityPerHour;
             var clamped = math.saturate(load);
-            var color = mode == FlowMode.Transit ? Blue : clamped < 0.5f ? math.lerp(Green, Yellow, clamped * 2f) : math.lerp(Yellow, Red, (clamped - 0.5f) * 2f);
+            var color = mode == FlowMode.Transit ? Blue : TrafficColor(clamped);
             var speed = mode == FlowMode.Transit ? freeSpeed : freeSpeed * math.lerp(1f, 0.15f, clamped * clamped);
             var dots = flowPerHour <= 0f ? 0 : math.clamp((int)math.ceil(segmentLength / DotSpacing * clamped), 1, MaxDots);
             return new FlowStyle(load, color, speed, dots);
+        }
+
+        private static float3 TrafficColor(float load)
+        {
+            if (load < 0.5f)
+            {
+                return math.lerp(Green, Yellow, load * 2f);
+            }
+
+            return math.lerp(Yellow, Red, (load - 0.5f) * 2f);
         }
 
         /// <summary>Plaatsen (0 tot 1 langs het segment) van de stipjes op een tijdstip.</summary>

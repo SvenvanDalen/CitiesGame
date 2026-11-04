@@ -69,8 +69,15 @@ namespace Cities.Gameplay.Audio
         public static float ToDecibel(float gain) => gain <= 0.0001f ? SilenceDecibel : Math.Max(SilenceDecibel, 20f * (float)Math.Log10(gain));
 
         /// <summary>De mixerwaarde in dB voor een groep; de Master-groep draagt zijn eigen volume.</summary>
-        public float Decibel(AudioGroup group) =>
-            ToDecibel(group == AudioGroup.Master ? Gain(group) : (_muted[Index(group)] ? 0f : _volumes[Index(group)]));
+        public float Decibel(AudioGroup group)
+        {
+            if (group == AudioGroup.Master)
+            {
+                return ToDecibel(Gain(group));
+            }
+
+            return ToDecibel(_muted[Index(group)] ? 0f : _volumes[Index(group)]);
+        }
 
         /// <summary>Neemt alle groepsvolumes over uit de instellingen (E18-07).</summary>
         public void Apply(UserSettings settings)

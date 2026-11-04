@@ -16,6 +16,7 @@ namespace Cities.Core.Settings
     /// <summary>Eén instelling (E18-07): sleutel, categorie, soort, bereik en standaardwaarde. Het instellingenpaneel wordt hieruit opgebouwd.</summary>
     public sealed class SettingDefinition
     {
+#pragma warning disable S107 // Gegevensklasse: elke parameter is een eigen eigenschap
         public SettingDefinition(string key, string category, string label, SettingKind kind, float defaultValue, float min = 0f, float max = 1f, IReadOnlyList<string> choices = null)
         {
             if (string.IsNullOrWhiteSpace(key))
@@ -54,6 +55,7 @@ namespace Cities.Core.Settings
             Max = max;
             Choices = choices ?? Array.Empty<string>();
         }
+#pragma warning restore S107
 
         public string Key { get; }
 

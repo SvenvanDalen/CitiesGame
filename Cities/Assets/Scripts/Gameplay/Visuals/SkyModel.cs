@@ -7,6 +7,7 @@ namespace Cities.Gameplay.Visuals
     /// <summary>Hoe de hemel eruitziet op een moment (E19-03).</summary>
     public readonly struct SkyState
     {
+#pragma warning disable S107 // Gegevensklasse: elke parameter is een eigen eigenschap
         public SkyState(float3 sunDirection, float sunElevation, float sunIntensity, float3 sunColor, float3 moonDirection, float moonPhase, float moonIntensity, float ambient)
         {
             SunDirection = sunDirection;
@@ -18,6 +19,7 @@ namespace Cities.Gameplay.Visuals
             MoonIntensity = moonIntensity;
             Ambient = ambient;
         }
+#pragma warning restore S107
 
         /// <summary>Eenheidsvector naar de zon in kaartassen: x oost, y omhoog, z noord.</summary>
         public float3 SunDirection { get; }
@@ -90,7 +92,7 @@ namespace Cities.Gameplay.Visuals
         /// <summary>Maanfase (0 tot 1) voor een datum, met nieuwe maan op 6 januari 2000.</summary>
         public static float MoonPhase(GameDate date)
         {
-            var days = (date.ToDateTime() - new DateTime(2000, 1, 6)).TotalDays;
+            var days = (date.ToDateTime() - new DateTime(2000, 1, 6, 0, 0, 0, DateTimeKind.Unspecified)).TotalDays;
             var phase = (float)((days % LunarMonthDays) / LunarMonthDays);
             return phase < 0f ? phase + 1f : phase;
         }
