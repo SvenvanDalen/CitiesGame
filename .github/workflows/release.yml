@@ -1,0 +1,125 @@
+name: Release
+
+# Bouwt bij elke merge naar main een Windows-versie van het spel en publiceert die als GitHub Release.
+# Instellingen en benodigde secrets: docs/RELEASES.md
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Elke build krijgt zijn eigen run; builds wachten op elkaar zodat releases in volgorde verschijnen.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  launcher:
+    name: Launcher testen en bouwen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Launcher-tests
+        run: dotnet test tools/Launcher/CitiesLauncher.slnx --configuration Release
+
+      - name: CitiesLauncher.exe publiceren (self-contained, enkel bestand)
+        run: >
+          dotnet publish tools/Launcher/CitiesLauncher/CitiesLauncher.csproj
+          --configuration Release --runtime win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none
+          --output launcher-out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher
+          path: launcher-out/CitiesLauncher.exe
+          if-no-files-found: error
+
+  build:
+    name: Windows-build en release
+    needs: launcher
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - name: Controleer de Unity-licentie-secrets
+        run: |
+          missing=""
+          [ -z "$UNITY_LICENSE" ] && missing="$missing UNITY_LICENSE"
+          [ -z "$UNITY_EMAIL" ] && missing="$missing UNITY_EMAIL"
+          [ -z "$UNITY_PASSWORD" ] && missing="$missing UNITY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error title=Unity-licentie ontbreekt::Repository-secrets niet ingesteld:${missing}. Zie docs/RELEASES.md voor het aanmaken van de licentie en het instellen van de secrets."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Versie bepalen
+        # 0.<run_number> loopt per workflow monotoon op, ook bij herhaalde runs van dezelfde commit
+        run: |
+          echo "VERSION=0.${{ github.run_number }}" >> "$GITHUB_ENV"
+          git log -1 --format=%B > release-notes.md
+          {
+            echo ""
+            echo "Commit: ${{ github.sha }}"
+          } >> release-notes.md
+
+      - uses: actions/cache@v4
+        with:
+          path: Cities/Library
+          key: Library-${{ hashFiles('Cities/Assets/**', 'Cities/Packages/**', 'Cities/ProjectSettings/**') }}
+          restore-keys: Library-
+
+      - name: Unity-build (Windows64)
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: Cities
+          unityVersion: 6000.5.10f1
+          targetPlatform: StandaloneWindows64
+          buildMethod: Cities.Editor.Build.BuildScript.PerformWindowsBuild
+          customParameters: -buildVersion ${{ env.VERSION }} -buildOutput /github/workspace/build/out
+          allowDirtyBuild: true
+
+      - name: Eigenaar van de build herstellen
+        # game-ci draait als root; de volgende stappen hebben schrijfrechten nodig
+        run: sudo chown -R "$(id -u):$(id -g)" build Cities/Library 2>/dev/null || true
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: launcher
+          path: launcher-out
+
+      - name: Zip samenstellen
+        run: |
+          test -f build/out/Game/Cities.exe
+          test -f build/out/Game/version.txt
+          mkdir dist
+          cp -r build/out/Game dist/Game
+          cp launcher-out/CitiesLauncher.exe dist/CitiesLauncher.exe
+          (cd dist && zip -r -q "../CitiesGame-${VERSION}-win64.zip" .)
+          ls -l "CitiesGame-${VERSION}-win64.zip"
+
+      - name: Release publiceren
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create "v${VERSION}" "CitiesGame-${VERSION}-win64.zip"
+          --title "Cities ${VERSION}" --notes-file release-notes.md --target "${{ github.sha }}" --latest

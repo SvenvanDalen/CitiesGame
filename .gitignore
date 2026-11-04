@@ -1,2 +1,7 @@
 # Uitvoer van tools/test.ps1 en de CI-workflow
 /TestResults/
+
+# Build-uitvoer van de launcher en van de Windows-build
+/tools/Launcher/**/bin/
+/tools/Launcher/**/obj/
+/build/
