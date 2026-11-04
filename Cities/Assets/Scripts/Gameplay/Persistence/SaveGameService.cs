@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.IO.Compression;
 using Cities.Core.Diagnostics;
 using Cities.Core.Persistence;
@@ -53,6 +54,9 @@ namespace Cities.Gameplay.Persistence
         /// <summary>Speeltijd van deze stad in seconden, ook over eerdere sessies.</summary>
         public double PlayTimeSeconds { get; private set; }
 
+        /// <summary>Duur en grootte van het laatste opslaan en laden, voor de budgetcontrole van E23-09.</summary>
+        public SaveTimings Timings { get; } = new SaveTimings();
+
         public IReadOnlyList<string> List() => _storage.List();
 
         public void AddPlayTime(double seconds)
@@ -74,7 +78,14 @@ namespace Cities.Gameplay.Persistence
                 PlayTimeSeconds = PlayTimeSeconds,
             };
             _describe(metadata);
-            _storage.Write(name, stream => SaveFile.Write(stream, metadata, _sections, Compression));
+            var stopwatch = Stopwatch.StartNew();
+            long written = 0;
+            _storage.Write(name, stream =>
+            {
+                SaveFile.Write(stream, metadata, _sections, Compression);
+                written = stream.CanSeek ? stream.Length : 0;
+            });
+            Timings.RecordSave(stopwatch.Elapsed, written);
             Log.Info("Opgeslagen als {0}.", name);
             return metadata;
         }
@@ -86,6 +97,7 @@ namespace Cities.Gameplay.Persistence
         public SaveLoadResult Load(string name)
         {
             _synchronize();
+            var stopwatch = Stopwatch.StartNew();
             SaveLoadResult result;
             try
             {
@@ -100,6 +112,7 @@ namespace Cities.Gameplay.Persistence
                 throw;
             }
 
+            Timings.RecordLoad(stopwatch.Elapsed);
             CityName = result.Metadata.CityName;
             PlayTimeSeconds = result.Metadata.PlayTimeSeconds;
             if (result.MissingSections.Count > 0)

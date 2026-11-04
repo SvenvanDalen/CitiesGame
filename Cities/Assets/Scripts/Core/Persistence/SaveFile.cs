@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cities.Core.Persistence
 {
@@ -52,11 +53,31 @@ namespace Cities.Core.Persistence
                 metadata.Write(meta);
                 WriteBlock(writer, SaveMetadata.SectionId, SaveMetadata.Version, meta.ToSegment(), CompressionLevel.NoCompression);
 
-                foreach (var section in sections)
+                // Secties worden achter elkaar geserialiseerd (ze lezen spelstatus op de aanroepende thread); het
+                // comprimeren, het duurste deel, gebeurt daarna parallel per sectie.
+                var blocks = new PreparedBlock[sections.Count];
+                for (var i = 0; i < blocks.Length; i++)
                 {
                     var content = new SaveWriter(4096);
-                    section.Write(content);
-                    WriteBlock(writer, section.Id, section.Version, content.ToSegment(), level);
+                    sections[i].Write(content);
+                    blocks[i] = new PreparedBlock(sections[i].Id, sections[i].Version, content.ToSegment());
+                }
+
+                if (blocks.Length > 1 && level != CompressionLevel.NoCompression)
+                {
+                    Parallel.For(0, blocks.Length, i => blocks[i] = Prepare(blocks[i], level));
+                }
+                else
+                {
+                    for (var i = 0; i < blocks.Length; i++)
+                    {
+                        blocks[i] = Prepare(blocks[i], level);
+                    }
+                }
+
+                foreach (var block in blocks)
+                {
+                    Emit(writer, block);
                 }
             }
         }
@@ -256,32 +277,66 @@ namespace Cities.Core.Persistence
             }
         }
 
-        private static void WriteBlock(BinaryWriter writer, string id, int version, ArraySegment<byte> raw, CompressionLevel level)
+        private static void WriteBlock(BinaryWriter writer, string id, int version, ArraySegment<byte> raw, CompressionLevel level) =>
+            Emit(writer, Prepare(new PreparedBlock(id, version, raw), level));
+
+        /// <summary>Controleert de grootte en comprimeert als dat loont; thread-safe omdat het alleen eigen data leest.</summary>
+        private static PreparedBlock Prepare(PreparedBlock block, CompressionLevel level)
         {
+            var raw = block.Raw;
             if (raw.Count > MaxSectionBytes)
             {
-                throw new InvalidOperationException($"Sectie {id} is {raw.Count} bytes; het maximum is {MaxSectionBytes}.");
+                throw new InvalidOperationException($"Sectie {block.Id} is {raw.Count} bytes; het maximum is {MaxSectionBytes}.");
             }
 
-            var stored = raw;
-            var storage = StoredRaw;
             if (level != CompressionLevel.NoCompression && raw.Count >= MinBytesToCompress)
             {
                 var compressed = Compress(raw, level);
                 if (compressed.Count < raw.Count)
                 {
-                    stored = compressed;
-                    storage = StoredDeflate;
+                    return new PreparedBlock(block.Id, block.Version, raw, compressed, StoredDeflate);
                 }
             }
 
-            writer.Write(Encoding.ASCII.GetBytes(id));
-            writer.Write(version);
-            writer.Write(storage);
-            writer.Write(raw.Count);
-            writer.Write(stored.Count);
-            writer.Write(Crc32.Compute(raw.AsSpan()));
-            writer.Write(stored.Array, stored.Offset, stored.Count);
+            return new PreparedBlock(block.Id, block.Version, raw, raw, StoredRaw);
+        }
+
+        private static void Emit(BinaryWriter writer, PreparedBlock block)
+        {
+            writer.Write(Encoding.ASCII.GetBytes(block.Id));
+            writer.Write(block.Version);
+            writer.Write(block.Storage);
+            writer.Write(block.Raw.Count);
+            writer.Write(block.Stored.Count);
+            writer.Write(Crc32.Compute(block.Raw.AsSpan()));
+            writer.Write(block.Stored.Array, block.Stored.Offset, block.Stored.Count);
+        }
+
+        private readonly struct PreparedBlock
+        {
+            public PreparedBlock(string id, int version, ArraySegment<byte> raw)
+                : this(id, version, raw, raw, StoredRaw)
+            {
+            }
+
+            public PreparedBlock(string id, int version, ArraySegment<byte> raw, ArraySegment<byte> stored, byte storage)
+            {
+                Id = id;
+                Version = version;
+                Raw = raw;
+                Stored = stored;
+                Storage = storage;
+            }
+
+            public string Id { get; }
+
+            public int Version { get; }
+
+            public ArraySegment<byte> Raw { get; }
+
+            public ArraySegment<byte> Stored { get; }
+
+            public byte Storage { get; }
         }
 
         private static ArraySegment<byte> Compress(ArraySegment<byte> raw, CompressionLevel level)
