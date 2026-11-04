@@ -39,7 +39,7 @@ namespace Cities.Tests.EditMode.Citizens
         [Test]
         public void AnUnemployedAdultNeverWorks()
         {
-            Assert.That(Enumerable.Range(0, 24).Select(h => DailySchedule.ActivityAt(Person(40), 1, 2, h)), Does.Not.Contain(Activity.Work));
+            Assert.That(Enumerable.Range(0, 24).Select(h => DailySchedule.ActivityAt(Person(40), 1, 2, h)), Has.No.Member(Activity.Work));
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace Cities.Tests.EditMode.Citizens
             AssertForEveryone(Person(10), 0, 11, Activity.School);
             AssertForEveryone(Person(10), 0, 17, Activity.Leisure);
             AssertForEveryone(Person(10), 5, 11, Activity.Leisure);
-            Assert.That(Enumerable.Range(0, 24).Select(h => DailySchedule.ActivityAt(Person(10), 1, 0, h)), Does.Not.Contain(Activity.Shop));
+            Assert.That(Enumerable.Range(0, 24).Select(h => DailySchedule.ActivityAt(Person(10), 1, 0, h)), Has.No.Member(Activity.Shop));
         }
 
         [Test]
