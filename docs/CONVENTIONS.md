@@ -235,6 +235,12 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `MetroNetwork` legt een perrondiepte op haltes van het `TransitNetwork`. Maak stations en metrolijnen met `AddStation` en `AddLine` zodat de regels gelden; een metrolijn is een gewone `TransitLine`. Sectie `METR` (`MetroSection`) bewaart alleen de dieptes; haltes en lijnen staan in `TRNS`. Verwijder stations met `TryRemoveStation`, niet met `TransitNetwork.TryRemoveStop`, anders blijft de diepte achter.
 - `UndergroundView` (Gameplay/Overlays) is de schakelaar voor de ondergrondse weergave: soepele terreindekking (`GroundOpacity`), zichtbaarheid per diepte (`IsVisible`) en een diepte-tint. `UndergroundViewBehaviour` zet de dekking als shaderglobal `_CityGroundOpacity`.
 
+## Luchtvaart
+
+- `AviationRules` (Simulation/Aviation, E09-09) bevat de rekenregels: baanlengte per `AircraftClass` (regionaal, smalrompvliegtuig, breedrompvliegtuig), stoelen, gate-omlooptijd en baanbezetting. `Airport` is een onveranderlijke luchthaven met één baan, een terminal en gates; de capaciteit is het knelpunt van baan, gates en terminal. Een gate waarvoor de baan te kort is, blijft ongebruikt.
+- `AirportNetwork` beheert de luchthavens (minimaal `MinAirportSpacing` uit elkaar), de vraag per luchthaven (`SetDemand`) en `Step`, dat passagiers en bewegingen optelt. Sectie `AIRP` (`AirportSection`) bewaart alles.
+- `AirportNoise.Sources` / `AirportNetwork.NoiseSources` zetten luchthavens om in `NoiseSource`s met `NoiseKind.Airport` voor `NoiseModel` (baanuiteinden, baanmidden en aanvliegroute; zwaardere toestellen en drukte tellen meer mee). Een luchthaven zonder vraag maakt geen lawaai.
+
 ## Trein
 
 - `Train` (Simulation/Transit, E09-07) bevat de rekenregels van de trein: snelheid, optrekken, lengte en capaciteit per `TrainKind` (passagier of goederen), minimale spoor- en perronlengte, stationsafstand (`MinStationSpacing`, 1500 m), `TravelTime` en de sluitregel van een overweg (`ShouldClose`: dicht `CrossingWarningTime` voor aankomst tot de staart voorbij is). Net als `Tram` en `Metro` rijdt de trein nog niet met eigen snelheid in `TransitFleet`.
