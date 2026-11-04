@@ -71,7 +71,7 @@ namespace Cities.Tests.EditMode.Network
             }
 
             Assert.That(reached.Count, Is.EqualTo(plan.Nodes.Count));
-            Assert.That(reached, Does.Contain(plan.East).And.Contain(plan.South).And.Contain(plan.North));
+            Assert.That(reached, Has.Member(plan.East).And.Member(plan.South).And.Member(plan.North));
         }
 
         [Test]

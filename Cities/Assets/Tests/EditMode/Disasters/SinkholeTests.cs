@@ -60,7 +60,7 @@ namespace Cities.Tests.EditMode.Disasters
             Assert.That(fourth.Radius, Is.EqualTo(40f));
             CollectionAssert.AreEqual(new[] { 2 }, fourth.Buildings);
             CollectionAssert.AreEqual(new[] { 1, 2 }, hole.LostBuildings);
-            Assert.That(hole.LostSegments, Does.Not.Contain(11));
+            Assert.That(hole.LostSegments, Has.No.Member(11));
         }
 
         [Test]
