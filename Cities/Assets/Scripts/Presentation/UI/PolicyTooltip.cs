@@ -73,7 +73,13 @@ namespace Cities.Presentation.UI
         public static string Percentage(float multiplier)
         {
             var percent = (int)Math.Round((multiplier - 1f) * 100f, MidpointRounding.AwayFromZero);
-            return percent == 0 ? "geen verandering" : (percent > 0 ? "+" : "−") + Math.Abs(percent).ToString(CultureInfo.CurrentCulture) + "%";
+            if (percent == 0)
+            {
+                return "geen verandering";
+            }
+
+            var sign = percent > 0 ? "+" : "−";
+            return sign + Math.Abs(percent).ToString(CultureInfo.CurrentCulture) + "%";
         }
 
         private static string Signed(long amount) => (amount < 0 ? "−" : "+") + HudText.Money(Math.Abs(amount));

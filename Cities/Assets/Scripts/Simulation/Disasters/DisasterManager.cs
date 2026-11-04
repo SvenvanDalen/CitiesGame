@@ -86,14 +86,19 @@ namespace Cities.Simulation.Disasters
             {
                 foreach (var spec in _specs.Where(s => IsEnabled(s.Name) && _running.All(d => d.Spec != s)).ToArray())
                 {
-                    if (random.NextFloat() < Settings.ChancePerDay(spec))
-                    {
-                        Trigger(spec.Name, new float2(random.NextFloat(0f, area.x), random.NextFloat(0f, area.y)));
-                    }
+                    TrySpawn(spec, ref random, area);
                 }
             }
 
             return cost;
+        }
+
+        private void TrySpawn(DisasterSpec spec, ref DeterministicRandom random, float2 area)
+        {
+            if (random.NextFloat() < Settings.ChancePerDay(spec))
+            {
+                Trigger(spec.Name, new float2(random.NextFloat(0f, area.x), random.NextFloat(0f, area.y)));
+            }
         }
     }
 }

@@ -121,13 +121,15 @@ namespace Cities.Simulation.Milestones
     /// <summary>De standaardmonumenten (E16-04), oplopend in eisen.</summary>
     public static class MonumentCatalog
     {
+        private const string TourismVisitors = "tourism.visitors";
+
         public static readonly IReadOnlyList<MonumentSpec> All = new[]
         {
-            new MonumentSpec("monument.cathedral", "Kathedraal", 10_000, 0.5f, 55f, 2_000_000, new[] { new MonumentBonus("tourism.visitors", 1.1f) }),
+            new MonumentSpec("monument.cathedral", "Kathedraal", 10_000, 0.5f, 55f, 2_000_000, new[] { new MonumentBonus(TourismVisitors, 1.1f) }),
             new MonumentSpec("monument.stadium", "Stadion", 25_000, 0.6f, 60f, 5_000_000, new[] { new MonumentBonus("events.attendance", 1.25f), new MonumentBonus("happiness.city", 1.02f) }),
-            new MonumentSpec("monument.opera", "Operagebouw", 50_000, 0.7f, 65f, 8_000_000, new[] { new MonumentBonus("tourism.visitors", 1.15f), new MonumentBonus("tax.income", 1.02f) }),
-            new MonumentSpec("monument.exhibition", "Wereldtentoonstelling", 100_000, 0.75f, 65f, 15_000_000, new[] { new MonumentBonus("tourism.visitors", 1.2f), new MonumentBonus("trade.income", 1.1f) }),
-            new MonumentSpec("monument.landmark-tower", "Icoon-toren", 250_000, 0.8f, 70f, 30_000_000, new[] { new MonumentBonus("tourism.visitors", 1.3f), new MonumentBonus("happiness.city", 1.03f) }),
+            new MonumentSpec("monument.opera", "Operagebouw", 50_000, 0.7f, 65f, 8_000_000, new[] { new MonumentBonus(TourismVisitors, 1.15f), new MonumentBonus("tax.income", 1.02f) }),
+            new MonumentSpec("monument.exhibition", "Wereldtentoonstelling", 100_000, 0.75f, 65f, 15_000_000, new[] { new MonumentBonus(TourismVisitors, 1.2f), new MonumentBonus("trade.income", 1.1f) }),
+            new MonumentSpec("monument.landmark-tower", "Icoon-toren", 250_000, 0.8f, 70f, 30_000_000, new[] { new MonumentBonus(TourismVisitors, 1.3f), new MonumentBonus("happiness.city", 1.03f) }),
         };
 
         public static MonumentSpec Find(string id) => All.FirstOrDefault(m => m.Id == id);
@@ -177,13 +179,10 @@ namespace Cities.Simulation.Milestones
         public IReadOnlyList<MonumentSpec> Update(CityConditions city)
         {
             var fresh = new List<MonumentSpec>();
-            foreach (var spec in _catalog)
+            foreach (var spec in _catalog.Where(s => !_available.Contains(s.Id) && s.IsMetBy(city)))
             {
-                if (!_available.Contains(spec.Id) && spec.IsMetBy(city))
-                {
-                    _available.Add(spec.Id);
-                    fresh.Add(spec);
-                }
+                _available.Add(spec.Id);
+                fresh.Add(spec);
             }
 
             return fresh;

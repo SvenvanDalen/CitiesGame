@@ -79,8 +79,10 @@ namespace Cities.Tests.EditMode.UI
                 new Dictionary<string, string> { ["recycling"] = "Recycling" },
                 new Ledger(0),
                 () => 0,
-                district => 0,
-                dailyBaseline: Baseline);
+                district => 0)
+            {
+                DailyBaseline = Baseline,
+            };
 
             Assert.That(model.TooltipFor("recycling"), Does.Contain("Netto: +€ 900 per dag"));
             Assert.That(model.TooltipFor("onbekend"), Is.Empty);
