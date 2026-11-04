@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cities.Simulation.Milestones
 {
@@ -31,18 +32,7 @@ namespace Cities.Simulation.Milestones
         /// <summary>De eerstvolgende mijlpaal, of <c>null</c> als alles gehaald is.</summary>
         public PopulationMilestone Next
         {
-            get
-            {
-                foreach (var m in _catalog)
-                {
-                    if (!_achievedIds.Contains(m.Id))
-                    {
-                        return m;
-                    }
-                }
-
-                return null;
-            }
+            get { return _catalog.FirstOrDefault(m => !_achievedIds.Contains(m.Id)); }
         }
 
         public bool IsAchieved(string id) => _achievedIds.Contains(id);
