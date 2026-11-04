@@ -166,6 +166,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
 - `BuildingSpawner.Policies` en `DistrictOf` koppelen het `PolicyBook` en de districtindeling; zonder beleid groeien alleen gewone gebouwen. De status zit in sectie `PLCY`, er is geen eigen sectie nodig.
 
+## Industrie en districtsbeleid
+
+- `IndustryPolicy` (Simulation/Industry) koppelt industrietypes aan beleid via het effect `industry.<type>` (`industry.oil`, `industry.agriculture`, ...): factor 0 verbiedt het type in dat district, boven 1 stimuleert het, zonder beleid is het 1. `IndustryNetwork.Step(week, IndustryPolicy.FactorOf(policies, districtOf))` laat verboden winningen stilliggen en schaalt opbrengst en vervuiling. Een nieuwe regel is alleen een `PolicyDefinition` met zo'n effect; samen met `zone.specialization.<naam>` (hierboven) schakelt districtsbeleid zo specialisaties en industrietypes in.
+
 ## Tests en dekking
 
 - Logica staat waar mogelijk in gewone C#-klassen en structs. MonoBehaviours (`*Behaviour.cs`) en editor-code zijn dunne lijm die de logica aanroept.
