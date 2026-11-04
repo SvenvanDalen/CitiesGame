@@ -222,6 +222,7 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - `DistrictBook` (`Cities.World.Districts`) bewaart de districten: nummer 1 tot 255, naam (uniek, hoogstens 40 tekens) en kleur (`0xRRGGBB`). Nummer 0 is geen district, dus de hele stad; dezelfde nummering gebruikt `PolicyBook`. Een nieuw district krijgt het laagste vrije nummer.
 - `DistrictMap` legt per blok van 4×4 cellen (32 m) vast bij welk district het hoort en houdt per district het aantal blokken bij (`BlockCount`, `Area`). `Paint` schildert een cirkel (0 wist), `RemoveDistrict` haalt een district uit de lijst en van de kaart, `AtPosition` zoekt het district op een wereldpositie. `Revision` loopt op bij elke wijziging.
 - `DistrictSection` (`DIST`) neemt lijst en kaart mee in de save; `DistrictTool` (`IBrushTool`) is het penseel om te schilderen of te wissen.
+- `DistrictStatistics.Compute` (E13-02) telt per district bevolking, beroepsbevolking en werkloosheid, banen en vacatures, vervuiling (gemiddeld en piek per blok, via een `Func<x, z, niveau>`) en weekinkomsten. Invoer zijn kleine waardetypes (`DistrictResident`, `DistrictWorkplace`, `DistrictIncome`) zodat de telling los staat van burgers, gebouwen en `Ledger`; rij 0 is alles buiten districten. Geen eigen toestand, dus geen save-sectie.
 
 ## OV-prioriteit
 
