@@ -134,6 +134,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
 - `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
 
+## Bossen als put voor vervuiling
+
+- `ForestSink` (Simulation/Fields, E12-09) laat elke cel een deel van zijn lucht- of grondvervuiling opnemen, naar bosbedekking (0 tot 1) met een verzadigende respons (`Response`); grond gaat veel trager dan lucht, en `NoiseFactor` dempt geluid. De aanroeper roept `Absorb` na elke diffusiestap (`DiffusionField.Step`) of na `SoilPollution.Step` aan, zodat een bos tussen bron en wijk wegvangt wat eroverheen waait.
+- `ForestCoverLayer.Build` (Gameplay/Pollution) rekent `WorldMap.Trees` om naar een bedekkingskaart op het raster van de milieulaag; er is geen eigen opslag, de bomen staan al in WMAP.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
@@ -262,3 +267,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Handelsvoorkeuren
 
 - `TradePreferences` (Simulation/Economy, E14-09) laat per goed de prijs- en vraagfactor van buiten wekelijks schuiven met seedgebonden ruis (`DeterministicRandom` uit seed, goed en week) en terugtrekking naar 1. Een gesloten of verdwenen verbinding (via `ITradeConnections`, de abstractie voor E14-04/E14-05) is een tegenvaller voor de goederen van die `ConnectionKind`: hogere importprijs, lagere exportprijs en minder vraag, wegebbend per week. `Apply` zet de prijzen in `Trade`, `Tradeable` begrenst het te exporteren overschot. Status in sectie `TRDP`.
+
+## Evenementen
+
+- `EventPlanner` (Simulation/Events, E10-12) beheert locaties (`EventVenue`: stadion, concertzaal, markt, met capaciteit en kaartprijs) en geplande evenementen (`PlannedEvent`: datum uit `GameDate`, beginuur, aantrekkingskracht 1-100; één per locatie per dag). `Forecast` splitst het publiek in inwoners (promille van de bevolking via `Func<int>`) en gasten van buiten (aandeel van de capaciteit, begrensd door de `IOutsideConnections` van het bezoekersmodel, per dag gedeeld). `Settle(vandaag, week, ledger)` houdt de evenementen die aan de beurt zijn en boekt kaartjes (Overig), belasting op bestedingen (Belastingen) en organisatiekosten (Diensten); sectie `EVNT`.
+- Voor het verkeer (E08-17): `IEventDemandSource.DemandOn(datum)` geeft per evenement `EventTrafficDemand` (beginuur, inwoners, gasten van buiten). De planner moet nog aan een dagtik en `SaveGameBehaviour` gehangen worden.
