@@ -43,6 +43,14 @@ namespace Cities.Core.Configuration
         /// <summary>Wordt na het laden van JSON-overrides aangeroepen om het oorspronkelijke ID terug te zetten.</summary>
         internal void RestoreId(string id) => _id = id;
 
+        /// <summary>Zet de gegevens van een definitie die tijdens het spelen wordt gemaakt (eigen gebouwen), in plaats van als asset.</summary>
+        protected void Initialize(string id, string displayName, string description)
+        {
+            _id = id;
+            _displayName = displayName;
+            _description = description ?? string.Empty;
+        }
+
         protected abstract void ValidateSpec(ICollection<string> errors);
     }
 }
