@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CitiesLauncher.Core/CitiesLauncher.Core.csproj" />
+  <Project Path="CitiesLauncher/CitiesLauncher.csproj" />
+  <Project Path="CitiesLauncher.Tests/CitiesLauncher.Tests.csproj" />
+</Solution>

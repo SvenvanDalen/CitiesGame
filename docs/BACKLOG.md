@@ -434,6 +434,7 @@ Het save-systeem begint als skelet in M0 en moet bij elk nieuw systeem meegroeie
 | E22-06 | Save-migratie | Oude saves laden na schema-wijziging met versienummer en upgradepad | M7 | M |
 | E22-07 | Scenario's | Kaarten met doelen, beperkingen en winvoorwaarden, zie E16-06 | M8 | L |
 | E22-08 | Timelapse en replay | Opname van de stadsgroei als snelle replay | M8 | M |
+| E22-09 | Release-exe met auto-update | Elke merge naar main bouwt automatisch een Windows-exe als GitHub Release; CitiesLauncher.exe controleert bij elke start op een nieuwere release en werkt het spel bij, zie docs/RELEASES.md | M5 | M |
 
 ## E23 Performance en schaalbaarheid
 
