@@ -85,6 +85,12 @@ namespace Cities.Presentation.UI
 
         public event Action Changed;
 
+        /// <summary>Weergavenaam per effectsleutel voor de tooltip (E13-07); ontbreekt die, dan wordt de sleutel getoond.</summary>
+        public IReadOnlyDictionary<string, string> EffectNames { get; set; }
+
+        /// <summary>Euro per dag die een systeem nu verwerkt voor een effectsleutel, of <c>null</c>; voor de dagbijdrage in de tooltip.</summary>
+        public Func<string, long?> DailyBaseline { get; set; }
+
         /// <summary>Maandkosten van al het ingevoerde beleid.</summary>
         public long MonthlyCost => _book.MonthlyCost(_population);
 
@@ -133,6 +139,10 @@ namespace Cities.Presentation.UI
             Changed?.Invoke();
             return PolicyToggleResult.Activated;
         }
+
+        /// <summary>De tooltip met kosten, effecten en dagelijkse bijdrage (E13-07); leeg bij onbekend beleid.</summary>
+        public string TooltipFor(string id, int district = PolicyBook.CityWide) =>
+            _book.IsKnown(id) ? PolicyTooltip.Build(NameOf(id), _specs[id], _population(district), EffectNames, DailyBaseline) : string.Empty;
 
         public string NameOf(string id) => id != null && _names.TryGetValue(id, out var name) ? name : id;
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cities.Gameplay.NewCity;
 using Cities.Simulation.Economy;
+using Cities.Simulation.Milestones;
 using Cities.World.Grid;
 using Cities.World.Tiles;
 using NUnit.Framework;
@@ -78,6 +79,32 @@ namespace Cities.Tests.EditMode.NewCity
 
             Assert.That(ledger.UnlimitedMoney, Is.True);
             Assert.That(tiles.UnlockedCount, Is.EqualTo(Dimensions.TileCount));
+        }
+
+        [Test]
+        public void ApplyingTheSandboxOpensEveryMilestoneUnlock()
+        {
+            var unlocks = new UnlockService(new MilestoneTracker());
+            var released = new List<string>();
+            unlocks.Unlocked += released.Add;
+
+            var opened = SandboxMode.Apply(DifficultySettings.Sandbox, new Ledger(10), Tiles(), unlocks);
+
+            Assert.That(unlocks.AllUnlocked, Is.True);
+            Assert.That(unlocks.IsUnlocked("tool.airport"), Is.True);
+            Assert.That(opened, Is.EqualTo(released));
+            Assert.That(opened, Is.Not.Empty);
+        }
+
+        [Test]
+        public void ANormalGameKeepsTheMilestoneUnlocksClosed()
+        {
+            var unlocks = new UnlockService(new MilestoneTracker());
+
+            var opened = SandboxMode.Apply(DifficultySettings.For(Difficulty.Normal), new Ledger(10), Tiles(), unlocks);
+
+            Assert.That(opened, Is.Empty);
+            Assert.That(unlocks.IsUnlocked("tool.airport"), Is.False);
         }
 
         [Test]

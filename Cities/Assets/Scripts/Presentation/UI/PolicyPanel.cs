@@ -59,7 +59,7 @@ namespace Cities.Presentation.UI
 
         private VisualElement Row(PolicyEntry entry)
         {
-            var row = new VisualElement { name = entry.Id };
+            var row = new VisualElement { name = entry.Id, tooltip = _model.TooltipFor(entry.Id, _district) };
             row.AddToClassList(UiClasses.Keybind);
             var title = new Label(entry.Name);
             title.AddToClassList(UiClasses.KeybindLabel);
