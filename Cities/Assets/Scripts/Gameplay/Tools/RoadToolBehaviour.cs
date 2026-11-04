@@ -71,7 +71,7 @@ namespace Cities.Gameplay.Tools
             _tools.Controller.ActiveChanged += OnActiveChanged;
             if (_catalog != null)
             {
-                Types = _catalog.Definitions.OfType<RoadTypeDefinition>().ToList();
+                Types = GameDataFolder.Load(_catalog).All<RoadTypeDefinition>().ToList();
                 var start = Types.FirstOrDefault(t => t.Id == _defaultType) ?? Types.FirstOrDefault();
                 if (start != null)
                 {

@@ -53,7 +53,7 @@ namespace Cities.Gameplay.Zoning
 
         private void Start()
         {
-            var buildings = _catalog.Definitions.OfType<BuildingDefinition>();
+            var buildings = GameDataFolder.Load(_catalog).All<BuildingDefinition>();
             _spawner = new BuildingSpawner(_world.Map, _zones.Service, _placement.Occupancy, buildings, Demand, Place, (ulong)_seed);
             _simulation.Clock.Ticked += OnTick;
         }

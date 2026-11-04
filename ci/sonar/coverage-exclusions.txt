@@ -78,3 +78,4 @@ Cities/Assets/Scripts/World/Fauna/WorldMapHabitat.cs
 Cities/Assets/Scripts/Gameplay/Overlays/WorldLayerOverlays.cs
 Cities/Assets/Scripts/Gameplay/Pollution/GroundPollutionLayer.cs
 Cities/Assets/Scripts/Gameplay/Overlays/RoadOverlays.cs
+Cities/Assets/Scripts/Core/Configuration/GameDataFolder.cs
