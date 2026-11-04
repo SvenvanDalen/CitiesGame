@@ -134,6 +134,11 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 - De kaart komt via `IFaunaHabitat` (`WorldMapHabitat` leest de lagen), zodat de regels in CI getest zijn. Willekeur gaat via `SeedHash`.
 - `FaunaRendererBehaviour` rekent alleen de groepen rond de camera (vogels 1,8 km, herten 600 m, vissen 120 m) en tekent ze met GPU-instancing; modellen staan als gewone geometrie in `FaunaShapes`. Testscene: `Scenes/Tests/Fauna.unity`.
 
+## Bossen als put voor vervuiling
+
+- `ForestSink` (Simulation/Fields, E12-09) laat elke cel een deel van zijn lucht- of grondvervuiling opnemen, naar bosbedekking (0 tot 1) met een verzadigende respons (`Response`); grond gaat veel trager dan lucht, en `NoiseFactor` dempt geluid. De aanroeper roept `Absorb` na elke diffusiestap (`DiffusionField.Step`) of na `SoilPollution.Step` aan, zodat een bos tussen bron en wijk wegvangt wat eroverheen waait.
+- `ForestCoverLayer.Build` (Gameplay/Pollution) rekent `WorldMap.Trees` om naar een bedekkingskaart op het raster van de milieulaag; er is geen eigen opslag, de bomen staan al in WMAP.
+
 ## Logging en profiling
 
 - Elk systeem logt via een eigen `SystemLog` met de systeemnaam als categorie: `private readonly SystemLog _log = new SystemLog("Traffic");`. Gebruik geen `Debug.Log` in simulatiecode.
@@ -160,6 +165,10 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 
 - Een gebouw met `BuildingSpec.Specialization` (bijvoorbeeld `eco`, `it-cluster`, `tourist-shopping`) groeit alleen waar een beleidsmaatregel die inschakelt via het effect `zone.specialization.<naam>` met factor boven 1 (`ZoneSpecialization`). Die factor is ook het gewicht tegenover gewone gebouwen. Een nieuwe specialisatie is dus alleen data: een gebouwdefinitie en een beleidseffect.
 - `BuildingSpawner.Policies` en `DistrictOf` koppelen het `PolicyBook` en de districtindeling; zonder beleid groeien alleen gewone gebouwen. De status zit in sectie `PLCY`, er is geen eigen sectie nodig.
+
+## Industrie en districtsbeleid
+
+- `IndustryPolicy` (Simulation/Industry) koppelt industrietypes aan beleid via het effect `industry.<type>` (`industry.oil`, `industry.agriculture`, ...): factor 0 verbiedt het type in dat district, boven 1 stimuleert het, zonder beleid is het 1. `IndustryNetwork.Step(week, IndustryPolicy.FactorOf(policies, districtOf))` laat verboden winningen stilliggen en schaalt opbrengst en vervuiling. Een nieuwe regel is alleen een `PolicyDefinition` met zo'n effect; samen met `zone.specialization.<naam>` (hierboven) schakelt districtsbeleid zo specialisaties en industrietypes in.
 
 ## Tests en dekking
 
@@ -262,3 +271,8 @@ Zelfde wereldseed en zelfde commands geven dezelfde stad, ook na opslaan en lade
 ## Ontgrendelen
 
 - `UnlockService` (Simulation/Milestones, E16-02) beantwoordt `IsUnlocked(definitieId)` (gebouw, tool, weg, voertuig, beleid). De data staat in `UnlockTable` (regels `UnlockRule`: definitie-ID naar mijlpaal-ID; standaard `UnlockCatalog`); een ID zonder regel is vanaf het begin open. Een definitie is open zodra `MilestoneTracker.IsAchieved` voor zijn mijlpaal geldt, dus ontgrendelen volgt uit `MILE`. Roep na `MilestoneTracker.Update` `OnMilestonesAchieved` aan voor de melding (`Unlocked`-event); `LockedReason` geeft de werkbaktekst. `SetAllUnlocked` is de sandbox-schakelaar (sectie `UNLK`). Kaarttegels blijven bij `TileUnlocks`.
+
+## Evenementen
+
+- `EventPlanner` (Simulation/Events, E10-12) beheert locaties (`EventVenue`: stadion, concertzaal, markt, met capaciteit en kaartprijs) en geplande evenementen (`PlannedEvent`: datum uit `GameDate`, beginuur, aantrekkingskracht 1-100; één per locatie per dag). `Forecast` splitst het publiek in inwoners (promille van de bevolking via `Func<int>`) en gasten van buiten (aandeel van de capaciteit, begrensd door de `IOutsideConnections` van het bezoekersmodel, per dag gedeeld). `Settle(vandaag, week, ledger)` houdt de evenementen die aan de beurt zijn en boekt kaartjes (Overig), belasting op bestedingen (Belastingen) en organisatiekosten (Diensten); sectie `EVNT`.
+- Voor het verkeer (E08-17): `IEventDemandSource.DemandOn(datum)` geeft per evenement `EventTrafficDemand` (beginuur, inwoners, gasten van buiten). De planner moet nog aan een dagtik en `SaveGameBehaviour` gehangen worden.

@@ -65,17 +65,29 @@ namespace Cities.Simulation.Industry
 
         public int CountOf(IndustryKind kind) => _sites.Values.Count(s => s.Kind == kind);
 
-        public IndustryWeek Step(int week)
+        public IndustryWeek Step(int week) => Step(week, null);
+
+        /// <summary>
+        /// Een week met een beleidsfactor per winning (E13-06, zie <see cref="IndustryPolicy"/>): 0 laat de winning stilliggen (geen
+        /// opbrengst, geen uitputting, geen werknemers), een andere factor schaalt opbrengst en vervuiling.
+        /// </summary>
+        public IndustryWeek Step(int week, Func<ExtractionSite, float> factorOf)
         {
             var extracted = new SortedDictionary<string, float>(StringComparer.Ordinal);
             var pollution = 0f;
             var workers = 0f;
             foreach (var site in _sites.Values)
             {
+                var factor = factorOf?.Invoke(site) ?? 1f;
+                if (!(factor > 0f))
+                {
+                    continue;
+                }
+
                 var result = site.Step(week);
                 extracted.TryGetValue(site.Profile.Good, out var sofar);
-                extracted[site.Profile.Good] = sofar + result.Output;
-                pollution += result.Pollution;
+                extracted[site.Profile.Good] = sofar + (result.Output * factor);
+                pollution += result.Pollution * factor;
                 workers += site.Depleted ? 0f : site.Workers;
             }
 
