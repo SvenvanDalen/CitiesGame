@@ -78,6 +78,19 @@ namespace Cities.Tests.EditMode.Tools
         }
 
         [Test]
+        public void AClickInTheMiddleOfARoadSplitsItAndConnects()
+        {
+            Click(100f, 100f);
+            Click(100f, 200f);
+            Click(104f, 150f);
+            Click(200f, 150f);
+
+            Assert.That(_network.SegmentCount, Is.EqualTo(3), "de eerste weg is gesplitst, plus de nieuwe");
+            Assert.That(_network.NodeCount, Is.EqualTo(4));
+            Assert.That(_network.Nodes().Any(n => _network.GetNode(n).Segments.Length == 3), Is.True, "een T-kruispunt");
+        }
+
+        [Test]
         public void TheEndSnapsToExistingNodesAndTheStartContinuesFromThem()
         {
             Click(100f, 100f);

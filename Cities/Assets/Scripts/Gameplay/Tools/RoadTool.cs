@@ -12,7 +12,7 @@ namespace Cities.Gameplay.Tools
     /// <summary>
     /// Legt wegen aan in het <see cref="RoadNetwork"/>: recht, met een buigpunt of als aaneengesloten lijn (zie
     /// <see cref="RoadDrawMode"/>). Het begin en eind snappen aan bestaande knooppunten; anders aan een hoek- en lengtestap
-    /// (de hoek ten opzichte van de bestaande weg waar je aan begint). Een nieuwe weg vlakt het terrein eronder af (<see cref="RoadTerrainShaper"/>). Midden op een bestaand segment aansluiten kan pas met E04-09.
+    /// (de hoek ten opzichte van de bestaande weg waar je aan begint). Een nieuwe weg vlakt het terrein eronder af (<see cref="RoadTerrainShaper"/>). Midden op een bestaand segment aansluiten kan ook: het segment wordt dan bij de eerste klik in tweeën gesplitst.
     /// </summary>
     public sealed class RoadTool : ITool
     {
@@ -97,11 +97,28 @@ namespace Cities.Gameplay.Tools
 
             var ground = input.Pick.Ground.Point;
             var node = FindNode(ground);
-            var point = node.HasValue ? _network.GetNode(node.Value).Position : RoadPlanner.SnapToGrid(ground, GridStep);
-            _plan = new Plan(point, node, default);
+            EntityId<SegmentKind>? onSegment = null;
+            var t = 0f;
+            float3 point;
+            if (node.HasValue)
+            {
+                point = _network.GetNode(node.Value).Position;
+            }
+            else if (FindSegment(ground, out var segment, out t))
+            {
+                onSegment = segment;
+                point = _network.GetSegment(segment).Curve.Position(t);
+            }
+            else
+            {
+                point = RoadPlanner.SnapToGrid(ground, GridStep);
+            }
+
+            _plan = new Plan(point, node, default, onSegment, t);
             if (_stage == Stage.Idle)
             {
-                return Marker(point, node, OutsideReason(ground) ?? (node.HasValue ? Cap(node.Value) : null));
+                var idleReason = OutsideReason(ground) ?? (node.HasValue ? Cap(node.Value) : null);
+                return Marker(point, node, idleReason, onSegment.HasValue);
             }
 
             if (_stage == Stage.Started && Mode == RoadDrawMode.Curve)
@@ -109,9 +126,9 @@ namespace Cities.Gameplay.Tools
                 return Guide(point, ground);
             }
 
-            var end = node.HasValue || GridStep > 0f ? point : RoadPlanner.Snap(_start, point, AngleStep, LengthStep, _referenceYaw);
+            var end = node.HasValue || onSegment.HasValue || GridStep > 0f ? point : RoadPlanner.Snap(_start, point, AngleStep, LengthStep, _referenceYaw);
             var curve = _stage == Stage.Bent ? RoadPlanner.Quadratic(_start, _control, end) : Bezier3.Straight(_start, end);
-            _plan = new Plan(end, node, curve);
+            _plan = new Plan(end, node, curve, onSegment, t);
             return Segment(curve, node, ground);
         }
 
@@ -119,7 +136,7 @@ namespace Cities.Gameplay.Tools
         {
             if (_stage == Stage.Idle)
             {
-                Begin(_plan.End, _plan.Node);
+                Begin(_plan.End, _plan.Node ?? SplitNode(_plan));
             }
             else if (_stage == Stage.Started && Mode == RoadDrawMode.Curve)
             {
@@ -158,7 +175,7 @@ namespace Cities.Gameplay.Tools
         private void Build()
         {
             var startNode = _startNode ?? _network.AddNode(_start);
-            var endNode = _plan.Node ?? _network.AddNode(_plan.End);
+            var endNode = _plan.Node ?? SplitNode(_plan) ?? _network.AddNode(_plan.End);
             _network.AddSegment(startNode, endNode, _plan.Curve, Profile, SpeedLimit);
             RoadTerrainShaper.Apply(_map, _plan.Curve, RoadTerrainShaper.HalfWidth(Profile));
             if (Mode == RoadDrawMode.Free)
@@ -173,10 +190,10 @@ namespace Cities.Gameplay.Tools
             }
         }
 
-        private ToolPreview Marker(float3 point, EntityId<NodeKind>? node, string reason)
+        private ToolPreview Marker(float3 point, EntityId<NodeKind>? node, string reason, bool onSegment)
         {
             _overlay.ShowMarker(point, reason == null);
-            return new ToolPreview(point, 0f, float2.zero, reason, node.HasValue ? "Bestaand kruispunt" : null);
+            return new ToolPreview(point, 0f, float2.zero, reason, node.HasValue ? "Bestaand kruispunt" : onSegment ? "Aansluiten op bestaande weg" : null);
         }
 
         /// <summary>De hulplijn van het begin naar het buigpunt.</summary>
@@ -193,6 +210,41 @@ namespace Cities.Gameplay.Tools
             var reason = RoadPlanner.Check(curve) ?? OutsideReason(curve.P3) ?? OutsideReason(ground) ?? EndReason(node);
             _overlay.ShowCurve(curve, reason == null);
             return new ToolPreview(curve.P3, 0f, float2.zero, reason, RoadPlanner.Describe(curve), (long)math.round(curve.Length() * CostPerMeter));
+        }
+
+        /// <summary>Splitst het segment waar het plan op uitkomt en geeft het nieuwe knooppunt, of <c>null</c> als het plan niet op een segment ligt.</summary>
+        private EntityId<NodeKind>? SplitNode(Plan plan) =>
+            plan.Segment.HasValue && _network.Contains(plan.Segment.Value) ? _network.Split(plan.Segment.Value, plan.T) : (EntityId<NodeKind>?)null;
+
+        /// <summary>Het dichtstbijzijnde segment binnen <see cref="SnapRadius"/> waar nog een kruispunt past (niet te dicht bij een uiteinde).</summary>
+        private bool FindSegment(float3 point, out EntityId<SegmentKind> best, out float bestT)
+        {
+            best = default;
+            bestT = 0f;
+            var found = false;
+            var bestDistance = SnapRadius;
+            foreach (var id in _network.Segments())
+            {
+                var road = _network.GetSegment(id);
+                var distance = RoadPlanner.DistanceTo(road.Curve, point);
+                if (distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                var t = RoadPlanner.NearestT(road.Curve, point);
+                if (road.Length * math.min(t, 1f - t) < RoadPlanner.MinLength)
+                {
+                    continue;
+                }
+
+                best = id;
+                bestT = t;
+                bestDistance = distance;
+                found = true;
+            }
+
+            return found;
         }
 
         private string EndReason(EntityId<NodeKind>? node)
@@ -247,12 +299,18 @@ namespace Cities.Gameplay.Tools
 
         private readonly struct Plan
         {
-            public Plan(float3 end, EntityId<NodeKind>? node, Bezier3 curve)
+            public Plan(float3 end, EntityId<NodeKind>? node, Bezier3 curve, EntityId<SegmentKind>? segment, float t)
             {
                 End = end;
                 Node = node;
                 Curve = curve;
+                Segment = segment;
+                T = t;
             }
+
+            public EntityId<SegmentKind>? Segment { get; }
+
+            public float T { get; }
 
             public float3 End { get; }
 
