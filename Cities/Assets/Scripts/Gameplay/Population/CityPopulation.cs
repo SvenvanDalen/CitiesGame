@@ -27,6 +27,14 @@ namespace Cities.Gameplay.Population
 
         public const int PeoplePerHousehold = 3;
 
+        /// <summary>
+        /// Zolang er minder banen zijn dan dit, vraagt de stad altijd om werk: zonder banen komt er niemand en zonder mensen is er geen
+        /// vraag naar werk (E26-15, gevonden met de balanssimulatie).
+        /// </summary>
+        public const int BootstrapJobs = 100;
+
+        public const float BootstrapWorkDemand = 0.5f;
+
         private sealed class Home
         {
             public int Capacity;
@@ -164,7 +172,7 @@ namespace Cities.Gameplay.Population
             {
                 case ZoneType.Residential: return _demand.Residential;
                 case ZoneType.Commercial: return _demand.Commerce;
-                default: return _demand.Work;
+                default: return Jobs < BootstrapJobs ? Math.Max(_demand.Work, BootstrapWorkDemand) : _demand.Work;
             }
         }
 
