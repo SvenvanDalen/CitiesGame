@@ -72,5 +72,43 @@ namespace Cities.Tests.EditMode.Diagnostics
                 StartupProgress.Shared = null;
             }
         }
+
+        [Test]
+        public void StepsAreTimedAndSummed()
+        {
+            var time = 0.0;
+            var progress = new StartupProgress(new[] { "A", "B" }, () => time);
+            time = 1.5;
+            progress.Complete("A");
+            time = 4.0;
+            progress.Complete("B");
+
+            Assert.That(progress.Timings[0].Seconds, Is.EqualTo(1.5).Within(1e-9));
+            Assert.That(progress.Timings[1].Seconds, Is.EqualTo(2.5).Within(1e-9));
+            Assert.That(progress.TotalSeconds, Is.EqualTo(4.0).Within(1e-9));
+            Assert.That(progress.OverBudget, Is.False);
+            Assert.That(progress.Summary(), Does.Contain("4,0 s").Or.Contain("4.0 s"));
+        }
+
+        [Test]
+        public void SlowStartIsFlaggedOverBudget()
+        {
+            var time = 0.0;
+            var progress = new StartupProgress(new[] { "A" }, () => time);
+            time = StartupProgress.BudgetSeconds + 1;
+            progress.Complete("A");
+
+            Assert.That(progress.OverBudget, Is.True);
+            Assert.That(progress.Summary(), Does.Contain("budget"));
+        }
+
+        [Test]
+        public void CompletingTwiceDoesNotTimeTwice()
+        {
+            var progress = new StartupProgress(new[] { "A" }, () => 0.0);
+            progress.Complete("A");
+            progress.Complete("A");
+            Assert.That(progress.Timings.Count, Is.EqualTo(1));
+        }
     }
 }

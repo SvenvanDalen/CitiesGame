@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Cities.Gameplay.Overlays;
 using Cities.Gameplay.Population;
@@ -109,6 +110,9 @@ namespace Cities.Gameplay.Environment
 
             var map = _world.Map;
             var size = map.Dimensions.CellSize * WorldMap.CoarseCellsPerSample;
+
+            // Eerst de cellen verzamelen: honderden woningen delen dezelfde buurt, en elke cel hoeft maar één keer te worden berekend.
+            var cells = new HashSet<(int X, int Z)>();
             foreach (var point in Environment.Homes.Concat(Environment.Industry))
             {
                 var cx = (int)(point.x / size);
@@ -119,14 +123,17 @@ namespace Cities.Gameplay.Environment
                     {
                         var x = cx + dx;
                         var z = cz + dz;
-                        if (x < 0 || z < 0 || x >= map.LandValue.Layout.Width || z >= map.LandValue.Layout.Depth)
+                        if (x >= 0 && z >= 0 && x < map.LandValue.Layout.Width && z < map.LandValue.Layout.Depth)
                         {
-                            continue;
+                            cells.Add((x, z));
                         }
-
-                        map.LandValue[x, z] = Environment.LandValueAt(new float2((x + 0.5f) * size, (z + 0.5f) * size), services) * 500f;
                     }
                 }
+            }
+
+            foreach (var (x, z) in cells)
+            {
+                map.LandValue[x, z] = Environment.LandValueAt(new float2((x + 0.5f) * size, (z + 0.5f) * size), services) * 500f;
             }
         }
     }

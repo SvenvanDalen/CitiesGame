@@ -16,6 +16,8 @@ namespace Cities.Presentation.UI
         private VisualElement _root;
         private CityMeter _bar;
         private Label _label;
+        private static readonly SystemLog Log = new SystemLog("Laden");
+
         private StartupProgress _progress;
         private int _frames;
 
@@ -75,6 +77,15 @@ namespace Cities.Presentation.UI
             _label.text = _progress.IsComplete ? "Klaar" : _progress.Current + " voorbereiden";
             if (_progress.IsComplete)
             {
+                if (_progress.OverBudget)
+                {
+                    Log.Warning("{0}", _progress.Summary());
+                }
+                else
+                {
+                    Log.Info("{0}", _progress.Summary());
+                }
+
                 _root.style.display = DisplayStyle.None;
                 if (StartupProgress.Shared == _progress)
                 {
