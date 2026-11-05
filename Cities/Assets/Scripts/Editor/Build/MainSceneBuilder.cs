@@ -76,6 +76,7 @@ namespace Cities.Editor.Build
             BuildPolicies(simulation, world, economy, population, panelSettings);
             BuildIndustry(simulation, economy);
             BuildEvents(simulation, world, economy, population, panelSettings);
+            BuildAtmosphere(simulation, population);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -189,6 +190,26 @@ namespace Cities.Editor.Build
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
             return transit;
+        }
+
+        /// <summary>E26-13: dag en nacht, weer en omgevingsgeluid.</summary>
+        private static void BuildAtmosphere(SimulationHostBehaviour simulation, Object population)
+        {
+            Light sun = RenderSettings.sun;
+            if (sun == null)
+            {
+                foreach (var light in Object.FindObjectsByType<Light>())
+                {
+                    if (light.type == LightType.Directional)
+                    {
+                        sun = light;
+                        break;
+                    }
+                }
+            }
+
+            var host = new GameObject("Dag en nacht").AddComponent<Cities.Presentation.Atmosphere.AtmosphereBehaviour>();
+            Wire(host, ("_simulation", simulation), ("_population", population), ("_sun", sun));
         }
 
         /// <summary>E26-12: rampen, mijlpalen en meldingen.</summary>
