@@ -52,6 +52,7 @@ namespace Cities.Editor.Build
             console.AddComponent<ConsoleBehaviour>();
             Wire(console.GetComponent<ConsoleBehaviour>(), ("_simulation", simulation), ("_camera", city));
 
+            NewUi("Laadscherm", panelSettings).AddComponent<Cities.Presentation.UI.LoadingScreenBehaviour>();
             new GameObject("Underground view").AddComponent<UndergroundViewBehaviour>();
             new GameObject("Log file").AddComponent<LogFileBehaviour>();
             var telemetry = new GameObject("Telemetry").AddComponent<TelemetryBehaviour>();
