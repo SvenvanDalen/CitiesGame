@@ -71,7 +71,8 @@ namespace Cities.Editor.Build
             var economy = new GameObject("Economie").AddComponent<Cities.Gameplay.Economy.EconomyHostBehaviour>();
             Wire(economy, ("_simulation", simulation), ("_population", population), ("_tools", tools), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
             BuildServices(simulation, utilities, economy, population);
-            BuildTransit(simulation, economy, population, panelSettings);
+            var transitHost = BuildTransit(simulation, economy, population, panelSettings);
+            BuildEnvironment(simulation, world, population, transitHost);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -162,13 +163,13 @@ namespace Cities.Editor.Build
         }
 
         /// <summary>E26-08: haltes, lijnen en bussen.</summary>
-        private static void BuildTransit(SimulationHostBehaviour simulation, Object economy, Object population, PanelSettings panelSettings)
+        private static Object BuildTransit(SimulationHostBehaviour simulation, Object economy, Object population, PanelSettings panelSettings)
         {
             var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
             var toolbar = Object.FindAnyObjectByType<Cities.Presentation.Tools.ToolbarBehaviour>();
             if (template == null)
             {
-                return;
+                return null;
             }
 
             var host = new GameObject("Openbaar vervoer");
@@ -184,6 +185,21 @@ namespace Cities.Editor.Build
 
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
+            return transit;
+        }
+
+        /// <summary>E26-09: milieu en landwaarde, met de milieu-overlays in het overlaypaneel.</summary>
+        private static void BuildEnvironment(SimulationHostBehaviour simulation, Object world, Object population, Object transit)
+        {
+            var host = new GameObject("Milieu").AddComponent<Cities.Gameplay.Environment.EnvironmentHostBehaviour>();
+            Wire(host, ("_simulation", simulation), ("_world", world), ("_population", population), ("_transit", transit),
+                ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()),
+                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()));
+            var overlay = Object.FindAnyObjectByType<OverlayBehaviour>();
+            if (overlay != null)
+            {
+                Wire(overlay, ("_environment", host));
+            }
         }
 
         /// <summary>E26-07: stadsdiensten met plaatsbare gebouwen en probleemiconen.</summary>
