@@ -38,6 +38,9 @@ namespace Cities.Gameplay.Tools
 
         public long Cost { get; }
 
+        /// <summary>Dezelfde preview met een andere reden waarom het niet mag (bijvoorbeeld te weinig geld).</summary>
+        public ToolPreview WithReason(string reason) => new ToolPreview(Position, YawDegrees, Size, reason, Info, Cost);
+
         public bool IsValid => IsVisible && InvalidReason == null;
     }
 }

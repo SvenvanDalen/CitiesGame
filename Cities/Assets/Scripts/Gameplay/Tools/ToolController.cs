@@ -11,6 +11,14 @@ namespace Cities.Gameplay.Tools
 
         public event Action<ITool> ActiveChanged;
 
+        /// <summary>Optioneel (E26-06): of het saldo de kosten toelaat; zonder blijft alles gratis.</summary>
+        public Func<long, bool> CanAfford { get; set; }
+
+        /// <summary>Optioneel (E26-06): boekt de kosten; <c>false</c> als het niet kan.</summary>
+        public Func<long, bool> TryPay { get; set; }
+
+        public const string NotEnoughMoney = "Te weinig geld";
+
         /// <summary>Maakt <paramref name="tool"/> actief; <c>null</c> zet de tools uit.</summary>
         public void Select(ITool tool)
         {
@@ -28,12 +36,24 @@ namespace Cities.Gameplay.Tools
 
         public void Deselect() => Select(null);
 
-        public void Update(in ToolInput input) => Preview = Active?.UpdatePreview(input) ?? ToolPreview.Hidden;
+        public void Update(in ToolInput input)
+        {
+            Preview = Active?.UpdatePreview(input) ?? ToolPreview.Hidden;
+            if (Preview.IsValid && Preview.Cost > 0 && CanAfford != null && !CanAfford(Preview.Cost))
+            {
+                Preview = Preview.WithReason(NotEnoughMoney);
+            }
+        }
 
         /// <summary>Voert de preview uit als die geldig is.</summary>
         public bool Apply()
         {
             if (Active == null || !Preview.IsValid)
+            {
+                return false;
+            }
+
+            if (Preview.Cost > 0 && TryPay != null && !TryPay(Preview.Cost))
             {
                 return false;
             }

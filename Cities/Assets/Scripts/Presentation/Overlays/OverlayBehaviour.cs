@@ -25,6 +25,7 @@ namespace Cities.Presentation.Overlays
         private static readonly int ParamsId = Shader.PropertyToID("_CityOverlayParams");
 
         [SerializeField] private WorldMapHostBehaviour _world;
+        [SerializeField] private Cities.Gameplay.Environment.EnvironmentHostBehaviour _environment;
 
         [Tooltip("Dekking van de celoverlay op het terrein, 0 tot 1.")]
         [SerializeField, Range(0f, 1f)] private float _opacity = 0.7f;
@@ -67,6 +68,18 @@ namespace Cities.Presentation.Overlays
             if (_registerWorldLayers && _world != null && _world.Map != null)
             {
                 foreach (var source in WorldLayerOverlays.Create(_world.Map))
+                {
+                    Controller.Register(source);
+                }
+            }
+        }
+
+        private void Start()
+        {
+            if (_environment != null && _world != null && _world.Map != null)
+            {
+                var dimensions = _world.Map.Dimensions;
+                foreach (var source in Cities.Gameplay.Overlays.EnvironmentOverlays.Create(dimensions.CellsX, dimensions.CellsZ, _environment.Sources))
                 {
                     Controller.Register(source);
                 }

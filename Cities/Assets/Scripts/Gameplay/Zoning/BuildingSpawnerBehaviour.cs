@@ -50,11 +50,42 @@ namespace Cities.Gameplay.Zoning
         // De kosten van groeigebouwen betaalt de ontwikkelaar (ConstructionCost is daar 0); de duur komt uit de definitie.
         private readonly List<Site> _sites = new List<Site>();
         private BuildingSpawner _spawner;
+        private readonly List<BuiltBuilding> _built = new List<BuiltBuilding>();
+        private readonly Dictionary<string, BuildingDefinition> _byId = new Dictionary<string, BuildingDefinition>();
+
+        /// <summary>De gegroeide gebouwen, voor opslaan (E26-14).</summary>
+        public IReadOnlyList<BuiltBuilding> Built => _built;
+
+        /// <summary>Zet een opgeslagen gebouw terug; <c>false</c> als de definitie niet meer bestaat of de plek bezet is.</summary>
+        public bool Restore(BuiltBuilding saved)
+        {
+            if (!_byId.TryGetValue(saved.DefinitionId, out var definition) || definition.Prefab == null)
+            {
+                return false;
+            }
+
+            var footprint = new Footprint(new CellCoord(saved.OriginX, saved.OriginZ), saved.Width, saved.Depth, saved.QuarterTurns);
+            if (_placement.Check(footprint) != null)
+            {
+                return false;
+            }
+
+            Place(definition, footprint, new float3(saved.X, saved.Y, saved.Z));
+            return true;
+        }
+
+        /// <summary>Er is een gebouw gegroeid (E26-03): definitie, object en positie.</summary>
+        public event System.Action<BuildingDefinition, GameObject, float3> Placed;
 
         private void Start()
         {
             var buildings = new List<BuildingDefinition>(GameDataFolder.Load(_catalog).All<BuildingDefinition>());
             buildings.AddRange(CustomBuildingRegistry.Definitions);
+            foreach (var building in buildings)
+            {
+                _byId[building.Id] = building;
+            }
+
             _spawner = new BuildingSpawner(_world.Map, _zones.Service, _placement.Occupancy, buildings, Demand, Place, (ulong)_seed);
             _simulation.Clock.Ticked += OnTick;
         }
@@ -86,8 +117,16 @@ namespace Cities.Gameplay.Zoning
             }
         }
 
+        /// <summary>Vervangt de vaste vraag door een berekende (E26-04); null gebruikt de waarden uit de inspector.</summary>
+        public System.Func<ZoneType, float> DemandSource { get; set; }
+
         private float Demand(ZoneType type)
         {
+            if (DemandSource != null)
+            {
+                return DemandSource(type);
+            }
+
             switch (type)
             {
                 case ZoneType.Residential:
@@ -102,8 +141,10 @@ namespace Cities.Gameplay.Zoning
         private void Place(BuildingDefinition definition, Footprint footprint, float3 position)
         {
             _placement.Occupancy.Add(footprint);
+            _built.Add(new BuiltBuilding(definition.Id, footprint, position));
             TreeBrush.ClearForBuilding(_world.Map, new RectInt(footprint.Origin.X, footprint.Origin.Z, footprint.SizeX, footprint.SizeZ));
             var building = Instantiate(definition.Prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            Placed?.Invoke(definition, building, position);
             var calendar = _simulation.Clock.Calendar;
             var duration = ConstructionSchedule.DurationTicks(definition.Spec.ConstructionDays, calendar.TicksPerDay, _constructionTimeScale);
             if (duration <= 0)

@@ -62,6 +62,9 @@ namespace Cities.Gameplay.Tools
 
         public bool RepeatsWhileHeld => false;
 
+        /// <summary>Wat plaatsen kost in euro (E26-06); 0 is gratis.</summary>
+        public long Cost { get; set; }
+
         public int Width { get; }
 
         public int Depth { get; }
@@ -99,7 +102,7 @@ namespace Cities.Gameplay.Tools
             var center = _footprint.Center(_dimensions);
             var reason = Check(_footprint, out var baseHeight);
             var size = new float2(Width, Depth) * _dimensions.CellSize;
-            return new ToolPreview(new float3(center.x, baseHeight, center.y), _footprint.YawDegrees, size, reason);
+            return new ToolPreview(new float3(center.x, baseHeight, center.y), _footprint.YawDegrees, size, reason, null, Cost);
         }
 
         public void Apply(in ToolPreview preview) => _target.Place(_footprint, preview.Position);

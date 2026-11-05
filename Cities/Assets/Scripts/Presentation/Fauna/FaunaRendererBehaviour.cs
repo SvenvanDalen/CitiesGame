@@ -73,7 +73,7 @@ namespace Cities.Presentation.Fauna
             var baseMaterial = _material;
             if (baseMaterial == null)
             {
-                baseMaterial = _owned = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                baseMaterial = _owned = new Material(Shader.Find("Universal Render Pipeline/Lit")) { enableInstancing = true };
             }
 
             _gullParams = Params(baseMaterial, new Color(0.9f, 0.91f, 0.92f), ShadowCastingMode.Off);

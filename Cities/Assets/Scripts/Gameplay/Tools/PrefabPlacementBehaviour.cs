@@ -21,6 +21,9 @@ namespace Cities.Gameplay.Tools
         [SerializeField, Min(0f)] private float _maxRise = 1.5f;
         [SerializeField] private bool _selectOnStart;
 
+        [Tooltip("Bouwkosten in euro (E26-06).")]
+        [SerializeField, Min(0)] private long _cost;
+
         [Tooltip("Optioneel: de kaart waarop de grond bebouwd wordt en de bomen gekapt.")]
         [SerializeField] private WorldMapHostBehaviour _world;
 
@@ -30,6 +33,9 @@ namespace Cities.Gameplay.Tools
         private readonly FootprintOccupancy _occupancy = new FootprintOccupancy();
 
         public PlacementTool Tool { get; private set; }
+
+        /// <summary>Er is een object geplaatst (E26-03): het object en zijn positie.</summary>
+        public event System.Action<GameObject, float3> Placed;
 
         public FootprintOccupancy Occupancy => _occupancy;
 
@@ -43,14 +49,15 @@ namespace Cities.Gameplay.Tools
                 TreeBrush.ClearForBuilding(_world.Map, new RectInt(footprint.Origin.X, footprint.Origin.Z, footprint.SizeX, footprint.SizeZ));
             }
 
-            Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            var placed = Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            Placed?.Invoke(placed, position);
         }
 
         /// <summary>Na de <see cref="Picking.PickingBehaviour"/> (die het terrein kiest) en vóór de UI (die de tool nodig heeft).</summary>
         private void Awake()
         {
             var picking = _tools.Picking;
-            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise) { Ghost = _prefab };
+            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise) { Ghost = _prefab, Cost = _cost };
         }
 
         private void Start()

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cities.Core.Diagnostics;
+using Cities.Simulation.Scheduling;
 using Cities.World.Grid;
 using UnityEngine;
 
@@ -18,16 +19,29 @@ namespace Cities.World.Terrain
         [SerializeField] private WorldMapHostBehaviour _world;
         [SerializeField] private TerrainShapeSettings _settings = TerrainShapeSettings.Default;
 
+        [Tooltip("Leidt de terreinseed af van de wereldseed van de simulatie (nieuwe seed per start, of -seed).")]
+        [SerializeField] private bool _useWorldSeed = true;
+
         private readonly List<System.IDisposable> _overlays = new List<System.IDisposable>();
 
         private void Awake()
         {
             var map = _world.Map;
+            if (_useWorldSeed)
+            {
+                var host = FindAnyObjectByType<SimulationHostBehaviour>();
+                if (host != null && host.Random != null)
+                {
+                    _settings.Seed = WorldSeed.Terrain(host.Random.Seed);
+                }
+            }
+
             var started = Time.realtimeSinceStartupAsDouble;
             TerrainGenerator.Generate(map, _settings);
             var range = map.Height.Range();
             Log.Info("Terrein gemaakt in {0:0} ms, hoogte {1}", (Time.realtimeSinceStartupAsDouble - started) * 1000.0, $"{range.Min:0} tot {range.Max:0} m");
             RegisterResourceOverlays(map);
+            StartupProgress.Report("Terrein");
         }
 
         private void OnDestroy()

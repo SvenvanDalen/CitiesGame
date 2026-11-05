@@ -109,3 +109,13 @@ Bij grotere steden groeien deze aandelen naar verhouding. Pathfinding en verkeer
 - Elk nieuw systeem krijgt een eigen profiler-marker (`Sim.<naam>`) en wordt gemeten in de benchmark-scenes van 10.000, 100.000 en 500.000 inwoners (E23-02).
 - Een regressie van meer dan 10% op een budgetregel is een bug en blokkeert het mergen.
 - Bij elke mijlpaal wordt de tabel *Huidige stand* bijgewerkt.
+
+## Hoofdscène: laadtijd en grote steden (E26-16)
+
+Wat er is gedaan, en wat nog gemeten moet worden in een echte build:
+
+- **Laadtijd.** `StartupProgress` meet per stap (terrein, bossen, wegen en water, stad) hoe lang het duurt en het laadscherm schrijft één logregel met het totaal. Duurt het meer dan `StartupProgress.BudgetSeconds` (5 s), dan is dat een waarschuwing in het log. De generatie loopt nog synchroon op de hoofdthread; de balk springt dus per stap en niet vloeiend. **Nog niet gemeten in een build:** haalt de terreingeneratie de 5 s niet, dan moet ze naar een job of coroutine.
+- **Rekenwerk van de stadsmodellen.** `CityScaleTests` draait een stad van ongeveer 50.000 inwoners (4200 woningen, 600 bedrijven), 300 fabrieken en een buslijn met 100 bussen door de modellen en controleert grove tijdsgrenzen. Dat vangt een kwadratische val, geen frametijd.
+- **Landwaarde.** De dagelijkse landwaarde-update berekent elke grofcel hoogstens één keer, ook als honderden woningen dezelfde buurt delen.
+- **Verkeer.** Het aantal voertuigen is begrensd (`_maximumCars`, standaard 3000), dus de verkeerskosten groeien niet mee met de bevolking.
+- **Niet gedaan:** de framerate (30 fps bij 50.000 inwoners) is niet gemeten; daarvoor is een build op de referentiemachine met de stresstest van E23 nodig.
