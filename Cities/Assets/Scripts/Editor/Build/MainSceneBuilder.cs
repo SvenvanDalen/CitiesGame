@@ -68,6 +68,11 @@ namespace Cities.Editor.Build
             var population = new GameObject("Bevolking").AddComponent<Cities.Gameplay.Population.PopulationHostBehaviour>();
             Wire(population, ("_simulation", simulation), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
 
+            var traffic = new GameObject("Verkeer").AddComponent<Cities.Gameplay.Traffic.TrafficHostBehaviour>();
+            var carMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+            var carMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.8f, 0.85f), enableInstancing = true };
+            Wire(traffic, ("_simulation", simulation), ("_network", network), ("_population", population), ("_mesh", carMesh), ("_material", carMaterial));
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
