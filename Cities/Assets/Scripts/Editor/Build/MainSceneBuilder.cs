@@ -68,6 +68,11 @@ namespace Cities.Editor.Build
             var population = new GameObject("Bevolking").AddComponent<Cities.Gameplay.Population.PopulationHostBehaviour>();
             Wire(population, ("_simulation", simulation), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
 
+            var economy = new GameObject("Economie").AddComponent<Cities.Gameplay.Economy.EconomyHostBehaviour>();
+            Wire(economy, ("_simulation", simulation), ("_population", population), ("_tools", tools), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
+            var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
+            Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
+
             var traffic = new GameObject("Verkeer").AddComponent<Cities.Gameplay.Traffic.TrafficHostBehaviour>();
             var carMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
             var carMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.8f, 0.85f), enableInstancing = true };
@@ -80,6 +85,8 @@ namespace Cities.Editor.Build
             AssetDatabase.SaveAssets();
             Debug.Log("Hoofdscène gebouwd: " + MainPath);
         }
+
+        private static readonly long[] PlantCosts = { 120_000L, 40_000L, 80_000L, 30_000L };
 
         /// <summary>E26-03: nutsnetten in de scene, met vier plaatsbare voorzieningen in de werkbalk.</summary>
         private static void BuildUtilities(SimulationHostBehaviour simulation)
@@ -120,7 +127,7 @@ namespace Cities.Editor.Build
                 CopyReference(source, placement, "_tools");
                 CopyReference(source, placement, "_world");
                 CopyReference(source, placement, "_roads");
-                Wire(placement, ("_prefab", prefab), ("_toolName", name), ("_width", cells), ("_depth", cells));
+                Wire(placement, ("_prefab", prefab), ("_toolName", name), ("_width", cells), ("_depth", cells), ("_cost", PlantCosts[i]));
                 prefab.SetActive(false);
                 placements[i] = placement;
             }
@@ -205,6 +212,7 @@ namespace Cities.Editor.Build
                 {
                     case string text: property.stringValue = text; break;
                     case int number: property.intValue = number; break;
+                    case long number: property.longValue = number; break;
                     case float number: property.floatValue = number; break;
                     case bool flag: property.boolValue = flag; break;
                     case Object reference: property.objectReferenceValue = reference; break;

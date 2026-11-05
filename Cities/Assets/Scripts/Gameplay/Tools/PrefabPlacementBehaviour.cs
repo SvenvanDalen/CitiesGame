@@ -21,6 +21,9 @@ namespace Cities.Gameplay.Tools
         [SerializeField, Min(0f)] private float _maxRise = 1.5f;
         [SerializeField] private bool _selectOnStart;
 
+        [Tooltip("Bouwkosten in euro (E26-06).")]
+        [SerializeField, Min(0)] private long _cost;
+
         [Tooltip("Optioneel: de kaart waarop de grond bebouwd wordt en de bomen gekapt.")]
         [SerializeField] private WorldMapHostBehaviour _world;
 
@@ -54,7 +57,7 @@ namespace Cities.Gameplay.Tools
         private void Awake()
         {
             var picking = _tools.Picking;
-            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise) { Ghost = _prefab };
+            Tool = new PlacementTool(_toolName, _width, _depth, picking.Dimensions, picking.Terrain, this, _maxRise) { Ghost = _prefab, Cost = _cost };
         }
 
         private void Start()
