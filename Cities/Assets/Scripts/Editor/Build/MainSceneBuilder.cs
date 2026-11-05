@@ -335,7 +335,7 @@ namespace Cities.Editor.Build
             so.FindProperty("_utilities").objectReferenceValue = utilities;
             so.FindProperty("_economy").objectReferenceValue = economy;
             so.FindProperty("_population").objectReferenceValue = population;
-            so.FindProperty("_problems").objectReferenceValue = icons;
+            so.FindProperty("_problemsSource").objectReferenceValue = icons;
             var list = so.FindProperty("_services");
             list.arraySize = kinds.Length;
             for (var i = 0; i < kinds.Length; i++)
