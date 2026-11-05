@@ -4,7 +4,6 @@ using Cities.Gameplay.Population;
 using Cities.Gameplay.Tools;
 using Cities.Gameplay.Utilities;
 using Cities.Gameplay.Zoning;
-using Cities.Presentation.Problems;
 using Cities.Simulation.Problems;
 using Cities.Simulation.Scheduling;
 using Cities.World.Buildings;
@@ -13,6 +12,16 @@ using UnityEngine;
 
 namespace Cities.Gameplay.Services
 {
+    /// <summary>De probleemiconen zoals de diensten ze nodig hebben; de presentatielaag implementeert dit (Gameplay mag niet naar Presentation verwijzen).</summary>
+    public interface IProblemIcons
+    {
+        ProblemTracker Tracker { get; }
+
+        void SetRoof(int building, float3 roof);
+
+        void ClearBuilding(int building);
+    }
+
     /// <summary>
     /// Brandweer, politie, zorg en onderwijs in de scene (E26-07): plaatsbaar via de werkbalk, met dekking, probleemiconen boven gebouwen
     /// (geen stroom, water, riool, afval; misdaad zonder politie) en een dienstenscore die migratie beïnvloedt.
@@ -31,7 +40,10 @@ namespace Cities.Gameplay.Services
         [SerializeField] private UtilitiesHostBehaviour _utilities;
         [SerializeField] private EconomyHostBehaviour _economy;
         [SerializeField] private PopulationHostBehaviour _population;
-        [SerializeField] private ProblemIconsBehaviour _problems;
+        [Tooltip("Een component dat IProblemIcons implementeert (ProblemIconsBehaviour).")]
+        [SerializeField] private MonoBehaviour _problemsSource;
+
+        private IProblemIcons _problems;
         [SerializeField] private ServicePlacement[] _services = System.Array.Empty<ServicePlacement>();
 
         [Tooltip("Hoeveel simulatieticks tussen het bijwerken van problemen en dekking.")]
@@ -55,6 +67,7 @@ namespace Cities.Gameplay.Services
 
         private void Start()
         {
+            _problems = _problemsSource as IProblemIcons;
             foreach (var service in _services)
             {
                 if (service.Placement != null)

@@ -13,7 +13,7 @@ namespace Cities.Presentation.Problems
     /// Systemen melden via <see cref="Tracker"/> en leggen met <see cref="SetRoof"/> vast waar het dak van een gebouw ligt.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class ProblemIconsBehaviour : MonoBehaviour
+    public sealed class ProblemIconsBehaviour : MonoBehaviour, Cities.Gameplay.Services.IProblemIcons
     {
         private const int BatchSize = 1023;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
