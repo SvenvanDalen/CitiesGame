@@ -31,6 +31,9 @@ namespace Cities.Gameplay.Tools
 
         public PlacementTool Tool { get; private set; }
 
+        /// <summary>Er is een object geplaatst (E26-03): het object en zijn positie.</summary>
+        public event System.Action<GameObject, float3> Placed;
+
         public FootprintOccupancy Occupancy => _occupancy;
 
         public string Check(in Footprint footprint) => _occupancy.Check(footprint);
@@ -43,7 +46,8 @@ namespace Cities.Gameplay.Tools
                 TreeBrush.ClearForBuilding(_world.Map, new RectInt(footprint.Origin.X, footprint.Origin.Z, footprint.SizeX, footprint.SizeZ));
             }
 
-            Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            var placed = Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            Placed?.Invoke(placed, position);
         }
 
         /// <summary>Na de <see cref="Picking.PickingBehaviour"/> (die het terrein kiest) en vóór de UI (die de tool nodig heeft).</summary>

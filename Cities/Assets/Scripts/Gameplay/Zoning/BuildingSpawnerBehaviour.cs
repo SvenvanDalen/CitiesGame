@@ -51,6 +51,9 @@ namespace Cities.Gameplay.Zoning
         private readonly List<Site> _sites = new List<Site>();
         private BuildingSpawner _spawner;
 
+        /// <summary>Er is een gebouw gegroeid (E26-03): definitie, object en positie.</summary>
+        public event System.Action<BuildingDefinition, GameObject, float3> Placed;
+
         private void Start()
         {
             var buildings = new List<BuildingDefinition>(GameDataFolder.Load(_catalog).All<BuildingDefinition>());
@@ -104,6 +107,7 @@ namespace Cities.Gameplay.Zoning
             _placement.Occupancy.Add(footprint);
             TreeBrush.ClearForBuilding(_world.Map, new RectInt(footprint.Origin.X, footprint.Origin.Z, footprint.SizeX, footprint.SizeZ));
             var building = Instantiate(definition.Prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            Placed?.Invoke(definition, building, position);
             var calendar = _simulation.Clock.Calendar;
             var duration = ConstructionSchedule.DurationTicks(definition.Spec.ConstructionDays, calendar.TicksPerDay, _constructionTimeScale);
             if (duration <= 0)
