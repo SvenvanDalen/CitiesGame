@@ -4,7 +4,7 @@ Oct 29, 2026 · @Sven vd
 
 ## Uitgangspunten en technische keuzes
 
-Dit backlog dekt alle systemen van een eigen stadsbouwer in Unity, verdeeld in 25 epics en negen mijlpalen, zodat je na elke mijlpaal iets speelbaars hebt. Omdat het voor privégebruik is, ontbreken releasezaken zoals lokalisatie, achievements, platformcertificering en storefront-integratie.
+Dit backlog dekt alle systemen van een eigen stadsbouwer in Unity, verdeeld in 26 epics en tien mijlpalen, zodat je na elke mijlpaal iets speelbaars hebt. Omdat het voor privégebruik is, ontbreken releasezaken zoals lokalisatie, achievements, platformcertificering en storefront-integratie.
 
 - **Engine:** Unity 6 LTS met URP, alleen pc (Windows; macOS/Linux optioneel).
 - **Simulatie:** data-georienteerd. Burgers, voertuigen en gebouwen zijn structs in NativeArrays, verwerkt met Burst-jobs op een vaste simulatiestap (bijv. 10 Hz) die losstaat van de framerate. In E01 valt na een spike de keuze tussen Entities (DOTS) en een eigen lichte ECS; aanbeveling is Entities voor agents (tienduizenden stuks) en gewone MonoBehaviours voor UI en tools.
@@ -24,7 +24,7 @@ Elk item is zo gesneden dat het in één Git-branch af te ronden is; items met s
 
 ## Roadmap en mijlpalen
 
-Negen mijlpalen, in volgorde; elke mijlpaal heeft een poort die je moet halen voordat de volgende begint.
+Tien mijlpalen, in volgorde; elke mijlpaal heeft een poort die je moet halen voordat de volgende begint.
 
 1. **M0 Fundament:** project, architectuur, simulatiekern, camera, debugtools. Poort: een lege wereld met camera, simulatieklok en save/load-skelet draait stabiel.
 2. **M1 Wereld en wegen:** terrein, water, natuur, wegen. Poort: je vormt terrein en legt een wegennet aan met kruispunten, bruggen en tunnels.
@@ -34,7 +34,8 @@ Negen mijlpalen, in volgorde; elke mijlpaal heeft een poort die je moet halen vo
 6. **M5 Diepgang:** districten, beleid, industrie, handel, buitenverbindingen, toerisme, rampen, progressie.
 7. **M6 Presentatie:** info-views, statistieken, volledige UI, visuals, weer, audio.
 8. **M7 Schaal en gereedschap:** content-pipeline, editors, spelmodi, performance voor de volledige kaart.
-9. **M8 Uitbreidingen:** uitbreidingsthema's uit E25.
+9. **M7b Speelbare release:** alle bestaande systemen aangesloten in één hoofdscène met menu's, HUD en volledige opslag. Poort: een nieuwe stad starten, 30 minuten bouwen en spelen zonder fouten, opslaan en laden geeft dezelfde stad.
+10. **M8 Uitbreidingen:** uitbreidingsthema's uit E25.
 
 ## E01 Project, architectuur en simulatiekern
 
@@ -484,6 +485,30 @@ Dit zijn uitbreidingsthema's als zelfstandige features; elk is te bouwen zodra d
 | E25-08 | Luchthavens op maat | Meerdere terminals, cargo en vliegroutes met geluidsbeheer | M8 | XL |
 | E25-09 | Pleinen en promenades | Plein-tool en aanpasbare promenades met winkelstraten | M8 | L |
 | E25-10 | Financiele districten en hotels | Financieel kantoorcluster, beurs, hotels en conferenties | M8 | L |
+
+## E26 Integratie: speelbare release (alles M7b)
+
+De systemen uit M0 t/m M7 bestaan als losse bibliotheken en testscènes, maar de release startte met een lege scène. Dit epic sluit alles aan in één hoofdscène (`Assets/Scenes/Main.unity`, gebouwd met `Cities > Bouw hoofdscène`) zodat het spel van begin tot eind te spelen is.
+
+| ID | Item | Klaar als | MS | Est |
+| --- | --- | --- | --- | --- |
+| E26-01 | Hoofdscène en spelstart | Main.unity is de enige scène in de build, wordt volledig gebouwd door een editor-script, toont een laadbalk tijdens terreingeneratie en start altijd met een nieuwe seed (of -seed) | M7b | M |
+| E26-02 | Hoofdmenu en pauzemenu | Startmenu met Nieuwe stad (seed en moeilijkheid), Laden, Instellingen en Afsluiten; Esc opent pauzemenu met Hervatten, Opslaan, Laden, Nieuwe wereld en Naar hoofdmenu | M7b | M |
+| E26-03 | Nutsvoorzieningen aansluiten | Stroom, water, riool en afval draaien als systemen in de scene; centrales, pompen en leidingen zijn plaatsbaar via de werkbalk en gebouwen tonen aansluitstatus | M7b | L |
+| E26-04 | Burgers, banen en vraagmodel | Inwoners, werk, migratie en demografie draaien in de scene; de vaste vraag in de gebouwspawner is vervangen door het echte vraagmodel | M7b | L |
+| E26-05 | Voertuigen en verkeer zichtbaar | Burgers en voertuigen rijden en lopen over het wegennet, worden gerenderd met meshes en materialen en veroorzaken files bij drukte | M7b | XL |
+| E26-06 | Economie, begroting en HUD | Geld, belasting, inkomsten en uitgaven draaien; HUD toont geld, bevolking, datum en snelheid; begrotingspaneel en startkapitaal werken; bouwen kost geld | M7b | L |
+| E26-07 | Stadsdiensten | Brandweer, politie, zorg en onderwijs zijn plaatsbaar met dekking, problemen-iconen boven gebouwen en gevolgen bij ontbrekende dienst | M7b | L |
+| E26-08 | Openbaar vervoer | Haltes, lijnen en voertuigen zijn aanlegbaar en bruikbaar door burgers, met lijnbeheer in de UI | M7b | L |
+| E26-09 | Landwaarde, milieu en info-views | Landwaarde, vervuiling en geluid werken op de kaart; overlays en statistiekpaneel zijn bereikbaar via de UI | M7b | L |
+| E26-10 | Beleid en districten | Beleids- en districtspaneel staan in de werkbalk, districten zijn te tekenen en beleid heeft zichtbaar effect | M7b | M |
+| E26-11 | Industrie, handel en toerisme | Goederenstromen, buitenverbindingen en toeristische plekken draaien in de scene en geven inkomsten | M7b | L |
+| E26-12 | Rampen, mijlpalen en meldingen | Rampen, ontgrendelingen en mijlpalen draaien; meldingen verschijnen in de UI en ontgrendelde gebouwen worden pas dan zichtbaar in de werkbalk | M7b | M |
+| E26-13 | Dag en nacht, weer en audio | Dag/nacht, weer, seizoenen en geluid draaien in de hoofdscène met volumeregeling in instellingen | M7b | L |
+| E26-14 | Volledig opslaan en laden | Alle systemen leveren hun opslagsectie; opslaan en laden werkt vanuit het menu met slots en autosave en een rondgang levert dezelfde stad op (checksum gelijk) | M7b | L |
+| E26-15 | Speelbalans en uitleg | Startkapitaal, kosten, vraag en groei zijn afgesteld voor een eerste uur spelen; korte hints bij de eerste acties; een speelverslag van 30 minuten ligt in docs | M7b | M |
+| E26-16 | Performance en laadtijd in de build | Terreingeneratie in de build duurt onder 5 s of draait op de achtergrond; 50.000 inwoners halen 30 fps op de doelmachine; gemeten met de stresstest | M7b | L |
+| E26-17 | Rooktest van de hoofdscène | Een PlayMode-test laadt Main.unity, draait 10 minuten simulatietijd met bouwacties en meldt geen fouten of excepties; draait in tools/test.ps1 en CI waar mogelijk | M7b | M |
 
 ## Risico's en aanbevolen bouwvolgorde
 
