@@ -89,8 +89,16 @@ namespace Cities.Gameplay.Zoning
             }
         }
 
+        /// <summary>Vervangt de vaste vraag door een berekende (E26-04); null gebruikt de waarden uit de inspector.</summary>
+        public System.Func<ZoneType, float> DemandSource { get; set; }
+
         private float Demand(ZoneType type)
         {
+            if (DemandSource != null)
+            {
+                return DemandSource(type);
+            }
+
             switch (type)
             {
                 case ZoneType.Residential:

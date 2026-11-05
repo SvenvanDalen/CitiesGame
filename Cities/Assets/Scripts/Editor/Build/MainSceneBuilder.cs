@@ -65,6 +65,8 @@ namespace Cities.Editor.Build
             Wire(shots, ("_controls", controls != null ? ReadControls(controls) : null), ("_camera", city));
 
             BuildUtilities(simulation);
+            var population = new GameObject("Bevolking").AddComponent<Cities.Gameplay.Population.PopulationHostBehaviour>();
+            Wire(population, ("_simulation", simulation), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
