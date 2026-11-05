@@ -98,6 +98,21 @@ namespace Cities.Gameplay.Persistence
             };
             Slots = new SaveSlots(Saves, storage) { AutosaveCount = _autosaveCount };
             _autosave.IntervalSeconds = _autosaveIntervalSeconds;
+
+            var request = Cities.Core.Configuration.StartRequest.Take();
+            if (request?.LoadSlot != null)
+            {
+                LoadNamed(request.LoadSlot);
+            }
+        }
+
+        /// <summary>Laadt een save op naam; fouten komen in het log.</summary>
+        public void LoadNamed(string name)
+        {
+            if (Saves != null)
+            {
+                Run(() => Saves.Load(name));
+            }
         }
 
         private void Update()

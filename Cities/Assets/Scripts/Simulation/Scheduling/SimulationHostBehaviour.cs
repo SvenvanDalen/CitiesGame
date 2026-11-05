@@ -81,7 +81,15 @@ namespace Cities.Simulation.Scheduling
         {
             ulong seed;
             string origin;
-            if (SimulationRandom.TryReadCommandLine(System.Environment.GetCommandLineArgs(), out seed, out var error))
+            string error;
+            var request = Cities.Core.Configuration.StartRequest.Pending;
+            if (request != null && request.Seed.HasValue)
+            {
+                seed = request.Seed.Value;
+                origin = "menu";
+                error = null;
+            }
+            else if (SimulationRandom.TryReadCommandLine(System.Environment.GetCommandLineArgs(), out seed, out error))
             {
                 origin = "opstartargument";
             }

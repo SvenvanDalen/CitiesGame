@@ -52,6 +52,9 @@ namespace Cities.Editor.Build
             console.AddComponent<ConsoleBehaviour>();
             Wire(console.GetComponent<ConsoleBehaviour>(), ("_simulation", simulation), ("_camera", city));
 
+            var tools = Object.FindAnyObjectByType<Cities.Gameplay.Tools.ToolsBehaviour>();
+            var menu = NewUi("Menu UI", panelSettings).AddComponent<Cities.Presentation.UI.MenuBehaviour>();
+            Wire(menu, ("_simulation", simulation), ("_save", save), ("_tools", tools), ("_controls", controls != null ? ReadControls(controls) : null));
             NewUi("Laadscherm", panelSettings).AddComponent<Cities.Presentation.UI.LoadingScreenBehaviour>();
             new GameObject("Underground view").AddComponent<UndergroundViewBehaviour>();
             new GameObject("Log file").AddComponent<LogFileBehaviour>();
