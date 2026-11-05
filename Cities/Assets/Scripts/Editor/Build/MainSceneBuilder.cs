@@ -74,6 +74,7 @@ namespace Cities.Editor.Build
             var transitHost = BuildTransit(simulation, economy, population, panelSettings);
             BuildEnvironment(simulation, world, population, transitHost);
             BuildPolicies(simulation, world, economy, population, panelSettings);
+            BuildIndustry(simulation, economy);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -187,6 +188,46 @@ namespace Cities.Editor.Build
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
             return transit;
+        }
+
+        /// <summary>E26-11: winningen, trekpleisters en hotels als plaatsbare bedrijven.</summary>
+        private static void BuildIndustry(SimulationHostBehaviour simulation, Object economy)
+        {
+            var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
+            var toolbar = Object.FindAnyObjectByType<Cities.Presentation.Tools.ToolbarBehaviour>();
+            if (template == null)
+            {
+                return;
+            }
+
+            var host = new GameObject("Industrie en toerisme");
+            var industry = host.AddComponent<Cities.Gameplay.Industry.IndustryHostBehaviour>();
+            var kinds = new (Cities.Gameplay.Industry.IndustryPlacementKind, string, int, Color, long)[]
+            {
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Agriculture, "Boerderij", 4, new Color(0.7f, 0.8f, 0.3f), 40_000L),
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Forestry, "Houtkap", 4, new Color(0.2f, 0.5f, 0.2f), 45_000L),
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Ore, "Mijn", 4, new Color(0.45f, 0.4f, 0.4f), 90_000L),
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Oil, "Oliewinning", 4, new Color(0.1f, 0.1f, 0.12f), 150_000L),
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Attraction, "Trekpleister", 4, new Color(0.9f, 0.4f, 0.7f), 100_000L),
+                (Cities.Gameplay.Industry.IndustryPlacementKind.Hotel, "Hotel", 3, new Color(0.3f, 0.5f, 0.85f), 120_000L),
+            };
+            var placements = new Object[kinds.Length];
+            var so = new SerializedObject(industry);
+            var list = so.FindProperty("_placements");
+            list.arraySize = kinds.Length;
+            for (var i = 0; i < kinds.Length; i++)
+            {
+                placements[i] = MakePlacement(host, new SerializedObject(template), kinds[i].Item2, kinds[i].Item3, kinds[i].Item4, kinds[i].Item5);
+                list.GetArrayElementAtIndex(i).FindPropertyRelative("Kind").enumValueIndex = (int)kinds[i].Item1;
+                list.GetArrayElementAtIndex(i).FindPropertyRelative("Source").objectReferenceValue = placements[i];
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Wire(industry, ("_simulation", simulation), ("_economy", economy));
+            if (toolbar != null)
+            {
+                AppendPlacements(toolbar, placements);
+            }
         }
 
         /// <summary>E26-10: beleid en districten met het beleidspaneel.</summary>
