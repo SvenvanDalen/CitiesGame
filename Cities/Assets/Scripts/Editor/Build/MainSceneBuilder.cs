@@ -75,6 +75,7 @@ namespace Cities.Editor.Build
             BuildEnvironment(simulation, world, population, transitHost);
             BuildPolicies(simulation, world, economy, population, panelSettings);
             BuildIndustry(simulation, economy);
+            BuildEvents(simulation, world, economy, population, panelSettings);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -188,6 +189,15 @@ namespace Cities.Editor.Build
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
             return transit;
+        }
+
+        /// <summary>E26-12: rampen, mijlpalen en meldingen.</summary>
+        private static void BuildEvents(SimulationHostBehaviour simulation, Object world, Object economy, Object population, PanelSettings panelSettings)
+        {
+            var host = new GameObject("Gebeurtenissen").AddComponent<Cities.Gameplay.Events.EventsHostBehaviour>();
+            Wire(host, ("_simulation", simulation), ("_world", world), ("_economy", economy), ("_population", population));
+            var notifications = NewUi("Meldingen", panelSettings).AddComponent<Cities.Presentation.UI.NotificationsBehaviour>();
+            Wire(notifications, ("_host", host));
         }
 
         /// <summary>E26-11: winningen, trekpleisters en hotels als plaatsbare bedrijven.</summary>
