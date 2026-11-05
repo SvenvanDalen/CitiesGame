@@ -73,6 +73,7 @@ namespace Cities.Editor.Build
             BuildServices(simulation, utilities, economy, population);
             var transitHost = BuildTransit(simulation, economy, population, panelSettings);
             BuildEnvironment(simulation, world, population, transitHost);
+            BuildPolicies(simulation, world, economy, population, panelSettings);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -186,6 +187,17 @@ namespace Cities.Editor.Build
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
             return transit;
+        }
+
+        /// <summary>E26-10: beleid en districten met het beleidspaneel.</summary>
+        private static void BuildPolicies(SimulationHostBehaviour simulation, Object world, Object economy, Object population, PanelSettings panelSettings)
+        {
+            var host = new GameObject("Beleid").AddComponent<Cities.Gameplay.Policies.PolicyHostBehaviour>();
+            var catalog = AssetDatabase.LoadAssetAtPath<Cities.Core.Configuration.DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset");
+            Wire(host, ("_simulation", simulation), ("_world", world), ("_economy", economy), ("_population", population),
+                ("_tools", Object.FindAnyObjectByType<Cities.Gameplay.Tools.ToolsBehaviour>()), ("_catalog", catalog));
+            var panel = NewUi("Beleidspaneel", panelSettings).AddComponent<Cities.Presentation.UI.PolicyPanelBehaviour>();
+            Wire(panel, ("_host", host));
         }
 
         /// <summary>E26-09: milieu en landwaarde, met de milieu-overlays in het overlaypaneel.</summary>
