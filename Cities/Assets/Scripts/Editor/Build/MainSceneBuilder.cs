@@ -71,6 +71,7 @@ namespace Cities.Editor.Build
             var economy = new GameObject("Economie").AddComponent<Cities.Gameplay.Economy.EconomyHostBehaviour>();
             Wire(economy, ("_simulation", simulation), ("_population", population), ("_tools", tools), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
             BuildServices(simulation, utilities, economy, population);
+            BuildTransit(simulation, economy, population, panelSettings);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -158,6 +159,31 @@ namespace Cities.Editor.Build
             Wire(placement, ("_prefab", prefab), ("_toolName", name), ("_width", cells), ("_depth", cells), ("_cost", cost));
             prefab.SetActive(false);
             return placement;
+        }
+
+        /// <summary>E26-08: haltes, lijnen en bussen.</summary>
+        private static void BuildTransit(SimulationHostBehaviour simulation, Object economy, Object population, PanelSettings panelSettings)
+        {
+            var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
+            var toolbar = Object.FindAnyObjectByType<Cities.Presentation.Tools.ToolbarBehaviour>();
+            if (template == null)
+            {
+                return;
+            }
+
+            var host = new GameObject("Openbaar vervoer");
+            var transit = host.AddComponent<Cities.Gameplay.Transit.TransitHostBehaviour>();
+            var stop = MakePlacement(host, new SerializedObject(template), "Bushalte", 1, new Color(0.2f, 0.7f, 0.4f), 5_000L);
+            var material = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.15f, 0.6f, 0.35f), enableInstancing = true };
+            Wire(transit, ("_simulation", simulation), ("_economy", economy), ("_population", population), ("_stopPlacement", stop),
+                ("_mesh", Resources.GetBuiltinResource<Mesh>("Cube.fbx")), ("_material", material));
+            if (toolbar != null)
+            {
+                AppendPlacements(toolbar, new Object[] { stop });
+            }
+
+            var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
+            Wire(panel, ("_host", transit));
         }
 
         /// <summary>E26-07: stadsdiensten met plaatsbare gebouwen en probleemiconen.</summary>
