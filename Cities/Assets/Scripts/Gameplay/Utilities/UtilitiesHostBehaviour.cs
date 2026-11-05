@@ -31,6 +31,7 @@ namespace Cities.Gameplay.Utilities
         [Tooltip("Hoeveel simulatieticks tussen het bijwerken van de aansluitkleur.")]
         [SerializeField, Min(1)] private int _tintInterval = 30;
 
+        private readonly Dictionary<GameObject, int> _handles = new Dictionary<GameObject, int>();
         private readonly List<(int Handle, Renderer[] Renderers)> _buildings = new List<(int, Renderer[])>();
         private MaterialPropertyBlock _block;
 
@@ -39,15 +40,7 @@ namespace Cities.Gameplay.Utilities
         /// <summary>Aansluitstatus van het gebouw dat bij dit object hoort; volledig aangesloten als het onbekend is.</summary>
         public UtilityStatus StatusOf(GameObject building)
         {
-            foreach (var (handle, renderers) in _buildings)
-            {
-                if (renderers.Length > 0 && renderers[0] != null && renderers[0].transform.IsChildOf(building.transform))
-                {
-                    return Utilities.StatusOf(handle);
-                }
-            }
-
-            return new UtilityStatus(1f, 1f, 1f, 1f);
+            return building != null && _handles.TryGetValue(building, out var handle) ? Utilities.StatusOf(handle) : new UtilityStatus(1f, 1f, 1f, 1f);
         }
 
         private void Start()
@@ -93,6 +86,7 @@ namespace Cities.Gameplay.Utilities
             var spec = definition.Spec;
             var handle = Utilities.AddBuilding(new float2(position.x, position.z), spec.Households, spec.Workplaces);
             _buildings.Add((handle, building.GetComponentsInChildren<Renderer>()));
+            _handles[building] = handle;
         }
 
         private void OnTick(long tick)

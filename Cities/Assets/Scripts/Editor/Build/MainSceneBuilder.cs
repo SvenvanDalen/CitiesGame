@@ -64,12 +64,13 @@ namespace Cities.Editor.Build
             var shots = new GameObject("Screenshots").AddComponent<ScreenshotBehaviour>();
             Wire(shots, ("_controls", controls != null ? ReadControls(controls) : null), ("_camera", city));
 
-            BuildUtilities(simulation);
+            var utilities = BuildUtilities(simulation);
             var population = new GameObject("Bevolking").AddComponent<Cities.Gameplay.Population.PopulationHostBehaviour>();
             Wire(population, ("_simulation", simulation), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
 
             var economy = new GameObject("Economie").AddComponent<Cities.Gameplay.Economy.EconomyHostBehaviour>();
             Wire(economy, ("_simulation", simulation), ("_population", population), ("_tools", tools), ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()));
+            BuildServices(simulation, utilities, economy, population);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -89,7 +90,7 @@ namespace Cities.Editor.Build
         private static readonly long[] PlantCosts = { 120_000L, 40_000L, 80_000L, 30_000L };
 
         /// <summary>E26-03: nutsnetten in de scene, met vier plaatsbare voorzieningen in de werkbalk.</summary>
-        private static void BuildUtilities(SimulationHostBehaviour simulation)
+        private static Object BuildUtilities(SimulationHostBehaviour simulation)
         {
             var spawner = Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>();
             var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
@@ -97,7 +98,7 @@ namespace Cities.Editor.Build
             if (template == null)
             {
                 Debug.LogWarning("Geen PrefabPlacementBehaviour in de bronscène; nutsvoorzieningen niet geplaatst.");
-                return;
+                return null;
             }
 
             var source = new SerializedObject(template);
@@ -113,22 +114,8 @@ namespace Cities.Editor.Build
             var placements = new Cities.Gameplay.Tools.PrefabPlacementBehaviour[kinds.Length];
             for (var i = 0; i < kinds.Length; i++)
             {
-                var (kind, name, cells, color) = kinds[i];
-                var prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                prefab.name = "Prefab " + name;
-                prefab.transform.SetParent(host.transform);
-                prefab.transform.localScale = new Vector3(cells * 8f - 2f, 10f, cells * 8f - 2f);
-                var renderer = prefab.GetComponent<Renderer>();
-                renderer.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = color };
-                Object.DestroyImmediate(prefab.GetComponent<Collider>());
-                var holder = new GameObject("Plaatsing " + name);
-                holder.transform.SetParent(host.transform);
-                var placement = holder.AddComponent<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
-                CopyReference(source, placement, "_tools");
-                CopyReference(source, placement, "_world");
-                CopyReference(source, placement, "_roads");
-                Wire(placement, ("_prefab", prefab), ("_toolName", name), ("_width", cells), ("_depth", cells), ("_cost", PlantCosts[i]));
-                prefab.SetActive(false);
+                var (_, name, cells, color) = kinds[i];
+                var placement = MakePlacement(host, source, name, cells, color, PlantCosts[i]);
                 placements[i] = placement;
             }
 
@@ -140,6 +127,78 @@ namespace Cities.Editor.Build
             for (var i = 0; i < kinds.Length; i++)
             {
                 var element = plants.GetArrayElementAtIndex(i);
+                element.FindPropertyRelative("Kind").enumValueIndex = (int)kinds[i].Item1;
+                element.FindPropertyRelative("Placement").objectReferenceValue = placements[i];
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            if (toolbar != null)
+            {
+                AppendPlacements(toolbar, placements);
+            }
+
+            return utilities;
+        }
+
+        private static Cities.Gameplay.Tools.PrefabPlacementBehaviour MakePlacement(GameObject host, SerializedObject source, string name, int cells, Color color, long cost)
+        {
+            var prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            prefab.name = "Prefab " + name;
+            prefab.transform.SetParent(host.transform);
+            prefab.transform.localScale = new Vector3((cells * 8f) - 2f, 10f, (cells * 8f) - 2f);
+            prefab.GetComponent<Renderer>().sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = color };
+            Object.DestroyImmediate(prefab.GetComponent<Collider>());
+            var holder = new GameObject("Plaatsing " + name);
+            holder.transform.SetParent(host.transform);
+            var placement = holder.AddComponent<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
+            var target = (Object)placement;
+            CopyReference(source, target, "_tools");
+            CopyReference(source, target, "_world");
+            CopyReference(source, target, "_roads");
+            Wire(placement, ("_prefab", prefab), ("_toolName", name), ("_width", cells), ("_depth", cells), ("_cost", cost));
+            prefab.SetActive(false);
+            return placement;
+        }
+
+        /// <summary>E26-07: stadsdiensten met plaatsbare gebouwen en probleemiconen.</summary>
+        private static void BuildServices(SimulationHostBehaviour simulation, Object utilities, Object economy, Object population)
+        {
+            var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
+            var toolbar = Object.FindAnyObjectByType<Cities.Presentation.Tools.ToolbarBehaviour>();
+            if (template == null)
+            {
+                return;
+            }
+
+            var source = new SerializedObject(template);
+            var host = new GameObject("Diensten");
+            var services = host.AddComponent<Cities.Gameplay.Services.ServicesHostBehaviour>();
+            var icons = new GameObject("Probleemiconen").AddComponent<Cities.Presentation.Problems.ProblemIconsBehaviour>();
+            var kinds = new[]
+            {
+                (Cities.Gameplay.Services.CityService.Fire, 3, new Color(0.85f, 0.2f, 0.15f), 150_000L),
+                (Cities.Gameplay.Services.CityService.Police, 3, new Color(0.2f, 0.3f, 0.75f), 120_000L),
+                (Cities.Gameplay.Services.CityService.Health, 3, new Color(0.95f, 0.95f, 0.95f), 200_000L),
+                (Cities.Gameplay.Services.CityService.Education, 4, new Color(0.9f, 0.65f, 0.2f), 160_000L),
+            };
+            var placements = new Cities.Gameplay.Tools.PrefabPlacementBehaviour[kinds.Length];
+            for (var i = 0; i < kinds.Length; i++)
+            {
+                placements[i] = MakePlacement(host, source, Cities.Gameplay.Services.CityServices.NameOf(kinds[i].Item1), kinds[i].Item2, kinds[i].Item3, kinds[i].Item4);
+            }
+
+            var so = new SerializedObject(services);
+            so.FindProperty("_simulation").objectReferenceValue = simulation;
+            so.FindProperty("_spawner").objectReferenceValue = Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>();
+            so.FindProperty("_utilities").objectReferenceValue = utilities;
+            so.FindProperty("_economy").objectReferenceValue = economy;
+            so.FindProperty("_population").objectReferenceValue = population;
+            so.FindProperty("_problems").objectReferenceValue = icons;
+            var list = so.FindProperty("_services");
+            list.arraySize = kinds.Length;
+            for (var i = 0; i < kinds.Length; i++)
+            {
+                var element = list.GetArrayElementAtIndex(i);
                 element.FindPropertyRelative("Kind").enumValueIndex = (int)kinds[i].Item1;
                 element.FindPropertyRelative("Placement").objectReferenceValue = placements[i];
             }
