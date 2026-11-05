@@ -97,5 +97,22 @@ namespace Cities.Tests.EditMode.Population
 
             Assert.That(city.Population, Is.EqualTo(0));
         }
+
+        [Test]
+        public void RestoreFillsHomesUpToCapacity()
+        {
+            var population = new CityPopulation();
+            population.AddBuilding(2, 0, 0);
+            population.AddBuilding(2, 0, 0);
+
+            population.Restore(8);
+            Assert.That(population.Population, Is.EqualTo(8));
+
+            population.Restore(500);
+            Assert.That(population.Population, Is.EqualTo(population.HomeCapacity));
+
+            population.Restore(-3);
+            Assert.That(population.Population, Is.EqualTo(0));
+        }
     }
 }

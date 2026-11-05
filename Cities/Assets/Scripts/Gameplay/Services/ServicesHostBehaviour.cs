@@ -85,6 +85,9 @@ namespace Cities.Gameplay.Services
             }
         }
 
+        /// <summary>Zet een opgeslagen dienst terug in het model (E26-14); het gebouwobject zelf wordt niet teruggezet.</summary>
+        public void Restore(CityService kind, float2 position) => OnService(kind, new float3(position.x, 0f, position.y));
+
         private void OnService(CityService kind, float3 position)
         {
             var station = Services.Place(kind, new float2(position.x, position.z));

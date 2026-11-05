@@ -57,10 +57,14 @@ namespace Cities.Gameplay.Transit
             }
         }
 
-        private void OnStopPlaced(GameObject placed, float3 position)
+        private void OnStopPlaced(GameObject placed, float3 position) => RestoreStop(new float2(position.x, position.z), position.y);
+
+        /// <summary>Voegt een halte toe, ook bij het laden van een save (E26-14); geeft het halte-id terug.</summary>
+        public int RestoreStop(float2 position, float height = 0f)
         {
-            Transit.AddStop(new float2(position.x, position.z));
-            _stops.Add(Matrix4x4.TRS(new Vector3(position.x, position.y + 2f, position.z), Quaternion.identity, new Vector3(2f, 4f, 2f)));
+            var id = Transit.AddStop(position);
+            _stops.Add(Matrix4x4.TRS(new Vector3(position.x, height + 2f, position.y), Quaternion.identity, new Vector3(2f, 4f, 2f)));
+            return id;
         }
 
         private void OnTick(long tick) => Transit.Fleet.Tick(1f / Mathf.Max(1, _ticksPerSecond));

@@ -66,6 +66,9 @@ namespace Cities.Gameplay.Industry
 
         public void AddHotel() => Beds += BedsPerHotel;
 
+        /// <summary>Zet het aantal hotelbedden terug uit een save (E26-14).</summary>
+        public void RestoreBeds(int beds) => Beds = Math.Max(0, beds);
+
         /// <summary>Sluit de week af: winnen, grondstoffen verkopen, toerisme afrekenen.</summary>
         public CityIndustryWeek EndWeek(int week, Ledger ledger)
         {

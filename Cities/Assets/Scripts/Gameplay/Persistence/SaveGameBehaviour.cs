@@ -32,6 +32,15 @@ namespace Cities.Gameplay.Persistence
 
         [Tooltip("Optioneel: de camera met bladwijzers.")]
         [SerializeField] private Cities.Gameplay.Cameras.CityCameraBehaviour _camera;
+        [Tooltip("Haalt de toestand van de stadsmodellen op en zet ze terug (E26-14); leeg slaat alleen kaart, wegen en klok op.")]
+        [SerializeField] private CityStateHostBehaviour _cityState;
+
+        [Tooltip("Beleid en districten (E26-14).")]
+        [SerializeField] private Cities.Gameplay.Policies.PolicyHostBehaviour _policies;
+
+        [Tooltip("Rampen en mijlpalen (E26-14).")]
+        [SerializeField] private Cities.Gameplay.Events.EventsHostBehaviour _events;
+
         [SerializeField] private string _cityName = "Nieuwe stad";
 
         [Tooltip("Naam van de save voor de contextmenu-opdrachten in de inspector.")]
@@ -88,6 +97,22 @@ namespace Cities.Gameplay.Persistence
             if (_camera != null)
             {
                 sections.Add(new Cities.Gameplay.Cameras.CameraBookmarksSection(_camera.Bookmarks));
+            }
+
+            if (_cityState != null)
+            {
+                sections.Add(new CityStateSection(_cityState.Capture, _cityState.Apply));
+            }
+
+            if (_policies != null)
+            {
+                sections.Add(new Cities.Simulation.Policies.PolicySection(_policies.Policies.Book));
+                sections.Add(new Cities.World.Districts.DistrictSection(_policies.Policies.Districts));
+            }
+
+            if (_events != null)
+            {
+                sections.Add(new Cities.Simulation.Milestones.MilestoneSection(_events.Events.Milestones));
             }
 
             var storage = new SaveStorage(_directory ?? SavesDirectory);

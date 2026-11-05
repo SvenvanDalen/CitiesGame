@@ -77,6 +77,7 @@ namespace Cities.Editor.Build
             BuildIndustry(simulation, economy);
             BuildEvents(simulation, world, economy, population, panelSettings);
             BuildAtmosphere(simulation, population);
+            BuildPersistence(save, population, economy);
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -190,6 +191,18 @@ namespace Cities.Editor.Build
             var panel = NewUi("OV-paneel", panelSettings).AddComponent<Cities.Presentation.UI.TransitPanelBehaviour>();
             Wire(panel, ("_host", transit));
             return transit;
+        }
+
+        /// <summary>E26-14: alle stadsmodellen in het opslaan en laden.</summary>
+        private static void BuildPersistence(Object save, Object population, Object economy)
+        {
+            var host = new GameObject("Stadstoestand").AddComponent<Cities.Gameplay.Persistence.CityStateHostBehaviour>();
+            Wire(host, ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()), ("_economy", economy), ("_population", population),
+                ("_transit", Object.FindAnyObjectByType<Cities.Gameplay.Transit.TransitHostBehaviour>()),
+                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()),
+                ("_industry", Object.FindAnyObjectByType<Cities.Gameplay.Industry.IndustryHostBehaviour>()));
+            Wire(save, ("_cityState", host), ("_policies", Object.FindAnyObjectByType<Cities.Gameplay.Policies.PolicyHostBehaviour>()),
+                ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()));
         }
 
         /// <summary>E26-13: dag en nacht, weer en omgevingsgeluid.</summary>

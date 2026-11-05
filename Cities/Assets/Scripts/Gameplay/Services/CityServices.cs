@@ -26,6 +26,8 @@ namespace Cities.Gameplay.Services
 
         public int Count => _placed.Count;
 
+        public IReadOnlyList<(CityService Kind, float2 Position)> Placed => _placed;
+
         public static float RadiusOf(CityService kind)
         {
             switch (kind)

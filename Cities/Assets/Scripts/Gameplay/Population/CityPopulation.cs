@@ -93,6 +93,21 @@ namespace Cities.Gameplay.Population
             return handle;
         }
 
+        /// <summary>
+        /// Zet het aantal inwoners terug uit een save (E26-14) en verdeelt ze over de woningen die er nu zijn; wat niet past, valt weg.
+        /// </summary>
+        public void Restore(int population)
+        {
+            var left = Math.Max(0, population);
+            Population = 0;
+            foreach (var home in _homes.Values)
+            {
+                home.Residents = Math.Min(home.Capacity, left);
+                left -= home.Residents;
+                Population += home.Residents;
+            }
+        }
+
         public void RemoveBuilding(int handle)
         {
             if (_homes.TryGetValue(handle, out var home))

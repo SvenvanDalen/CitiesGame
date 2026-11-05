@@ -40,6 +40,9 @@ namespace Cities.Simulation.Economy
 
         public long Balance { get; private set; }
 
+        /// <summary>Zet het saldo terug uit een save (E26-14); de weekhistorie blijft zoals ze is.</summary>
+        public void RestoreBalance(long balance) => Balance = balance;
+
         /// <summary>
         /// Sandbox (E22-04): uitgaven worden nog wel geboekt maar kosten niets; het saldo gaat niet omlaag en elke uitgave is toegestaan.
         /// Inkomsten tellen gewoon mee.
