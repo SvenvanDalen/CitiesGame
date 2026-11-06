@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cities.Gameplay.Tools;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
@@ -94,12 +95,9 @@ namespace Cities.Gameplay.Zoning
         public List<KeyValuePair<CellCoord, ZoneCell>> Snapshot(IEnumerable<CellCoord> cells)
         {
             var result = new List<KeyValuePair<CellCoord, ZoneCell>>();
-            foreach (var cell in cells)
+            foreach (var cell in cells.Where(c => _map.Zones.Layout.Contains(c.X, c.Z)))
             {
-                if (_map.Zones.Layout.Contains(cell.X, cell.Z))
-                {
-                    result.Add(new KeyValuePair<CellCoord, ZoneCell>(cell, _map.Zones.GetForCell(cell)));
-                }
+                result.Add(new KeyValuePair<CellCoord, ZoneCell>(cell, _map.Zones.GetForCell(cell)));
             }
 
             return result;
