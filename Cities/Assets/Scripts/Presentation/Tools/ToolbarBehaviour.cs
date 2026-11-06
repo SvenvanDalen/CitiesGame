@@ -38,6 +38,9 @@ namespace Cities.Presentation.Tools
         private Label _info;
         private VisualElement _bar;
         private Slider _targetHeight;
+        private readonly ToolbarModel _model = new ToolbarModel();
+        private readonly Dictionary<ToolbarTab, VisualElement> _panels = new Dictionary<ToolbarTab, VisualElement>();
+        private readonly Dictionary<ToolbarTab, CityButton> _tabButtons = new Dictionary<ToolbarTab, CityButton>();
 
         private void OnEnable()
         {
@@ -63,32 +66,60 @@ namespace Cities.Presentation.Tools
             _info.style.marginBottom = 8;
             _bar.Add(_info);
 
-            var toolbar = new VisualElement();
-            toolbar.AddToClassList(UiClasses.Toolbar);
+            foreach (var tab in ToolbarModel.Tabs)
+            {
+                var panel = new VisualElement { name = "tool-panel-" + tab };
+                panel.AddToClassList(UiClasses.Toolbar);
+                panel.style.flexWrap = Wrap.Wrap;
+                panel.style.justifyContent = Justify.Center;
+                panel.style.maxWidth = Length.Percent(90);
+                panel.style.marginBottom = 8;
+                panel.style.display = DisplayStyle.None;
+                _panels[tab] = panel;
+                _bar.Add(panel);
+            }
+
             foreach (var placement in _placements)
             {
                 var button = new CityButton(placement.Tool.Name);
                 button.clicked += () => Toggle(placement);
-                toolbar.Add(button);
+                Panel(ToolbarCatalog.TabFor(placement.Tool.Name)).Add(button);
                 _buttons.Add((button, placement));
             }
 
             if (_brushes != null)
             {
-                AddBrushes(toolbar);
+                AddBrushes(Panel(ToolbarTab.Terrain));
             }
 
             if (_roads != null)
             {
-                AddRoads(toolbar);
+                AddRoads(Panel(ToolbarTab.Roads));
             }
 
             if (_zones != null)
             {
-                AddZones(toolbar);
+                AddZones(Panel(ToolbarTab.Zones));
             }
 
-            _bar.Add(toolbar);
+            var tabs = new VisualElement { name = "tool-tabs" };
+            tabs.AddToClassList(UiClasses.Toolbar);
+            foreach (var tab in ToolbarModel.Tabs)
+            {
+                if (_panels[tab].childCount == 0)
+                {
+                    continue;
+                }
+
+                var chosen = tab;
+                var tabButton = new CityButton(ToolbarModel.LabelOf(tab));
+                tabButton.clicked += () => _model.ToggleTab(chosen);
+                tabs.Add(tabButton);
+                _tabButtons[tab] = tabButton;
+            }
+
+            _bar.Add(tabs);
+            _model.Changed += RefreshTabs;
             root.Add(_bar);
             _tools.Controller.ActiveChanged += OnActiveChanged;
         }
@@ -96,7 +127,10 @@ namespace Cities.Presentation.Tools
         private void OnDisable()
         {
             _tools.Controller.ActiveChanged -= OnActiveChanged;
+            _model.Changed -= RefreshTabs;
             _bar?.RemoveFromHierarchy();
+            _panels.Clear();
+            _tabButtons.Clear();
             _buttons.Clear();
             _brushButtons.Clear();
             _brushSettings.Clear();
@@ -105,6 +139,22 @@ namespace Cities.Presentation.Tools
         private static readonly System.Globalization.CultureInfo Dutch = new System.Globalization.CultureInfo("nl-NL");
 
         private void Start() => OnActiveChanged(_tools.Controller.Active);
+
+        private VisualElement Panel(ToolbarTab tab) => _panels[tab];
+
+        /// <summary>Toont alleen het subpaneel van de open tab en markeert die tab.</summary>
+        private void RefreshTabs()
+        {
+            foreach (var (tab, panel) in _panels)
+            {
+                var open = _model.OpenTab == tab;
+                panel.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
+                if (_tabButtons.TryGetValue(tab, out var button))
+                {
+                    button.Selected = open;
+                }
+            }
+        }
 
         private void LateUpdate()
         {
