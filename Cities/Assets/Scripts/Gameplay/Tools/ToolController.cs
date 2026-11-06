@@ -1,4 +1,5 @@
 using System;
+using Cities.Simulation.Commands;
 
 namespace Cities.Gameplay.Tools
 {
@@ -6,6 +7,9 @@ namespace Cities.Gameplay.Tools
     public sealed class ToolController
     {
         public ITool Active { get; private set; }
+
+        /// <summary>Wat de speler ongedaan kan maken (E27-04); tools die <see cref="IUndoSource"/> zijn vullen dit na het uitvoeren.</summary>
+        public UndoHistory History { get; } = new UndoHistory();
 
         public ToolPreview Preview { get; private set; }
 
@@ -59,6 +63,15 @@ namespace Cities.Gameplay.Tools
             }
 
             Active.Apply(Preview);
+            if (Active is IUndoSource source)
+            {
+                var action = source.TakeUndo();
+                if (action != null)
+                {
+                    History.Record(action);
+                }
+            }
+
             return true;
         }
 

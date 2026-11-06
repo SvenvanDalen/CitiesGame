@@ -90,6 +90,39 @@ namespace Cities.Gameplay.Zoning
             return changed;
         }
 
+        /// <summary>Legt de huidige zone van de cellen vast, voor ongedaan maken (E27-04).</summary>
+        public List<KeyValuePair<CellCoord, ZoneCell>> Snapshot(IEnumerable<CellCoord> cells)
+        {
+            var result = new List<KeyValuePair<CellCoord, ZoneCell>>();
+            foreach (var cell in cells)
+            {
+                if (_map.Zones.Layout.Contains(cell.X, cell.Z))
+                {
+                    result.Add(new KeyValuePair<CellCoord, ZoneCell>(cell, _map.Zones.GetForCell(cell)));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>Zet de zones uit een <see cref="Snapshot"/> terug, zonder de aanlegregels opnieuw te toetsen.</summary>
+        public void Restore(IReadOnlyList<KeyValuePair<CellCoord, ZoneCell>> snapshot)
+        {
+            if (snapshot.Count == 0)
+            {
+                return;
+            }
+
+            var bounds = new RectInt(snapshot[0].Key.X, snapshot[0].Key.Z, 1, 1);
+            foreach (var pair in snapshot)
+            {
+                _map.Zones.SetForCell(pair.Key, pair.Value);
+                bounds = Include(bounds, pair.Key);
+            }
+
+            ZonesChanged?.Invoke(bounds);
+        }
+
         /// <summary>Wist de zone op alle cellen in <paramref name="cells"/>.</summary>
         public int Clear(RectInt cells) => Paint(cells, ZoneType.None, ZoneDensity.Low);
 

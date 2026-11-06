@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cities.Core.Diagnostics;
 using Cities.Gameplay.Tools;
+using Cities.Simulation.Commands;
 using Cities.World.Grid;
 using Unity.Mathematics;
 using UnityEngine;
@@ -25,7 +26,7 @@ namespace Cities.Gameplay.Zoning
     /// Zoneert cellen langs wegen (E05-02) met een kwast, een rechthoek of vullen, of wist ze (<see cref="Erase"/>).
     /// De preview toont de cellen die veranderen (groen, rood als een cel niet mag) en de bebouwbare cellen om de muis heen.
     /// </summary>
-    public sealed class ZoneTool : ITool
+    public sealed class ZoneTool : ITool, IUndoSource
     {
         public const float MinRadius = 8f;
         public const float MaxRadius = 64f;
@@ -105,6 +106,7 @@ namespace Cities.Gameplay.Zoning
                 return;
             }
 
+            var before = _service.Snapshot(_cells);
             if (Erase)
             {
                 _service.Clear(_cells);
@@ -114,8 +116,20 @@ namespace Cities.Gameplay.Zoning
                 _service.Paint(_cells, Type, Density);
             }
 
+            var after = _service.Snapshot(before.ConvertAll(p => p.Key));
+            _lastAction = new UndoAction(Erase ? "Zone wissen" : "Zone aanleggen", 0, () => _service.Restore(before), () => _service.Restore(after));
+
             _anchor = null;
             _cells.Clear();
+        }
+
+        private UndoAction _lastAction;
+
+        public UndoAction TakeUndo()
+        {
+            var action = _lastAction;
+            _lastAction = null;
+            return action;
         }
 
         public bool CancelStep()
