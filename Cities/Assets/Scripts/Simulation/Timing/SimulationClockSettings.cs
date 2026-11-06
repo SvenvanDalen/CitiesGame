@@ -32,6 +32,13 @@ namespace Cities.Simulation.Timing
         [Range(1, 31)]
         public int StartDay;
 
+        [Tooltip("Uur van de dag waarop het spel begint (0 tot 23); 0 is middernacht.")]
+        [Range(0, 23)]
+        public int StartHour;
+
+        /// <summary>Een nieuwe stad begint 's ochtends, niet midden in de nacht.</summary>
+        public const int DefaultStartHour = 8;
+
         /// <summary>
         /// Standaard: 10 Hz en 100 ticks per dag. Bij 1x duurt een dag 10 seconden, een maand ongeveer vijf minuten
         /// en een jaar een uur; bij 3x een derde daarvan.
@@ -95,6 +102,11 @@ namespace Cities.Simulation.Timing
             if (StartDay < 1 || StartDay > DateTime.DaysInMonth(StartYear, StartMonth))
             {
                 return $"{nameof(StartDay)} {StartDay} bestaat niet in maand {StartMonth} van {StartYear}.";
+            }
+
+            if (StartHour < 0 || StartHour > 23)
+            {
+                return $"{nameof(StartHour)} moet tussen 0 en 23 liggen (is {StartHour}).";
             }
 
             return null;

@@ -3,7 +3,7 @@ namespace Cities.Gameplay.Population
     /// <summary>Wat de uitleg nodig heeft om te kiezen welke hint de speler nu helpt (E26-15).</summary>
     public readonly struct HintInputs
     {
-        public HintInputs(int buildings, int jobs, int population, int services, int transitStops, long balance)
+        public HintInputs(int buildings, int jobs, int population, int services, int transitStops, long balance, int roads = 1)
         {
             Buildings = buildings;
             Jobs = jobs;
@@ -11,6 +11,7 @@ namespace Cities.Gameplay.Population
             Services = services;
             TransitStops = transitStops;
             Balance = balance;
+            Roads = roads;
         }
 
         public int Buildings { get; }
@@ -24,6 +25,9 @@ namespace Cities.Gameplay.Population
         public int TransitStops { get; }
 
         public long Balance { get; }
+
+        /// <summary>Aantal wegsegmenten; standaard 1 zodat oudere aanroepen de wegstap overslaan.</summary>
+        public int Roads { get; }
     }
 
     /// <summary>
@@ -46,9 +50,14 @@ namespace Cities.Gameplay.Population
                 return "Je geld raakt op. Verhoog de belasting, of leen geld in het financiënpaneel.";
             }
 
+            if (state.Buildings == 0 && state.Roads == 0)
+            {
+                return "Stap 1: klik op 'Wegen' (of druk op R), kies 'Rechte weg' en klik twee keer op het gras.";
+            }
+
             if (state.Buildings == 0)
             {
-                return "Begin met een weg en teken daarlangs een woonzone, een winkelzone en een industriezone.";
+                return "Stap 2: klik op 'Zones' (of druk op Z), kies 'Wonen' en teken een vlak langs de weg. Dan komen er huizen.";
             }
 
             if (state.Jobs == 0)

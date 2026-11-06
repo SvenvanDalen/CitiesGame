@@ -18,6 +18,7 @@ namespace Cities.Presentation.UI
         public const string ButtonSmall = "c-button--small";
         public const string ButtonIcon = "c-button--icon";
         public const string ButtonSelected = "c-button--selected";
+        public const string ButtonDisabled = "c-button--unaffordable";
 
         public const string Panel = "c-panel";
         public const string PanelHeader = "c-panel__header";

@@ -40,10 +40,64 @@ namespace Cities.Gameplay.Tools
 
         private void OnDisable() => Controller.Deselect();
 
+        /// <summary>Ctrl+Z maakt ongedaan, Ctrl+Y of Ctrl+Shift+Z doet opnieuw (E27-04).</summary>
+        private void HandleUndoKeys()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null || !keyboard.ctrlKey.isPressed)
+            {
+                return;
+            }
+
+            if (keyboard.zKey.wasPressedThisFrame)
+            {
+                if (keyboard.shiftKey.isPressed)
+                {
+                    Controller.History.Redo();
+                }
+                else
+                {
+                    Controller.History.Undo();
+                }
+            }
+            else if (keyboard.yKey.wasPressedThisFrame)
+            {
+                Controller.History.Redo();
+            }
+        }
+
+        /// <summary>Volgt de rechtermuisknop: een korte klik zonder slepen annuleert, slepen blijft voor de camera.</summary>
+        private bool RightClicked()
+        {
+            var mouse = Mouse.current;
+            if (mouse == null)
+            {
+                return false;
+            }
+
+            if (mouse.rightButton.wasPressedThisFrame)
+            {
+                _rightDown = mouse.position.ReadValue();
+                _rightDownTime = Time.unscaledTime;
+            }
+
+            return mouse.rightButton.wasReleasedThisFrame && ClickDetector.IsClick(_rightDown, _rightDownTime, mouse.position.ReadValue(), Time.unscaledTime);
+        }
+
+        private Vector2 _rightDown;
+        private float _rightDownTime;
+
         private void Update()
         {
+            HandleUndoKeys();
             if (Controller.Active == null)
             {
+                return;
+            }
+
+            if (RightClicked())
+            {
+                Controller.Cancel();
                 return;
             }
 

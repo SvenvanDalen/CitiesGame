@@ -38,6 +38,10 @@ namespace Cities.Presentation.Tools
         private Label _info;
         private VisualElement _bar;
         private Slider _targetHeight;
+        private VisualElement _help;
+        private readonly ToolbarModel _model = new ToolbarModel();
+        private readonly Dictionary<ToolbarTab, VisualElement> _panels = new Dictionary<ToolbarTab, VisualElement>();
+        private readonly Dictionary<ToolbarTab, CityButton> _tabButtons = new Dictionary<ToolbarTab, CityButton>();
 
         private void OnEnable()
         {
@@ -63,32 +67,78 @@ namespace Cities.Presentation.Tools
             _info.style.marginBottom = 8;
             _bar.Add(_info);
 
-            var toolbar = new VisualElement();
-            toolbar.AddToClassList(UiClasses.Toolbar);
+            foreach (var tab in ToolbarModel.Tabs)
+            {
+                var panel = new VisualElement { name = "tool-panel-" + tab };
+                panel.AddToClassList(UiClasses.Toolbar);
+                panel.style.flexWrap = Wrap.Wrap;
+                panel.style.justifyContent = Justify.Center;
+                panel.style.maxWidth = Length.Percent(90);
+                panel.style.marginBottom = 8;
+                panel.style.display = DisplayStyle.None;
+                _panels[tab] = panel;
+                _bar.Add(panel);
+            }
+
             foreach (var placement in _placements)
             {
-                var button = new CityButton(placement.Tool.Name);
+                var cost = placement.Tool.Cost;
+                var button = new CityButton(cost > 0 ? $"{placement.Tool.Name} · € {ToolbarHotkeys.ShortMoney(cost)}" : placement.Tool.Name);
                 button.clicked += () => Toggle(placement);
-                toolbar.Add(button);
+                Panel(ToolbarCatalog.TabFor(placement.Tool.Name)).Add(button);
                 _buttons.Add((button, placement));
             }
 
             if (_brushes != null)
             {
-                AddBrushes(toolbar);
+                AddBrushes(Panel(ToolbarTab.Terrain));
             }
 
             if (_roads != null)
             {
-                AddRoads(toolbar);
+                AddRoads(Panel(ToolbarTab.Roads));
             }
 
             if (_zones != null)
             {
-                AddZones(toolbar);
+                AddZones(Panel(ToolbarTab.Zones));
             }
 
-            _bar.Add(toolbar);
+            var tabs = new VisualElement { name = "tool-tabs" };
+            tabs.AddToClassList(UiClasses.Toolbar);
+            foreach (var tab in ToolbarModel.Tabs)
+            {
+                if (_panels[tab].childCount == 0)
+                {
+                    continue;
+                }
+
+                var chosen = tab;
+                var tabKey = ToolbarHotkeys.KeyOf(tab).ToString();
+                var tabButton = new CityButton($"{ToolbarModel.LabelOf(tab)} ({tabKey})") { tooltip = ToolbarHotkeys.Tooltip(ToolbarModel.LabelOf(tab), tabKey, 0) };
+                tabButton.clicked += () => _model.ToggleTab(chosen);
+                tabs.Add(tabButton);
+                _tabButtons[tab] = tabButton;
+            }
+
+            _bar.Add(tabs);
+            _help = new VisualElement { name = "help" };
+            _help.AddToClassList(UiClasses.Toolbar);
+            _help.style.position = Position.Absolute;
+            _help.style.alignSelf = Align.Center;
+            _help.style.bottom = 120;
+            _help.style.flexDirection = FlexDirection.Column;
+            _help.style.alignItems = Align.FlexStart;
+            _help.style.paddingLeft = _help.style.paddingRight = _help.style.paddingTop = _help.style.paddingBottom = 12;
+            _help.style.display = DisplayStyle.None;
+            foreach (var line in HelpContent.Lines())
+            {
+                _help.Add(new Label(line));
+            }
+
+            root.Add(_help);
+            AddTooltips();
+            _model.Changed += RefreshTabs;
             root.Add(_bar);
             _tools.Controller.ActiveChanged += OnActiveChanged;
         }
@@ -96,7 +146,11 @@ namespace Cities.Presentation.Tools
         private void OnDisable()
         {
             _tools.Controller.ActiveChanged -= OnActiveChanged;
+            _model.Changed -= RefreshTabs;
             _bar?.RemoveFromHierarchy();
+            _help?.RemoveFromHierarchy();
+            _panels.Clear();
+            _tabButtons.Clear();
             _buttons.Clear();
             _brushButtons.Clear();
             _brushSettings.Clear();
@@ -106,8 +160,117 @@ namespace Cities.Presentation.Tools
 
         private void Start() => OnActiveChanged(_tools.Controller.Active);
 
+        private VisualElement _roadMore;
+        private bool _roadMoreOpen;
+
+        private VisualElement Panel(ToolbarTab tab) => _panels[tab];
+
+        /// <summary>Tooltip met naam, cijfertoets en kosten op elke knop in een subpaneel.</summary>
+        private void AddTooltips()
+        {
+            foreach (var panel in _panels.Values)
+            {
+                var index = 0;
+                foreach (var child in panel.Children())
+                {
+                    if (!(child is CityButton button))
+                    {
+                        continue;
+                    }
+
+                    index++;
+                    var cost = 0L;
+                    foreach (var (placementButton, placement) in _buttons)
+                    {
+                        if (ReferenceEquals(placementButton, button))
+                        {
+                            cost = placement.Tool.Cost;
+                        }
+                    }
+
+                    button.tooltip = ToolbarHotkeys.Tooltip(button.text.Split('·')[0].Trim(), index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
+                }
+            }
+        }
+
+        private void Update()
+        {
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard == null || keyboard.ctrlKey.isPressed || keyboard.altKey.isPressed)
+            {
+                return;
+            }
+
+            if (keyboard.f1Key.wasPressedThisFrame)
+            {
+                _help.style.display = _help.style.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            foreach (var key in keyboard.allKeys)
+            {
+                if (!key.wasPressedThisFrame)
+                {
+                    continue;
+                }
+
+                var tab = ToolbarHotkeys.TabFor(key.keyCode);
+                if (tab.HasValue && _tabButtons.ContainsKey(tab.Value))
+                {
+                    _model.ToggleTab(tab.Value);
+                    return;
+                }
+
+                PressEntry(ToolbarHotkeys.EntryIndex(key.keyCode));
+            }
+        }
+
+        /// <summary>Kiest het gereedschap met nummer <paramref name="index"/> (vanaf 0) in het open paneel.</summary>
+        private void PressEntry(int index)
+        {
+            if (index < 0 || !_model.OpenTab.HasValue)
+            {
+                return;
+            }
+
+            var n = 0;
+            foreach (var child in _panels[_model.OpenTab.Value].Children())
+            {
+                if (child is CityButton button && n++ == index)
+                {
+                    using (var click = NavigationSubmitEvent.GetPooled())
+                    {
+                        click.target = button;
+                        button.SendEvent(click);
+                    }
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>Toont alleen het subpaneel van de open tab en markeert die tab.</summary>
+        private void RefreshTabs()
+        {
+            foreach (var (tab, panel) in _panels)
+            {
+                var open = _model.OpenTab == tab;
+                panel.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
+                if (_tabButtons.TryGetValue(tab, out var button))
+                {
+                    button.Selected = open;
+                }
+            }
+        }
+
         private void LateUpdate()
         {
+            var afford = _tools.Controller.CanAfford;
+            foreach (var (button, placement) in _buttons)
+            {
+                var cost = placement.Tool.Cost;
+                button.EnableInClassList(UiClasses.ButtonDisabled, afford != null && cost > 0 && !afford(cost));
+            }
+
             var reason = _tools.Controller.Preview.InvalidReason;
             _status.text = reason ?? string.Empty;
             _status.style.visibility = reason != null ? Visibility.Visible : Visibility.Hidden;
@@ -137,7 +300,7 @@ namespace Cities.Presentation.Tools
 
             foreach (var (tool, row) in _brushSettings)
             {
-                row.style.display = ReferenceEquals(active, tool) ? DisplayStyle.Flex : DisplayStyle.None;
+                row.style.display = ReferenceEquals(active, tool) && (!ReferenceEquals(tool, _roads?.Tool) || _roadMoreOpen) ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             if (_targetHeight != null)
@@ -183,28 +346,47 @@ namespace Cities.Presentation.Tools
         private void AddRoads(VisualElement toolbar)
         {
             var road = _roads.Tool;
+            AddBrush(toolbar, "Rechte weg", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
+            AddBrush(toolbar, "Bochtige weg", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
+            AddBrush(toolbar, "Doorlopende weg", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
             AddSeparator(toolbar);
-            AddBrush(toolbar, "Weg recht", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
-            AddBrush(toolbar, "Weg bocht", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
-            AddBrush(toolbar, "Weg vrij", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
             foreach (var type in _roads.Types)
             {
                 var chosen = type;
                 AddBrush(toolbar, chosen.DisplayName, road, () => road.Use(chosen.Id, chosen.Spec), () => road.TypeId == chosen.Id);
             }
 
-            AddBrush(toolbar, "Upgraden", _roads.Upgrade, () => { }, () => true);
-            AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
-            AddBrush(toolbar, "Splitsen", _roads.Split, () => { }, () => true);
-            AddBrush(toolbar, "Samenvoegen", _roads.Merge, () => { }, () => true);
+            AddSeparator(toolbar);
+            AddBrush(toolbar, "Weg weghalen", _roads.Demolish, () => { }, () => true);
+            AddBrush(toolbar, "Bekijken", _roads.Inspect, () => { }, () => true);
+
+            _roadMore = new VisualElement { name = "road-more" };
+            _roadMore.AddToClassList(UiClasses.Toolbar);
+            _roadMore.style.flexWrap = Wrap.Wrap;
+            _roadMore.style.justifyContent = Justify.Center;
+            _roadMore.style.width = Length.Percent(100);
+            _roadMore.style.display = DisplayStyle.None;
+            AddBrush(_roadMore, "Weg verbeteren", _roads.Upgrade, () => { }, () => true);
+            AddBrush(_roadMore, "Richting omdraaien", _roads.Reverse, () => { }, () => true);
+            AddBrush(_roadMore, "Kruispunt maken", _roads.Split, () => { }, () => true);
+            AddBrush(_roadMore, "Wegen samenvoegen", _roads.Merge, () => { }, () => true);
+            AddSeparator(_roadMore);
             foreach (var preset in InterchangeGeometry.Presets)
             {
                 var chosen = preset;
-                AddBrush(toolbar, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
+                AddBrush(_roadMore, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
             }
 
-            AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
-            AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
+            var more = new CityButton("Meer ▾") { tooltip = "Meer opties: rotondes, kruispunten, bijsturen" };
+            more.clicked += () =>
+            {
+                _roadMoreOpen = !_roadMoreOpen;
+                _roadMore.style.display = _roadMoreOpen ? DisplayStyle.Flex : DisplayStyle.None;
+                more.text = _roadMoreOpen ? "Minder ▴" : "Meer ▾";
+                OnActiveChanged(_tools.Controller.Active);
+            };
+            toolbar.Add(more);
+            toolbar.Add(_roadMore);
             AddSettings(road,
                 BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
                 BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)),
@@ -236,6 +418,11 @@ namespace Cities.Presentation.Tools
 
         private static void AddSeparator(VisualElement toolbar)
         {
+            if (toolbar.childCount == 0)
+            {
+                return;
+            }
+
             var separator = new VisualElement();
             separator.AddToClassList(UiClasses.ToolbarSeparator);
             toolbar.Add(separator);

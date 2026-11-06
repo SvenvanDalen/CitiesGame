@@ -13,6 +13,8 @@ namespace Cities.Presentation.UI
         Transit,
         Policies,
         Districts,
+        Terrain,
+        Industry,
     }
 
     /// <summary>Eén knop in het subpaneel van een tab; <see cref="Id"/> is wat de koppeling met de tool of het paneel gebruikt.</summary>
@@ -30,7 +32,7 @@ namespace Cities.Presentation.UI
     }
 
     /// <summary>
-    /// De hoofdtoolbalk (E18-04): zeven tabs met elk een subpaneel van knoppen. Het model houdt de gekozen tab en knop bij; de UI leest het en
+    /// De hoofdtoolbalk (E18-04): negen tabs met elk een subpaneel van knoppen. Het model houdt de gekozen tab en knop bij; de UI leest het en
     /// meldt klikken. Een tab opent zijn subpaneel, dezelfde tab nog eens sluit het weer.
     /// </summary>
     public sealed class ToolbarModel
@@ -44,12 +46,15 @@ namespace Cities.Presentation.UI
             [ToolbarTab.Transit] = "OV",
             [ToolbarTab.Policies] = "Beleid",
             [ToolbarTab.Districts] = "Districten",
+            [ToolbarTab.Terrain] = "Terrein",
+            [ToolbarTab.Industry] = "Industrie",
         };
 
         /// <summary>Alle tabs in toolbalkvolgorde.</summary>
         public static readonly IReadOnlyList<ToolbarTab> Tabs = new[]
         {
             ToolbarTab.Roads, ToolbarTab.Zones, ToolbarTab.Utilities, ToolbarTab.Services, ToolbarTab.Transit, ToolbarTab.Policies, ToolbarTab.Districts,
+            ToolbarTab.Terrain, ToolbarTab.Industry,
         };
 
         private readonly Dictionary<ToolbarTab, List<ToolbarEntry>> _entries = new Dictionary<ToolbarTab, List<ToolbarEntry>>();

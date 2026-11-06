@@ -26,7 +26,7 @@ namespace Cities.Tests.EditMode.UI
                 Assert.That(model.EntriesOf(tab), Is.Empty);
             }
 
-            Assert.That(ToolbarModel.Tabs.Count, Is.EqualTo(7));
+            Assert.That(ToolbarModel.Tabs.Count, Is.EqualTo(9));
             Assert.That(ToolbarModel.LabelOf(ToolbarTab.Utilities), Is.EqualTo("Nutsvoorzieningen"));
         }
 
