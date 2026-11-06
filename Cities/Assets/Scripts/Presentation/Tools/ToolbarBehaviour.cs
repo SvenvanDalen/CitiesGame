@@ -38,6 +38,7 @@ namespace Cities.Presentation.Tools
         private Label _info;
         private VisualElement _bar;
         private Slider _targetHeight;
+        private VisualElement _help;
         private readonly ToolbarModel _model = new ToolbarModel();
         private readonly Dictionary<ToolbarTab, VisualElement> _panels = new Dictionary<ToolbarTab, VisualElement>();
         private readonly Dictionary<ToolbarTab, CityButton> _tabButtons = new Dictionary<ToolbarTab, CityButton>();
@@ -81,7 +82,8 @@ namespace Cities.Presentation.Tools
 
             foreach (var placement in _placements)
             {
-                var button = new CityButton(placement.Tool.Name);
+                var cost = placement.Tool.Cost;
+                var button = new CityButton(cost > 0 ? $"{placement.Tool.Name}\n€ {ToolbarHotkeys.ShortMoney(cost)}" : placement.Tool.Name);
                 button.clicked += () => Toggle(placement);
                 Panel(ToolbarCatalog.TabFor(placement.Tool.Name)).Add(button);
                 _buttons.Add((button, placement));
@@ -120,6 +122,21 @@ namespace Cities.Presentation.Tools
             }
 
             _bar.Add(tabs);
+            _help = new VisualElement { name = "help" };
+            _help.AddToClassList(UiClasses.Toolbar);
+            _help.style.position = Position.Absolute;
+            _help.style.alignSelf = Align.Center;
+            _help.style.bottom = 120;
+            _help.style.flexDirection = FlexDirection.Column;
+            _help.style.alignItems = Align.FlexStart;
+            _help.style.paddingLeft = _help.style.paddingRight = _help.style.paddingTop = _help.style.paddingBottom = 12;
+            _help.style.display = DisplayStyle.None;
+            foreach (var line in HelpContent.Lines())
+            {
+                _help.Add(new Label(line));
+            }
+
+            root.Add(_help);
             AddTooltips();
             _model.Changed += RefreshTabs;
             root.Add(_bar);
@@ -131,6 +148,7 @@ namespace Cities.Presentation.Tools
             _tools.Controller.ActiveChanged -= OnActiveChanged;
             _model.Changed -= RefreshTabs;
             _bar?.RemoveFromHierarchy();
+            _help?.RemoveFromHierarchy();
             _panels.Clear();
             _tabButtons.Clear();
             _buttons.Clear();
@@ -167,7 +185,7 @@ namespace Cities.Presentation.Tools
                         }
                     }
 
-                    button.tooltip = ToolbarHotkeys.Tooltip(button.text, index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
+                    button.tooltip = ToolbarHotkeys.Tooltip(button.text.Split('\n')[0], index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
                 }
             }
         }
@@ -178,6 +196,11 @@ namespace Cities.Presentation.Tools
             if (keyboard == null || keyboard.ctrlKey.isPressed || keyboard.altKey.isPressed)
             {
                 return;
+            }
+
+            if (keyboard.f1Key.wasPressedThisFrame)
+            {
+                _help.style.display = _help.style.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             foreach (var key in keyboard.allKeys)
@@ -238,6 +261,13 @@ namespace Cities.Presentation.Tools
 
         private void LateUpdate()
         {
+            var afford = _tools.Controller.CanAfford;
+            foreach (var (button, placement) in _buttons)
+            {
+                var cost = placement.Tool.Cost;
+                button.EnableInClassList(UiClasses.ButtonDisabled, afford != null && cost > 0 && !afford(cost));
+            }
+
             var reason = _tools.Controller.Preview.InvalidReason;
             _status.text = reason ?? string.Empty;
             _status.style.visibility = reason != null ? Visibility.Visible : Visibility.Hidden;

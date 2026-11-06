@@ -35,5 +35,11 @@ namespace Cities.Tests.EditMode.UI
             Assert.That(ToolbarHotkeys.Tooltip("Weg", "1", 0), Is.EqualTo("Weg [1]"));
             Assert.That(ToolbarHotkeys.Tooltip("Centrale", "2", 120000), Is.EqualTo("Centrale [2] · € 120.000"));
         }
+
+        [TestCase(500L, "500")]
+        [TestCase(5000L, "5k")]
+        [TestCase(120000L, "120k")]
+        [TestCase(1200000L, "1,2M")]
+        public void ShortMoneyIsCompact(long amount, string expected) => Assert.That(ToolbarHotkeys.ShortMoney(amount), Is.EqualTo(expected));
     }
 }

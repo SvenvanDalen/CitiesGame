@@ -56,11 +56,22 @@ namespace Cities.Presentation.UI
             return -1;
         }
 
+        /// <summary>Korte bedrag-notatie voor op een knop: 5k, 120k, 1,2M.</summary>
+        public static string ShortMoney(long amount)
+        {
+            if (amount >= 1_000_000)
+            {
+                return (amount / 1_000_000d).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture).Replace('.', ',') + "M";
+            }
+
+            return amount >= 1_000 ? (amount / 1_000) + "k" : amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         /// <summary>Tooltip: naam, sneltoets en kosten (alleen als die er zijn).</summary>
         public static string Tooltip(string name, string hotkey, long cost)
         {
             var text = hotkey == null ? name : $"{name} [{hotkey}]";
-            return cost > 0 ? $"{text} · € {cost.ToString("N0", new System.Globalization.CultureInfo("nl-NL"))}" : text;
+            return cost > 0 ? $"{text} · € {cost.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(',', '.')}" : text;
         }
     }
 }

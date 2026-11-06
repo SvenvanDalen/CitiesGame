@@ -123,6 +123,11 @@
     background-color: var(--color-surface-hover);
 }
 
+/* Voorziening die de speler nu niet kan betalen */
+.c-button--unaffordable {
+    opacity: 0.45;
+}
+
 /* ---------- Panelen ---------- */
 .c-panel {
     background-color: var(--color-surface);
