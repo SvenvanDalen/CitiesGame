@@ -21,6 +21,9 @@ namespace Cities.Gameplay.Tools
         /// <summary>Optioneel (E26-06): boekt de kosten; <c>false</c> als het niet kan.</summary>
         public Func<long, bool> TryPay { get; set; }
 
+        /// <summary>Optioneel: boekt kosten terug als een betaalde actie ongedaan wordt gemaakt.</summary>
+        public Action<long> Refund { get; set; }
+
         public const string NotEnoughMoney = "Te weinig geld";
 
         /// <summary>Maakt <paramref name="tool"/> actief; <c>null</c> zet de tools uit.</summary>
@@ -62,18 +65,36 @@ namespace Cities.Gameplay.Tools
                 return false;
             }
 
+            var cost = Preview.Cost;
             Active.Apply(Preview);
             if (Active is IUndoSource source)
             {
                 var action = source.TakeUndo();
                 if (action != null)
                 {
-                    History.Record(action);
+                    History.Record(cost > 0 ? WithCost(action, cost) : action);
                 }
             }
 
             return true;
         }
+
+        /// <summary>Undo geeft de kosten terug; redo rekent ze opnieuw af en doet niets als het geld er niet is.</summary>
+        private UndoAction WithCost(UndoAction action, long cost) => new UndoAction(
+            action.Description,
+            cost,
+            () =>
+            {
+                action.Undo();
+                Refund?.Invoke(cost);
+            },
+            () =>
+            {
+                if (TryPay == null || TryPay(cost))
+                {
+                    action.Redo();
+                }
+            });
 
         /// <summary>
         /// Escape: eerst een lopende stap afbreken, anders de tool uitzetten. <c>false</c> als er geen tool actief

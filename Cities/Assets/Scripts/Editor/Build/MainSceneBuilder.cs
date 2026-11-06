@@ -80,7 +80,8 @@ namespace Cities.Editor.Build
             BuildPersistence(save, population, economy);
             var hints = NewUi("Hints", panelSettings).AddComponent<Cities.Presentation.UI.HintsBehaviour>();
             Wire(hints, ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()), ("_population", population), ("_economy", economy),
-                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()), ("_transit", transitHost));
+                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()), ("_transit", transitHost),
+                ("_roads", Object.FindAnyObjectByType<Cities.Simulation.Network.RoadNetworkHostBehaviour>()));
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 

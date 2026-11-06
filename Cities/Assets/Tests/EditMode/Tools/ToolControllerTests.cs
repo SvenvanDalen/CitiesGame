@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cities.Gameplay.Tools;
+using Cities.Simulation.Commands;
 using NUnit.Framework;
 using Unity.Mathematics;
 using UnityEngine;
@@ -36,6 +37,64 @@ namespace Cities.Tests.EditMode.Tools
                 HasStep = false;
                 return had;
             }
+        }
+
+        private sealed class UndoableTool : ITool, IUndoSource
+        {
+            public int Applied;
+
+            public string Name => "Undo";
+
+            public GameObject Ghost => null;
+
+            public bool RepeatsWhileHeld => false;
+
+            public void Activate() { }
+
+            public void Deactivate() { }
+
+            public ToolPreview UpdatePreview(in ToolInput input) => new ToolPreview(float3.zero, 0f, float2.zero, null, null, 500);
+
+            public void Apply(in ToolPreview preview) => Applied++;
+
+            public bool CancelStep() => false;
+
+            public UndoAction TakeUndo() => new UndoAction("test", 0, () => Applied--, () => Applied++);
+        }
+
+        [Test]
+        public void UndoRefundsTheCostAndRedoPaysAgain()
+        {
+            var money = 1000L;
+            var controller = new ToolController { TryPay = c => { money -= c; return true; }, Refund = c => money += c };
+            var tool = new UndoableTool();
+            controller.Select(tool);
+            controller.Update(default);
+            controller.Apply();
+
+            Assert.That(money, Is.EqualTo(500));
+            controller.History.Undo();
+            Assert.That(money, Is.EqualTo(1000));
+            Assert.That(tool.Applied, Is.EqualTo(0));
+            controller.History.Redo();
+            Assert.That(money, Is.EqualTo(500));
+            Assert.That(tool.Applied, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void RedoDoesNothingWithoutMoney()
+        {
+            var money = 500L;
+            var controller = new ToolController { TryPay = c => { if (money < c) { return false; } money -= c; return true; }, Refund = c => money += c };
+            var tool = new UndoableTool();
+            controller.Select(tool);
+            controller.Update(default);
+            controller.Apply();
+            controller.History.Undo();
+            money = 0;
+            controller.History.Redo();
+
+            Assert.That(tool.Applied, Is.EqualTo(0));
         }
 
         [Test]

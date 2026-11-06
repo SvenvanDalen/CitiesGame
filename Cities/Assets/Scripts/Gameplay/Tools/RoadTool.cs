@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cities.Core.Ids;
+using Cities.Simulation.Commands;
 using Cities.Simulation.Network;
 using Cities.World.Grid;
 using Cities.World.Roads;
@@ -14,7 +15,7 @@ namespace Cities.Gameplay.Tools
     /// <see cref="RoadDrawMode"/>). Het begin en eind snappen aan bestaande knooppunten; anders aan een hoek- en lengtestap
     /// (de hoek ten opzichte van de bestaande weg waar je aan begint). Een nieuwe weg vlakt het terrein eronder af (<see cref="RoadTerrainShaper"/>). Midden op een bestaand segment aansluiten kan ook: het segment wordt dan bij de eerste klik in tweeën gesplitst.
     /// </summary>
-    public sealed class RoadTool : ITool
+    public sealed class RoadTool : ITool, IUndoSource
     {
         public const float SnapRadius = 10f;
         public const float DefaultSpeedLimit = 13.9f;
@@ -156,6 +157,41 @@ namespace Cities.Gameplay.Tools
             return was;
         }
 
+        private UndoAction _lastAction;
+
+        public UndoAction TakeUndo()
+        {
+            var action = _lastAction;
+            _lastAction = null;
+            return action;
+        }
+
+        /// <summary>Ongedaan maken haalt het segment weg (en knooppunten die daarna leeg zijn); opnieuw leest het terug. Het afgevlakte terrein blijft.</summary>
+        private UndoAction MakeUndo(EntityId<SegmentKind> segment, EntityId<NodeKind> startNode, EntityId<NodeKind> endNode, Bezier3 curve, IReadOnlyList<LaneSpec> profile, float speed)
+        {
+            var current = segment;
+            var startPosition = _network.GetNode(startNode).Position;
+            var endPosition = _network.GetNode(endNode).Position;
+            return new UndoAction(
+                "Weg aangelegd",
+                0,
+                () =>
+                {
+                    Reset();
+                    if (_network.Contains(current))
+                    {
+                        _network.RemoveSegment(current);
+                    }
+                },
+                () =>
+                {
+                    Reset();
+                    var a = _network.Contains(startNode) ? startNode : _network.AddNode(startPosition);
+                    var b = _network.Contains(endNode) ? endNode : _network.AddNode(endPosition);
+                    current = _network.AddSegment(a, b, curve, profile, speed);
+                });
+        }
+
         private void Reset()
         {
             _stage = Stage.Idle;
@@ -175,8 +211,10 @@ namespace Cities.Gameplay.Tools
         private void Build()
         {
             var startNode = _startNode ?? _network.AddNode(_start);
+            var split = _plan.Segment.HasValue && !_plan.Node.HasValue;
             var endNode = _plan.Node ?? SplitNode(_plan) ?? _network.AddNode(_plan.End);
-            _network.AddSegment(startNode, endNode, _plan.Curve, Profile, SpeedLimit);
+            var segment = _network.AddSegment(startNode, endNode, _plan.Curve, Profile, SpeedLimit);
+            _lastAction = split ? null : MakeUndo(segment, startNode, endNode, _plan.Curve, Profile, SpeedLimit);
             RoadTerrainShaper.Apply(_map, _plan.Curve, RoadTerrainShaper.HalfWidth(Profile));
             if (Mode == RoadDrawMode.Free)
             {
@@ -193,7 +231,7 @@ namespace Cities.Gameplay.Tools
         private ToolPreview Marker(float3 point, EntityId<NodeKind>? node, string reason, bool onSegment)
         {
             _overlay.ShowMarker(point, reason == null);
-            return new ToolPreview(point, 0f, float2.zero, reason, node.HasValue ? "Bestaand kruispunt" : onSegment ? "Aansluiten op bestaande weg" : null);
+            return new ToolPreview(point, 0f, float2.zero, reason, node.HasValue ? "Bestaand kruispunt · klik om hier te beginnen" : onSegment ? "Aansluiten op bestaande weg · klik om hier te beginnen" : "Klik om de weg te beginnen");
         }
 
         /// <summary>De hulplijn van het begin naar het buigpunt.</summary>
@@ -202,14 +240,14 @@ namespace Cities.Gameplay.Tools
             var curve = Bezier3.Straight(_start, point);
             var reason = RoadPlanner.Check(curve) ?? OutsideReason(ground);
             _overlay.ShowCurve(curve, reason == null);
-            return new ToolPreview(point, 0f, float2.zero, reason, $"Buigpunt · {curve.Length():0.0} m");
+            return new ToolPreview(point, 0f, float2.zero, reason, $"Buigpunt · {curve.Length():0.0} m · klik om het buigpunt te zetten");
         }
 
         private ToolPreview Segment(Bezier3 curve, EntityId<NodeKind>? node, float3 ground)
         {
             var reason = RoadPlanner.Check(curve) ?? OutsideReason(curve.P3) ?? OutsideReason(ground) ?? EndReason(node);
             _overlay.ShowCurve(curve, reason == null);
-            return new ToolPreview(curve.P3, 0f, float2.zero, reason, RoadPlanner.Describe(curve), (long)math.round(curve.Length() * CostPerMeter));
+            return new ToolPreview(curve.P3, 0f, float2.zero, reason, RoadPlanner.Describe(curve) + " · klik om te bouwen, rechtsklik om te stoppen", (long)math.round(curve.Length() * CostPerMeter));
         }
 
         /// <summary>Splitst het segment waar het plan op uitkomt en geeft het nieuwe knooppunt, of <c>null</c> als het plan niet op een segment ligt.</summary>

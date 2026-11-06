@@ -160,6 +160,9 @@ namespace Cities.Presentation.Tools
 
         private void Start() => OnActiveChanged(_tools.Controller.Active);
 
+        private VisualElement _roadMore;
+        private bool _roadMoreOpen;
+
         private VisualElement Panel(ToolbarTab tab) => _panels[tab];
 
         /// <summary>Tooltip met naam, cijfertoets en kosten op elke knop in een subpaneel.</summary>
@@ -297,7 +300,7 @@ namespace Cities.Presentation.Tools
 
             foreach (var (tool, row) in _brushSettings)
             {
-                row.style.display = ReferenceEquals(active, tool) ? DisplayStyle.Flex : DisplayStyle.None;
+                row.style.display = ReferenceEquals(active, tool) && (!ReferenceEquals(tool, _roads?.Tool) || _roadMoreOpen) ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             if (_targetHeight != null)
@@ -343,10 +346,9 @@ namespace Cities.Presentation.Tools
         private void AddRoads(VisualElement toolbar)
         {
             var road = _roads.Tool;
-            AddSeparator(toolbar);
-            AddBrush(toolbar, "Weg recht", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
-            AddBrush(toolbar, "Weg bocht", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
-            AddBrush(toolbar, "Weg vrij", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
+            AddBrush(toolbar, "Rechte weg", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
+            AddBrush(toolbar, "Bochtige weg", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
+            AddBrush(toolbar, "Doorlopende weg", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
             AddSeparator(toolbar);
             foreach (var type in _roads.Types)
             {
@@ -355,20 +357,36 @@ namespace Cities.Presentation.Tools
             }
 
             AddSeparator(toolbar);
-            AddBrush(toolbar, "Upgraden", _roads.Upgrade, () => { }, () => true);
-            AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
-            AddBrush(toolbar, "Splitsen", _roads.Split, () => { }, () => true);
-            AddBrush(toolbar, "Samenvoegen", _roads.Merge, () => { }, () => true);
-            AddSeparator(toolbar);
+            AddBrush(toolbar, "Weg weghalen", _roads.Demolish, () => { }, () => true);
+            AddBrush(toolbar, "Bekijken", _roads.Inspect, () => { }, () => true);
+
+            _roadMore = new VisualElement { name = "road-more" };
+            _roadMore.AddToClassList(UiClasses.Toolbar);
+            _roadMore.style.flexWrap = Wrap.Wrap;
+            _roadMore.style.justifyContent = Justify.Center;
+            _roadMore.style.width = Length.Percent(100);
+            _roadMore.style.display = DisplayStyle.None;
+            AddBrush(_roadMore, "Weg verbeteren", _roads.Upgrade, () => { }, () => true);
+            AddBrush(_roadMore, "Richting omdraaien", _roads.Reverse, () => { }, () => true);
+            AddBrush(_roadMore, "Kruispunt maken", _roads.Split, () => { }, () => true);
+            AddBrush(_roadMore, "Wegen samenvoegen", _roads.Merge, () => { }, () => true);
+            AddSeparator(_roadMore);
             foreach (var preset in InterchangeGeometry.Presets)
             {
                 var chosen = preset;
-                AddBrush(toolbar, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
+                AddBrush(_roadMore, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
             }
 
-            AddSeparator(toolbar);
-            AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
-            AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
+            var more = new CityButton("Meer ▾") { tooltip = "Meer opties: rotondes, kruispunten, bijsturen" };
+            more.clicked += () =>
+            {
+                _roadMoreOpen = !_roadMoreOpen;
+                _roadMore.style.display = _roadMoreOpen ? DisplayStyle.Flex : DisplayStyle.None;
+                more.text = _roadMoreOpen ? "Minder ▴" : "Meer ▾";
+                OnActiveChanged(_tools.Controller.Active);
+            };
+            toolbar.Add(more);
+            toolbar.Add(_roadMore);
             AddSettings(road,
                 BrushSlider("Hoekstap (°)", 0f, 45f, road.AngleStep, v => road.AngleStep = Mathf.Round(v)),
                 BrushSlider("Lengtestap (m)", 0f, 50f, road.LengthStep, v => road.LengthStep = Mathf.Round(v)),

@@ -17,12 +17,18 @@ namespace Cities.Presentation.UI
         [SerializeField] private EconomyHostBehaviour _economy;
         [SerializeField] private ServicesHostBehaviour _services;
         [SerializeField] private TransitHostBehaviour _transit;
+        [SerializeField] private Cities.Simulation.Network.RoadNetworkHostBehaviour _roads;
 
         private Label _label;
         private float _nextCheck;
 
         private void OnEnable()
         {
+            if (_roads == null)
+            {
+                _roads = FindAnyObjectByType<Cities.Simulation.Network.RoadNetworkHostBehaviour>();
+            }
+
             var root = GetComponent<UIDocument>().rootVisualElement;
             root.AddToClassList(UiClasses.Root);
             _label = new Label { name = "hint", pickingMode = PickingMode.Ignore };
@@ -51,7 +57,8 @@ namespace Cities.Presentation.UI
                 population.Population,
                 _services != null ? _services.Services.Count : 0,
                 _transit != null ? System.Linq.Enumerable.Count(_transit.Transit.Network.Stops) : 0,
-                _economy.Economy.Balance);
+                _economy.Economy.Balance,
+                _roads != null ? _roads.Network.SegmentCount : 1);
             var hint = CityHints.Next(inputs);
             _label.text = hint;
             _label.style.display = string.IsNullOrEmpty(hint) ? DisplayStyle.None : DisplayStyle.Flex;
