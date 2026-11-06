@@ -112,13 +112,15 @@ namespace Cities.Presentation.Tools
                 }
 
                 var chosen = tab;
-                var tabButton = new CityButton(ToolbarModel.LabelOf(tab));
+                var tabKey = ToolbarHotkeys.KeyOf(tab).ToString();
+                var tabButton = new CityButton($"{ToolbarModel.LabelOf(tab)} ({tabKey})") { tooltip = ToolbarHotkeys.Tooltip(ToolbarModel.LabelOf(tab), tabKey, 0) };
                 tabButton.clicked += () => _model.ToggleTab(chosen);
                 tabs.Add(tabButton);
                 _tabButtons[tab] = tabButton;
             }
 
             _bar.Add(tabs);
+            AddTooltips();
             _model.Changed += RefreshTabs;
             root.Add(_bar);
             _tools.Controller.ActiveChanged += OnActiveChanged;
@@ -141,6 +143,84 @@ namespace Cities.Presentation.Tools
         private void Start() => OnActiveChanged(_tools.Controller.Active);
 
         private VisualElement Panel(ToolbarTab tab) => _panels[tab];
+
+        /// <summary>Tooltip met naam, cijfertoets en kosten op elke knop in een subpaneel.</summary>
+        private void AddTooltips()
+        {
+            foreach (var panel in _panels.Values)
+            {
+                var index = 0;
+                foreach (var child in panel.Children())
+                {
+                    if (!(child is CityButton button))
+                    {
+                        continue;
+                    }
+
+                    index++;
+                    var cost = 0L;
+                    foreach (var (placementButton, placement) in _buttons)
+                    {
+                        if (ReferenceEquals(placementButton, button))
+                        {
+                            cost = placement.Tool.Cost;
+                        }
+                    }
+
+                    button.tooltip = ToolbarHotkeys.Tooltip(button.text, index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
+                }
+            }
+        }
+
+        private void Update()
+        {
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard == null || keyboard.ctrlKey.isPressed || keyboard.altKey.isPressed)
+            {
+                return;
+            }
+
+            foreach (var key in keyboard.allKeys)
+            {
+                if (!key.wasPressedThisFrame)
+                {
+                    continue;
+                }
+
+                var tab = ToolbarHotkeys.TabFor(key.keyCode);
+                if (tab.HasValue && _tabButtons.ContainsKey(tab.Value))
+                {
+                    _model.ToggleTab(tab.Value);
+                    return;
+                }
+
+                PressEntry(ToolbarHotkeys.EntryIndex(key.keyCode));
+            }
+        }
+
+        /// <summary>Kiest het gereedschap met nummer <paramref name="index"/> (vanaf 0) in het open paneel.</summary>
+        private void PressEntry(int index)
+        {
+            if (index < 0 || !_model.OpenTab.HasValue)
+            {
+                return;
+            }
+
+            var n = 0;
+            foreach (var child in _panels[_model.OpenTab.Value].Children())
+            {
+                if (child is CityButton button && n++ == index)
+                {
+                    using (var click = NavigationSubmitEvent.GetPooled())
+                    {
+                        click.target = button;
+                        button.SendEvent(click);
+                    }
+
+                    return;
+                }
+            }
+        }
 
         /// <summary>Toont alleen het subpaneel van de open tab en markeert die tab.</summary>
         private void RefreshTabs()
