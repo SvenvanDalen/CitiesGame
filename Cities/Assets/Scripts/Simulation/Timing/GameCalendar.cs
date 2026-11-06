@@ -9,17 +9,25 @@ namespace Cities.Simulation.Timing
     public sealed class GameCalendar
     {
         private readonly int _ticksPerDay;
+        private readonly long _offsetTicks;
         private readonly DateTime _start;
         private long _dayIndex;
 
-        public GameCalendar(GameDate startDate, int ticksPerDay)
+        /// <param name="startHour">Uur waarop tick 0 valt; de dag wisselt dan om middernacht, niet bij een veelvoud van <paramref name="ticksPerDay"/>.</param>
+        public GameCalendar(GameDate startDate, int ticksPerDay, int startHour = 0)
         {
+            if (startHour < 0 || startHour > 23)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startHour), startHour, "Het beginuur ligt tussen 0 en 23.");
+            }
+
             if (ticksPerDay < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(ticksPerDay), ticksPerDay, "Minstens 1 tick per dag.");
             }
 
             _ticksPerDay = ticksPerDay;
+            _offsetTicks = (long)startHour * ticksPerDay / 24;
             StartDate = startDate;
             _start = startDate.ToDateTime();
             Date = startDate;
@@ -52,8 +60,9 @@ namespace Cities.Simulation.Timing
                 throw new ArgumentOutOfRangeException(nameof(tick), tick, "Tick kan niet negatief zijn.");
             }
 
-            var dayIndex = tick / _ticksPerDay;
-            TimeOfDay = (float)(tick % _ticksPerDay) / _ticksPerDay;
+            var shifted = tick + _offsetTicks;
+            var dayIndex = shifted / _ticksPerDay;
+            TimeOfDay = (float)(shifted % _ticksPerDay) / _ticksPerDay;
             while (_dayIndex < dayIndex)
             {
                 _dayIndex++;
@@ -80,8 +89,9 @@ namespace Cities.Simulation.Timing
                 throw new ArgumentOutOfRangeException(nameof(tick), tick, "Tick kan niet negatief zijn.");
             }
 
-            _dayIndex = tick / _ticksPerDay;
-            TimeOfDay = (float)(tick % _ticksPerDay) / _ticksPerDay;
+            var shifted = tick + _offsetTicks;
+            _dayIndex = shifted / _ticksPerDay;
+            TimeOfDay = (float)(shifted % _ticksPerDay) / _ticksPerDay;
             Date = GameDate.FromDateTime(_start.AddDays(_dayIndex));
         }
 
@@ -94,7 +104,7 @@ namespace Cities.Simulation.Timing
                 throw new ArgumentOutOfRangeException(nameof(date), date, "Datum ligt voor de startdatum.");
             }
 
-            return days * _ticksPerDay;
+            return Math.Max(0L, (days * _ticksPerDay) - _offsetTicks);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Cities.Presentation.UI
             root.AddToClassList(UiClasses.Root);
             _label = new Label { name = "hint", pickingMode = PickingMode.Ignore };
             _label.style.position = Position.Absolute;
-            _label.style.bottom = 56;
+            _label.style.bottom = 150;
             _label.style.left = new Length(50f, LengthUnit.Percent);
             _label.style.translate = new Translate(new Length(-50f, LengthUnit.Percent), 0f);
             _label.style.display = DisplayStyle.None;

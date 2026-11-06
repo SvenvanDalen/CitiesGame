@@ -83,7 +83,7 @@ namespace Cities.Presentation.Tools
             foreach (var placement in _placements)
             {
                 var cost = placement.Tool.Cost;
-                var button = new CityButton(cost > 0 ? $"{placement.Tool.Name}\n€ {ToolbarHotkeys.ShortMoney(cost)}" : placement.Tool.Name);
+                var button = new CityButton(cost > 0 ? $"{placement.Tool.Name} · € {ToolbarHotkeys.ShortMoney(cost)}" : placement.Tool.Name);
                 button.clicked += () => Toggle(placement);
                 Panel(ToolbarCatalog.TabFor(placement.Tool.Name)).Add(button);
                 _buttons.Add((button, placement));
@@ -185,7 +185,7 @@ namespace Cities.Presentation.Tools
                         }
                     }
 
-                    button.tooltip = ToolbarHotkeys.Tooltip(button.text.Split('\n')[0], index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
+                    button.tooltip = ToolbarHotkeys.Tooltip(button.text.Split('·')[0].Trim(), index <= ToolbarHotkeys.MaxEntries ? index.ToString() : null, cost);
                 }
             }
         }
@@ -347,22 +347,26 @@ namespace Cities.Presentation.Tools
             AddBrush(toolbar, "Weg recht", road, () => road.Mode = RoadDrawMode.Straight, () => road.Mode == RoadDrawMode.Straight);
             AddBrush(toolbar, "Weg bocht", road, () => road.Mode = RoadDrawMode.Curve, () => road.Mode == RoadDrawMode.Curve);
             AddBrush(toolbar, "Weg vrij", road, () => road.Mode = RoadDrawMode.Free, () => road.Mode == RoadDrawMode.Free);
+            AddSeparator(toolbar);
             foreach (var type in _roads.Types)
             {
                 var chosen = type;
                 AddBrush(toolbar, chosen.DisplayName, road, () => road.Use(chosen.Id, chosen.Spec), () => road.TypeId == chosen.Id);
             }
 
+            AddSeparator(toolbar);
             AddBrush(toolbar, "Upgraden", _roads.Upgrade, () => { }, () => true);
             AddBrush(toolbar, "Omkeren", _roads.Reverse, () => { }, () => true);
             AddBrush(toolbar, "Splitsen", _roads.Split, () => { }, () => true);
             AddBrush(toolbar, "Samenvoegen", _roads.Merge, () => { }, () => true);
+            AddSeparator(toolbar);
             foreach (var preset in InterchangeGeometry.Presets)
             {
                 var chosen = preset;
                 AddBrush(toolbar, chosen.Name, _roads.Interchange, () => _roads.Interchange.Kind = chosen.Kind, () => _roads.Interchange.Kind == chosen.Kind);
             }
 
+            AddSeparator(toolbar);
             AddBrush(toolbar, "Slopen", _roads.Demolish, () => { }, () => true);
             AddBrush(toolbar, "Inspecteren", _roads.Inspect, () => { }, () => true);
             AddSettings(road,
@@ -396,6 +400,11 @@ namespace Cities.Presentation.Tools
 
         private static void AddSeparator(VisualElement toolbar)
         {
+            if (toolbar.childCount == 0)
+            {
+                return;
+            }
+
             var separator = new VisualElement();
             separator.AddToClassList(UiClasses.ToolbarSeparator);
             toolbar.Add(separator);

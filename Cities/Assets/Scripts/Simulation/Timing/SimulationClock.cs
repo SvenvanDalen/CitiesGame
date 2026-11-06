@@ -21,7 +21,7 @@ namespace Cities.Simulation.Timing
         {
             SimulationClockSettings.Validate(settings);
             _settings = settings;
-            Calendar = new GameCalendar(new GameDate(settings.StartYear, settings.StartMonth, settings.StartDay), settings.TicksPerDay);
+            Calendar = new GameCalendar(new GameDate(settings.StartYear, settings.StartMonth, settings.StartDay), settings.TicksPerDay, settings.StartHour);
         }
 
         /// <summary>Wordt na elke tick aangeroepen met het nieuwe tickgetal; hier hangen de simulatiesystemen aan.</summary>

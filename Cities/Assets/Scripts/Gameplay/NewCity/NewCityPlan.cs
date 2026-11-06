@@ -57,6 +57,7 @@ namespace Cities.Gameplay.NewCity
             settings.StartYear = StartYear;
             settings.StartMonth = 1;
             settings.StartDay = 1;
+            settings.StartHour = SimulationClockSettings.DefaultStartHour;
             return settings;
         }
 
