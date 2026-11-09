@@ -37,7 +37,7 @@ namespace Cities.Tests.EditMode.Scheduling
             var cars = new List<VehicleAgent> { new VehicleAgent { Position = 10f, Speed = 5f, Length = 4.5f, Driver = new Idm(30f, 1.5f, 2f) } };
             Congestion.Occupancy(cars, 100f);
 
-            Assert.That(() => Congestion.Occupancy(cars, 100f), Is.Not.AllocatingGCMemory());
+            Assert.That(() => { Congestion.Occupancy(cars, 100f); }, Is.Not.AllocatingGCMemory());
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Cities.Tests.EditMode.Scheduling
             var idm = new Idm(30f, 1.5f, 2f);
             idm.Acceleration(10f, 20f, 8f);
 
-            Assert.That(() => idm.Acceleration(10f, 20f, 8f), Is.Not.AllocatingGCMemory());
+            Assert.That(() => { idm.Acceleration(10f, 20f, 8f); }, Is.Not.AllocatingGCMemory());
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Cities.Tests.EditMode.Scheduling
             DiffusionStep.Next(1f, new float4(1f), settings);
 
             Assert.That(
-                () => DiffusionStep.Next(1f, new float4(1f, 2f, 3f, 4f), settings) + DiffusionStep.Neighbours(5, 10, 10).x,
+                () => { _ = DiffusionStep.Next(1f, new float4(1f, 2f, 3f, 4f), settings) + DiffusionStep.Neighbours(5, 10, 10).x; },
                 Is.Not.AllocatingGCMemory());
         }
 
@@ -81,9 +81,11 @@ namespace Cities.Tests.EditMode.Scheduling
         public void SystemTimingsRecordDoesNotAllocateAfterTheFirstSample()
         {
             var timings = new SystemTimings();
-            timings.Record("Verkeer", 1d);
+            var system = "Verkeer";
+            timings.Record(system, 1d);
+            timings.Record(system, 1d);
 
-            Assert.That(() => timings.Record("Verkeer", 2d), Is.Not.AllocatingGCMemory());
+            Assert.That(() => { timings.Record(system, 2d); }, Is.Not.AllocatingGCMemory());
         }
     }
 }

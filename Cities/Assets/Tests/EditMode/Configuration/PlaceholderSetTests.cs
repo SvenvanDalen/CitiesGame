@@ -18,13 +18,15 @@ namespace Cities.Tests.EditMode.Configuration
             UnityEditor.AssetDatabase.LoadAssetAtPath<DefinitionCatalog>("Assets/Data/DefinitionCatalog.asset").CreateDatabase();
 
         [Test]
-        public void EveryBuildingPowerPlantAndVehicleHasAModel()
+        public void EveryBuildingAndPowerPlantHasAModelAndEveryVehicleASize()
         {
             var database = Database();
 
             Assert.That(database.All<BuildingDefinition>().Where(d => d.Prefab == null).Select(d => d.Id), Is.Empty);
             Assert.That(database.All<PowerPlantDefinition>().Where(d => d.Prefab == null).Select(d => d.Id), Is.Empty);
-            Assert.That(database.All<VehicleDefinition>().Where(d => d.Prefab == null).Select(d => d.Id), Is.Empty);
+
+            // Voertuigen worden als geïnstantieerde agents getekend (CityAgent-shader) en hebben geen prefab; wel een afmeting voor de placeholder-kubus.
+            Assert.That(database.All<VehicleDefinition>().Where(d => !(d.Spec.LengthMeters > 0f) || !(d.Spec.WidthMeters > 0f)).Select(d => d.Id), Is.Empty);
         }
 
         [Test]

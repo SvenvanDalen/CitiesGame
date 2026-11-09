@@ -31,6 +31,8 @@ namespace Cities.Simulation.Transit
         /// <summary>Steilste helling van een metrotunnel als deel (0,04 = 4%); treinen halen meer niet.</summary>
         public const float MaxGrade = 0.04f;
 
+        private const float GradeTolerance = 1e-6f;
+
         /// <summary>Verticale snelheid van een roltrap in m/s.</summary>
         public const float EscalatorSpeed = 0.5f;
 
@@ -49,7 +51,8 @@ namespace Cities.Simulation.Transit
                 throw new ArgumentOutOfRangeException(nameof(distance), distance, "De afstand moet groter dan nul zijn.");
             }
 
-            return math.abs(depthA - depthB) / distance <= MaxGrade;
+            // Kleine marge: 40 / 1000 is op de ene runtime iets meer dan 0,04f en op de andere iets minder.
+            return math.abs(depthA - depthB) / distance <= MaxGrade + GradeTolerance;
         }
 
         /// <summary>Seconden van de straat naar het perron (of terug): lopen plus de roltrap naar de diepte.</summary>

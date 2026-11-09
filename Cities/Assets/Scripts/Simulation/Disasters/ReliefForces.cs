@@ -77,6 +77,8 @@ namespace Cities.Simulation.Disasters
         /// <summary>Deel van de nog niet geredde vastzittenden dat elke dag overlijdt (naar boven afgerond op een geheel aantal).</summary>
         public const float DeathShare = 0.1f;
 
+        private const int DeathDivisor = 10;
+
         private int _teams;
         private int _helicopters;
         private int _shelterBeds;
@@ -133,8 +135,8 @@ namespace Cities.Simulation.Disasters
             op.Homeless -= housed;
             op.Sheltered += housed;
 
-            var diedCutOff = (int)Math.Ceiling(op.CutOff * DeathShare);
-            var diedRoad = (int)Math.Ceiling(op.Trapped * DeathShare);
+            var diedCutOff = DeathsAmong(op.CutOff);
+            var diedRoad = DeathsAmong(op.Trapped);
             op.CutOff -= diedCutOff;
             op.Trapped -= diedRoad;
             var died = diedCutOff + diedRoad;
@@ -155,6 +157,9 @@ namespace Cities.Simulation.Disasters
             _shelterBeds = beds;
             Operation = operation;
         }
+
+        // Gehele rekenkunde: 10 * 0,1f is op de ene runtime precies 1 en op de andere iets boven 1, wat na afronden een ander aantal doden geeft.
+        private static int DeathsAmong(int waiting) => (waiting + DeathDivisor - 1) / DeathDivisor;
 
         private static int NotNegative(int value, string name) =>
             value >= 0 ? value : throw new ArgumentOutOfRangeException(name, value, "Het aantal kan niet negatief zijn.");
