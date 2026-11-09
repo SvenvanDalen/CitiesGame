@@ -65,6 +65,9 @@ namespace Cities.Gameplay.Tools
         /// <summary>Wat plaatsen kost in euro (E26-06); 0 is gratis.</summary>
         public long Cost { get; set; }
 
+        /// <summary>Bereik van wat dit object levert in meters (E27-08); wordt als cirkel getoond tijdens het plaatsen. 0 toont niets.</summary>
+        public float RangeMeters { get; set; }
+
         public int Width { get; }
 
         public int Depth { get; }
@@ -102,7 +105,7 @@ namespace Cities.Gameplay.Tools
             var center = _footprint.Center(_dimensions);
             var reason = Check(_footprint, out var baseHeight);
             var size = new float2(Width, Depth) * _dimensions.CellSize;
-            return new ToolPreview(new float3(center.x, baseHeight, center.y), _footprint.YawDegrees, size, reason, null, Cost);
+            return new ToolPreview(new float3(center.x, baseHeight, center.y), _footprint.YawDegrees, size, reason, null, Cost).WithRange(RangeMeters);
         }
 
         public void Apply(in ToolPreview preview) => _target.Place(_footprint, preview.Position);

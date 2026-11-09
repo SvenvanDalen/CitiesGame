@@ -63,6 +63,23 @@ namespace Cities.Tests.EditMode.Tools
         }
 
         [Test]
+        public void UndoRemovesTheRoadAndRedoBringsItBack()
+        {
+            Click(100f, 100f);
+            Click(100f, 152f);
+            var action = _tool.TakeUndo();
+
+            Assert.That(action, Is.Not.Null);
+            action.Undo();
+            Assert.That(_network.SegmentCount, Is.EqualTo(0));
+            Assert.That(_network.NodeCount, Is.EqualTo(0));
+            action.Redo();
+            Assert.That(_network.SegmentCount, Is.EqualTo(1));
+            action.Undo();
+            Assert.That(_network.SegmentCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void TwoClicksLayAStraightRoadWithLengthAndAngleInTheInfo()
         {
             Click(100f, 100f);

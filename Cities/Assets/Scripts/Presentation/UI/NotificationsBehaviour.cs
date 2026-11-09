@@ -1,5 +1,6 @@
 using Cities.Gameplay.Events;
 using Cities.Gameplay.Statistics;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -55,6 +56,14 @@ namespace Cities.Presentation.UI
                 var label = new Label(item.Text);
                 label.style.color = item.Severity == Severity.Critical ? new Color(1f, 0.45f, 0.4f) : Color.white;
                 label.style.marginBottom = 2;
+                if (item.Location.HasValue)
+                {
+                    var location = item.Location.Value;
+                    label.pickingMode = PickingMode.Position;
+                    label.tooltip = "Klik om naar de plek te gaan";
+                    label.RegisterCallback<ClickEvent>(_ => FindAnyObjectByType<Cities.Gameplay.Cameras.CityCameraBehaviour>()?.FocusOn(location));
+                }
+
                 _list.Add(label);
             }
         }

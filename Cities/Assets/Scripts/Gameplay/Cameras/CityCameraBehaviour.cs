@@ -32,6 +32,8 @@ namespace Cities.Gameplay.Cameras
         [Tooltip("Optioneel: volg de hoogtekaart van deze wereld in plaats van colliders.")]
         [SerializeField] private WorldMapHostBehaviour _world;
 
+        private CameraSettings _baseSettings;
+        private ITerrainHeight _terrainHeight;
         private PhysicsSurfaceHeight _surface;
         private TerrainPickLayer _heightmap;
 
@@ -57,8 +59,21 @@ namespace Cities.Gameplay.Cameras
         /// <summary>Bladwijzers: F5 tot en met F9 roepen terug, met Ctrl erbij slaan ze de stand op.</summary>
         public CameraBookmarks Bookmarks { get; } = new CameraBookmarks();
 
+        /// <summary>Neemt gevoeligheid, omkeren en randscrollen uit de gebruikersinstellingen over (E27-09, E27-12).</summary>
+        public void ApplyUserSettings(Cities.Core.Settings.UserSettings user) => _settings = CameraUserSettings.Apply(_baseSettings, user);
+
+        /// <summary>Springt naar een plek op de kaart (bijvoorbeeld de plek van een melding).</summary>
+        public void FocusOn(float2 location)
+        {
+            var height = _terrainHeight != null ? _terrainHeight.SurfaceHeight(location) : 0f;
+            Controller.Teleport(CameraFocus.On(Controller.Target, location, height, FocusDistance));
+        }
+
+        private const float FocusDistance = 300f;
+
         private void Awake()
         {
+            _baseSettings = _settings;
             _camera = GetComponent<UnityEngine.Camera>();
             var world = WorldDimensions.Default;
             _surface = new PhysicsSurfaceHeight(_surfaceLayers);
@@ -70,6 +85,7 @@ namespace Cities.Gameplay.Cameras
                 _heightmap = new TerrainPickLayer(terrain, new float2(world.SizeX, world.SizeZ));
             }
 
+            _terrainHeight = terrain;
             Controller = new CameraController(
                 _settings,
                 new CameraRig(new float3(_startPivot.x, 0f, _startPivot.y), _startYaw, _startPitch, _startDistance),

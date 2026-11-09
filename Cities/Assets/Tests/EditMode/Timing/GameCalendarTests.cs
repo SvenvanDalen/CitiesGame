@@ -158,5 +158,37 @@ namespace Cities.Tests.EditMode.Timing
             Assert.Throws<ArgumentOutOfRangeException>(() => calendar.Restore(-1));
             Assert.Throws<ArgumentOutOfRangeException>(() => calendar.FirstTickOf(new GameDate(1999, 12, 31)));
         }
+
+        [Test]
+        public void StartHourShiftsTimeOfDayAndTheDayChangesAtMidnight()
+        {
+            var calendar = new GameCalendar(new GameDate(2000, 1, 1), TicksPerDay, 8);
+            var days = new List<GameDate>();
+            calendar.DayStarted += days.Add;
+
+            Assert.That(calendar.TimeOfDay, Is.EqualTo(0f), "voor de eerste Update");
+            calendar.Update(0);
+            Assert.That(calendar.TimeOfDay, Is.EqualTo(8f / 24f).Within(0.01f));
+            calendar.Update(70);
+            Assert.That(calendar.Date, Is.EqualTo(new GameDate(2000, 1, 2)), "middernacht valt op tick 67");
+            Assert.That(days, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void StartHourKeepsRestoreAndFirstTickConsistent()
+        {
+            var calendar = new GameCalendar(new GameDate(2000, 1, 1), TicksPerDay, 12);
+
+            calendar.Restore(50);
+
+            Assert.That(calendar.Date, Is.EqualTo(new GameDate(2000, 1, 2)));
+            Assert.That(calendar.TimeOfDay, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(calendar.FirstTickOf(new GameDate(2000, 1, 2)), Is.EqualTo(50));
+            Assert.That(calendar.FirstTickOf(new GameDate(2000, 1, 1)), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void StartHourOutsideTheDayIsRefused()
+            => Assert.Throws<ArgumentOutOfRangeException>(() => new GameCalendar(new GameDate(2000, 1, 1), TicksPerDay, 24));
     }
 }

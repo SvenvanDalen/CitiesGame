@@ -7,6 +7,14 @@ namespace Cities.Tests.EditMode.UI
     public class HudTextTests
     {
         [Test]
+        public void WeeklyNetShowsTheSign()
+        {
+            Assert.That(HudText.WeeklyNet(1200), Is.EqualTo("+€ 1.200 /week"));
+            Assert.That(HudText.WeeklyNet(-300), Is.EqualTo("-€ 300 /week"));
+            Assert.That(HudText.WeeklyNet(0), Is.EqualTo("+€ 0 /week"));
+        }
+
+        [Test]
         public void MoneyAndPopulationUseDutchGrouping()
         {
             Assert.That(HudText.Money(1250000), Is.EqualTo("€ 1.250.000"));

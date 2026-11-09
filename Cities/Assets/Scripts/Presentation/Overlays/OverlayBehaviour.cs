@@ -93,7 +93,7 @@ namespace Cities.Presentation.Overlays
             root.AddToClassList(UiClasses.Root);
             _panel = new OverlayPanel(Controller);
             _panel.style.position = Position.Absolute;
-            _panel.style.left = 16;
+            _panel.style.right = 16;
             _panel.style.bottom = 56;
             _panel.style.display = DisplayStyle.None;
             _panel.CloseRequested += HidePanel;
@@ -101,7 +101,7 @@ namespace Cities.Presentation.Overlays
 
             _toggle = new CityButton(OverlayText.Toggle, ButtonVariant.Secondary) { Small = true };
             _toggle.style.position = Position.Absolute;
-            _toggle.style.left = 16;
+            _toggle.style.right = 16;
             _toggle.style.bottom = 16;
             _toggle.clicked += TogglePanel;
             root.Add(_toggle);

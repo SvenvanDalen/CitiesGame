@@ -68,6 +68,32 @@ namespace Cities.Tests.EditMode.Zoning
         }
 
         [Test]
+        public void UndoAndRedoRestoreThePaintedZones()
+        {
+            _tool.Mode = ZoneMode.Fill;
+            _tool.Type = ZoneType.Commercial;
+            Click(new float3(18f * 8f + 4f, 0f, 10f * 8f + 4f));
+            var action = _tool.TakeUndo();
+
+            Assert.That(action, Is.Not.Null);
+            Assert.That(_tool.TakeUndo(), Is.Null, "maar één keer");
+            action.Undo();
+            Assert.That(_map.Zones.GetForCell(new CellCoord(18, 10)).IsZoned, Is.False);
+            action.Redo();
+            Assert.That(_map.Zones.GetForCell(new CellCoord(18, 10)).Type, Is.EqualTo(ZoneType.Commercial));
+        }
+
+        [Test]
+        public void DescribeUsesSingularForOneCell()
+        {
+            Assert.That(ZoneTool.Describe(1), Is.EqualTo("1 cel"));
+            Assert.That(ZoneTool.Describe(12), Is.EqualTo("12 cellen"));
+        }
+
+        [Test]
+        public void StartsInStripMode() => Assert.That(_tool.Mode, Is.EqualTo(ZoneMode.Fill));
+
+        [Test]
         public void OutsideTheMapIsRefused()
         {
             var preview = _tool.UpdatePreview(new ToolInput(Ground(new float3(-50f, 0f, 10f))));

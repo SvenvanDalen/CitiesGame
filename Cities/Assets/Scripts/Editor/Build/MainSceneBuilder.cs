@@ -80,7 +80,8 @@ namespace Cities.Editor.Build
             BuildPersistence(save, population, economy);
             var hints = NewUi("Hints", panelSettings).AddComponent<Cities.Presentation.UI.HintsBehaviour>();
             Wire(hints, ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()), ("_population", population), ("_economy", economy),
-                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()), ("_transit", transitHost));
+                ("_services", Object.FindAnyObjectByType<Cities.Gameplay.Services.ServicesHostBehaviour>()), ("_transit", transitHost),
+                ("_roads", Object.FindAnyObjectByType<Cities.Simulation.Network.RoadNetworkHostBehaviour>()));
             var hud = NewUi("HUD", panelSettings).AddComponent<Cities.Presentation.UI.HudBehaviour>();
             Wire(hud, ("_simulation", simulation), ("_economy", economy), ("_population", population));
 
@@ -89,12 +90,47 @@ namespace Cities.Editor.Build
             var carMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.8f, 0.85f), enableInstancing = true };
             Wire(traffic, ("_simulation", simulation), ("_network", network), ("_population", population), ("_mesh", carMesh), ("_material", carMaterial));
 
+            QuietStart();
+            var clockSettings = new SerializedObject(simulation).FindProperty("_settings.StartHour");
+            if (clockSettings != null)
+            {
+                clockSettings.intValue = Cities.Simulation.Timing.SimulationClockSettings.DefaultStartHour;
+                clockSettings.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainPath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log("Hoofdscène gebouwd: " + MainPath);
+        }
+
+        /// <summary>
+        /// E27: de testscène start met een penseel geselecteerd en het debugpaneel open. In het spel begint de speler zonder actief gereedschap
+        /// en zonder paneel dat de HUD bedekt.
+        /// </summary>
+        private static void QuietStart()
+        {
+            foreach (var behaviour in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
+            {
+                var so = new SerializedObject(behaviour);
+                var changed = false;
+                foreach (var field in new[] { "_selectOnStart", "_openOnStart" })
+                {
+                    var property = so.FindProperty(field);
+                    if (property != null && property.propertyType == SerializedPropertyType.Boolean && property.boolValue)
+                    {
+                        property.boolValue = false;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
         }
 
         private static readonly long[] PlantCosts = { 120_000L, 40_000L, 80_000L, 30_000L };

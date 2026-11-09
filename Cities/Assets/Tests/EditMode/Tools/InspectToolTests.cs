@@ -27,6 +27,16 @@ namespace Cities.Tests.EditMode.Tools
             new ToolInput(new PickResult(PickHit.None, new PickHit(PickKind.Terrain, 0, new float3(x, 10f, z), 100f)));
 
         [Test]
+        public void QueryWorksWithoutTheToolBeingActive()
+        {
+            var tool = new InspectTool(new Fixed(null), new Fixed("daar"));
+
+            Assert.That(tool.Query(new float3(1f, 2f, 3f), out var report), Is.True);
+            Assert.That(report.Title, Is.EqualTo("daar"));
+            Assert.That(new InspectTool(new Fixed(null)).Query(float3.zero, out _), Is.False);
+        }
+
+        [Test]
         public void TheFirstSourceThatFindsSomethingWins()
         {
             var tool = new InspectTool(new Fixed(null), null, new Fixed("eerste"), new Fixed("tweede"));

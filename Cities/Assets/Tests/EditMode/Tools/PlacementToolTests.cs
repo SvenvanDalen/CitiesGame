@@ -108,6 +108,16 @@ namespace Cities.Tests.EditMode.Tools
         }
 
         [Test]
+        public void PreviewCarriesTheServiceRange()
+        {
+            var tool = Tool(new Target());
+            tool.RangeMeters = 350f;
+
+            Assert.That(tool.UpdatePreview(At(20f, 20f)).RangeMeters, Is.EqualTo(350f));
+            Assert.That(tool.UpdatePreview(At(20f, 20f)).WithReason("x").RangeMeters, Is.EqualTo(350f));
+        }
+
+        [Test]
         public void NoGroundMeansNoPreview()
         {
             var tool = Tool(new Target());

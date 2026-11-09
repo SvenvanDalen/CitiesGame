@@ -13,8 +13,9 @@ namespace Cities.Gameplay.Tools
         /// <param name="invalidReason">Waarom het niet mag, of <c>null</c> als het mag.</param>
         /// <param name="info">Korte uitleg bij de preview (zoals de lengte van een weg), of <c>null</c>.</param>
         /// <param name="cost">Wat de actie kost in hele munteenheden; 0 als ze niets kost.</param>
-        public ToolPreview(float3 position, float yawDegrees, float2 size, string invalidReason = null, string info = null, long cost = 0)
+        public ToolPreview(float3 position, float yawDegrees, float2 size, string invalidReason = null, string info = null, long cost = 0, float rangeMeters = 0f)
         {
+            RangeMeters = rangeMeters;
             Info = info;
             Cost = cost;
             IsVisible = true;
@@ -38,8 +39,14 @@ namespace Cities.Gameplay.Tools
 
         public long Cost { get; }
 
+        /// <summary>Bereik in meters dat als cirkel om de plek getoond wordt (dekking van een dienst of centrale); 0 toont niets.</summary>
+        public float RangeMeters { get; }
+
+        /// <summary>Dezelfde preview met een bereikcirkel.</summary>
+        public ToolPreview WithRange(float meters) => new ToolPreview(Position, YawDegrees, Size, InvalidReason, Info, Cost, meters);
+
         /// <summary>Dezelfde preview met een andere reden waarom het niet mag (bijvoorbeeld te weinig geld).</summary>
-        public ToolPreview WithReason(string reason) => new ToolPreview(Position, YawDegrees, Size, reason, Info, Cost);
+        public ToolPreview WithReason(string reason) => new ToolPreview(Position, YawDegrees, Size, reason, Info, Cost, RangeMeters);
 
         public bool IsValid => IsVisible && InvalidReason == null;
     }

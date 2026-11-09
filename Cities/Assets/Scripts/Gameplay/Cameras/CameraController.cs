@@ -84,11 +84,12 @@ namespace Cities.Gameplay.Cameras
 
             var yaw = target.Yaw + (input.Rotate * _settings.RotateSpeed * speed * deltaSeconds) +
                       (input.OrbitPixels.x * _settings.MouseOrbitSensitivity);
+            var orbitY = input.OrbitPixels.y * (_settings.InvertOrbitY ? -1f : 1f);
             var pitch = target.Pitch + (input.Tilt * _settings.TiltSpeed * speed * deltaSeconds) -
-                        (input.OrbitPixels.y * _settings.MouseOrbitSensitivity);
+                        (orbitY * _settings.MouseOrbitSensitivity);
 
             // Zoomen werkt met factoren, zodat elke stap op elke hoogte even groot voelt.
-            var zoomFactor = math.pow(1f - _settings.ZoomStep, input.ScrollSteps * speed) *
+            var zoomFactor = math.pow(1f - _settings.ZoomStep, input.ScrollSteps * (_settings.InvertZoom ? -1f : 1f) * speed) *
                              math.exp(-input.Zoom * _settings.KeyZoomSpeed * speed * deltaSeconds);
             var distance = ClampDistance(target.Distance * zoomFactor);
 

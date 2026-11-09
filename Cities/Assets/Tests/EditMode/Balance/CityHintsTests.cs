@@ -8,6 +8,13 @@ namespace Cities.Tests.EditMode.Balance
         private const long Rich = 1_000_000;
 
         [Test]
+        public void WithoutRoadsTheFirstStepIsARoadAndThenAZone()
+        {
+            Assert.That(CityHints.Next(new HintInputs(0, 0, 0, 0, 0, Rich, roads: 0)), Does.StartWith("Stap 1"));
+            Assert.That(CityHints.Next(new HintInputs(0, 0, 0, 0, 0, Rich, roads: 1)), Does.StartWith("Stap 2"));
+        }
+
+        [Test]
         public void ANewCityIsToldToBuildRoadsAndZones()
         {
             Assert.That(CityHints.Next(new HintInputs(0, 0, 0, 0, 0, Rich)), Does.Contain("weg"));

@@ -34,6 +34,7 @@ namespace Cities.Gameplay.Economy
             var controller = _tools.Controller;
             controller.CanAfford = Economy.CanAfford;
             controller.TryPay = cost => Economy.TryBuild(Week, cost);
+            controller.Refund = cost => Economy.Ledger.Earn(Week, LedgerCategory.Construction, cost);
             _simulation.Clock.Calendar.DayStarted += OnDay;
             if (_spawner != null)
             {
@@ -47,6 +48,7 @@ namespace Cities.Gameplay.Economy
             {
                 _tools.Controller.CanAfford = null;
                 _tools.Controller.TryPay = null;
+                _tools.Controller.Refund = null;
             }
 
             if (_simulation != null && _simulation.Clock != null)

@@ -126,6 +126,18 @@ namespace Cities.Tests.EditMode.Cameras
         }
 
         [Test]
+        public void InvertedOrbitFlipsTheTiltDirection()
+        {
+            var settings = Instant();
+            settings.InvertOrbitY = true;
+            var controller = Create(settings);
+
+            controller.Update(new CameraInput { OrbitPixels = new float2(0f, 100f) }, Frame);
+
+            Assert.That(controller.Current.Pitch, Is.EqualTo(70f).Within(1e-3f), "Muis omhoog kijkt nu steiler");
+        }
+
+        [Test]
         public void PitchIsClamped()
         {
             var controller = Create(Instant());

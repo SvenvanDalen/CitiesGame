@@ -73,6 +73,7 @@ namespace Cities.Gameplay.Services
                 if (service.Placement != null)
                 {
                     var kind = service.Kind;
+                    service.Placement.Tool.RangeMeters = CityServices.RadiusOf(kind);
                     service.Placement.Placed += (go, position) => OnService(kind, position);
                 }
             }
