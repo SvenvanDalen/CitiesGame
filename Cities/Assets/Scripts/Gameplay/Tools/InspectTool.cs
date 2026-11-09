@@ -120,17 +120,28 @@ namespace Cities.Gameplay.Tools
                 return ToolPreview.Hidden;
             }
 
-            var point = input.Pick.Ground.Point;
-            foreach (var source in _sources)
+            if (Query(input.Pick.Ground.Point, out var report))
             {
-                if (source.TryInspect(point, out var report))
-                {
-                    Current = report;
-                    return new ToolPreview(report.Position, 0f, float2.zero, null, report.ToString());
-                }
+                Current = report;
+                return new ToolPreview(report.Position, 0f, float2.zero, null, report.ToString());
             }
 
             return ToolPreview.Hidden;
+        }
+
+        /// <summary>Vraagt de bronnen op volgorde wat er op dit punt is; de eerste die iets vindt wint. Werkt ook als de tool niet actief is (infokaart bij de cursor).</summary>
+        public bool Query(float3 point, out InspectionReport report)
+        {
+            foreach (var source in _sources)
+            {
+                if (source.TryInspect(point, out report))
+                {
+                    return true;
+                }
+            }
+
+            report = default;
+            return false;
         }
 
         public void Apply(in ToolPreview preview)

@@ -82,3 +82,4 @@ Cities/Assets/Scripts/Core/Configuration/GameDataFolder.cs
 Cities/Assets/Scripts/World/Maps/MapDocumentApplier.cs
 Cities/Assets/Scripts/Presentation/Settings/OptionsPanel.cs
 Cities/Assets/Scripts/Presentation/Settings/OptionsApplier.cs
+Cities/Assets/Scripts/Presentation/UI/HoverInfoBootstrap.cs
