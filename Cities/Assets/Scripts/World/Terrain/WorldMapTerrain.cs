@@ -14,6 +14,7 @@ namespace Cities.World.Terrain
 
         public float SurfaceHeight(float2 position)
         {
+            _map.CompleteWaterWrites();
             var p = new Vector2(position.x, position.y);
             return _map.Height.Sample(p) + _map.WaterDepth.Sample(p);
         }

@@ -1,5 +1,6 @@
 using System;
 using Unity.Collections;
+using Unity.Jobs;
 
 namespace Cities.World.Grid
 {
@@ -60,6 +61,16 @@ namespace Cities.World.Grid
 
         /// <summary>Waterdiepte boven het terrein in meters op elk hoekpunt; 0 is droog.</summary>
         public ref CellLayer<float> WaterDepth => ref _waterDepth;
+
+        /// <summary>De laatste taak die <see cref="WaterDepth"/> beschrijft (de watersimulatie); wie op de main thread leest, roept eerst <see cref="CompleteWaterWrites"/> aan.</summary>
+        public JobHandle WaterWriter { get; set; }
+
+        /// <summary>Wacht tot de watersimulatie klaar is met schrijven, zodat <see cref="WaterDepth"/> veilig te lezen is.</summary>
+        public void CompleteWaterWrites()
+        {
+            WaterWriter.Complete();
+            WaterWriter = default;
+        }
 
         public ref CellLayer<ZoneCell> Zones => ref _zones;
 

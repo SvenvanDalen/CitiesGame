@@ -43,7 +43,7 @@ namespace Cities.Tests.PlayMode.Cameras
             Assert.That(rig.Distance, Is.EqualTo(600f).Within(0.01f));
             Assert.That(rig.Pitch, Is.EqualTo(50f).Within(0.01f));
             Assert.That(_controls.FindActionMap("Camera").enabled, Is.True);
-            Assert.That(_controls.FindActionMap("Camera").actions.Count, Is.EqualTo(10));
+            Assert.That(_controls.FindActionMap("Camera").actions.Count, Is.EqualTo(16));
         }
 
         private static void SetControls(CityCameraBehaviour behaviour, InputActionAsset controls)

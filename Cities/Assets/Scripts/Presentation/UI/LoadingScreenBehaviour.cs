@@ -29,9 +29,15 @@ namespace Cities.Presentation.UI
             StartupProgress.Shared = _progress;
         }
 
-        private void OnEnable()
+        // Dit script draait vóór de UIDocument (uitvoervolgorde -2000), dus de root bestaat in OnEnable nog niet: bouwen kan pas vanaf Update.
+        private void Build()
         {
             var root = _document.rootVisualElement;
+            if (root == null)
+            {
+                return;
+            }
+
             _root = new VisualElement { name = "loading" };
             _root.style.position = Position.Absolute;
             _root.style.left = 0;
@@ -58,6 +64,11 @@ namespace Cities.Presentation.UI
 
         private void Update()
         {
+            if (_root == null)
+            {
+                Build();
+            }
+
             if (_progress == null || _root == null)
             {
                 return;
