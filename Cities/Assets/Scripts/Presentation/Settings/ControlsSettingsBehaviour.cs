@@ -1,3 +1,5 @@
+using Cities.Core.Settings;
+using Cities.Gameplay.Cameras;
 using Cities.Gameplay.Controls;
 using Cities.Gameplay.Tools;
 using Cities.Presentation.UI;
@@ -22,6 +24,10 @@ namespace Cities.Presentation.Settings
         [SerializeField] private ToolsBehaviour _tools;
 
         private UIDocument _document;
+        private UserSettings _user;
+        private FileSettingsStore _store;
+        private OptionsPanel _options;
+        private VisualElement _tabs;
         private VisualElement _overlay;
         private InputAction _menu;
 
@@ -62,7 +68,14 @@ namespace Cities.Presentation.Settings
         {
             _document = GetComponent<UIDocument>();
             _menu = _bindings.Controls.FindActionMap("Game", throwIfNotFound: true).FindAction("Menu", true);
+            _store = new FileSettingsStore(ControlBindingsBehaviour.SettingsDirectory);
+            _user = new UserSettings();
+            _user.Load(_store);
         }
+
+        private void Start() => ApplyUser();
+
+        private void ApplyUser() => OptionsApplier.Apply(_user, _document.panelSettings, FindAnyObjectByType<CityCameraBehaviour>());
 
         private void OnEnable()
         {
@@ -81,7 +94,25 @@ namespace Cities.Presentation.Settings
 
             Panel = new ControlsSettingsPanel(_bindings.Bindings);
             Panel.CloseRequested += Close;
+            _options = new OptionsPanel(_user);
+            _options.Applied += () =>
+            {
+                _user.Save(_store);
+                ApplyUser();
+            };
+            _options.CloseRequested += Close;
+            _tabs = new VisualElement { name = "settings-tabs" };
+            _tabs.style.flexDirection = FlexDirection.Row;
+            var optionsTab = new CityButton("Opties");
+            var controlsTab = new CityButton("Toetsen");
+            optionsTab.clicked += () => ShowTab(true);
+            controlsTab.clicked += () => ShowTab(false);
+            _tabs.Add(optionsTab);
+            _tabs.Add(controlsTab);
+            _overlay.Add(_tabs);
+            _overlay.Add(_options);
             _overlay.Add(Panel);
+            ShowTab(true);
             root.Add(_overlay);
             SetOpen(_openOnStart);
 
@@ -100,6 +131,12 @@ namespace Cities.Presentation.Settings
             _overlay?.RemoveFromHierarchy();
             _overlay = null;
             Panel = null;
+        }
+
+        private void ShowTab(bool options)
+        {
+            _options.style.display = options ? DisplayStyle.Flex : DisplayStyle.None;
+            Panel.style.display = options ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         private void OnMenu(InputAction.CallbackContext context)

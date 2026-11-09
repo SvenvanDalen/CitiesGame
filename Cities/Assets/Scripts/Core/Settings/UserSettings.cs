@@ -107,6 +107,7 @@ namespace Cities.Core.Settings
         public const string EdgeScroll = "controls.edge-scroll";
         public const string CameraSensitivity = "controls.camera-sensitivity";
         public const string InvertZoom = "controls.invert-zoom";
+        public const string InvertCameraY = "controls.invert-camera-y";
         public const string AutosaveMinutes = "gameplay.autosave-minutes";
         public const string Tooltips = "gameplay.tooltips";
         public const string CitizenMessages = "gameplay.citizen-messages";
@@ -127,6 +128,7 @@ namespace Cities.Core.Settings
             new SettingDefinition(EdgeScroll, Controls, "Scrollen aan de schermrand", SettingKind.Toggle, 0f),
             new SettingDefinition(CameraSensitivity, Controls, "Cameragevoeligheid", SettingKind.Slider, 1f, 0.2f, 3f),
             new SettingDefinition(InvertZoom, Controls, "Zoomrichting omkeren", SettingKind.Toggle, 0f),
+            new SettingDefinition(InvertCameraY, Controls, "Kantelen met de muis omkeren", SettingKind.Toggle, 0f),
             new SettingDefinition(AutosaveMinutes, Gameplay, "Automatisch opslaan (minuten)", SettingKind.Slider, 10f, 1f, 60f),
             new SettingDefinition(Tooltips, Gameplay, "Tooltips tonen", SettingKind.Toggle, 1f),
             new SettingDefinition(CitizenMessages, Gameplay, "Berichten van burgers", SettingKind.Toggle, 0f),

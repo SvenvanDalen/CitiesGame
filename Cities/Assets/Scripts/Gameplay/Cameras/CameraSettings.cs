@@ -24,6 +24,12 @@ namespace Cities.Gameplay.Cameras
         [Tooltip("Graden per pixel muisbeweging bij draaien en kantelen met de rechtermuisknop.")]
         public float MouseOrbitSensitivity;
 
+        [Tooltip("Scrollen omkeren: omhoog scrollen zoomt uit in plaats van in (E27-09).")]
+        public bool InvertZoom;
+
+        [Tooltip("Kantelen met de muis omkeren: omhoog slepen kijkt dan steiler naar beneden (E27-09).")]
+        public bool InvertOrbitY;
+
         [Tooltip("Fractie waarmee de afstand per scrollstap verandert.")]
         [Range(0.01f, 0.5f)]
         public float ZoomStep;
