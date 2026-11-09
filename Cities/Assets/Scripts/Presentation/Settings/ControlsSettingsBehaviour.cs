@@ -27,7 +27,6 @@ namespace Cities.Presentation.Settings
         private UserSettings _user;
         private FileSettingsStore _store;
         private OptionsPanel _options;
-        private VisualElement _tabs;
         private VisualElement _overlay;
         private InputAction _menu;
 
@@ -101,15 +100,15 @@ namespace Cities.Presentation.Settings
                 ApplyUser();
             };
             _options.CloseRequested += Close;
-            _tabs = new VisualElement { name = "settings-tabs" };
-            _tabs.style.flexDirection = FlexDirection.Row;
+            var tabs = new VisualElement { name = "settings-tabs" };
+            tabs.style.flexDirection = FlexDirection.Row;
             var optionsTab = new CityButton("Opties");
             var controlsTab = new CityButton("Toetsen");
             optionsTab.clicked += () => ShowTab(true);
             controlsTab.clicked += () => ShowTab(false);
-            _tabs.Add(optionsTab);
-            _tabs.Add(controlsTab);
-            _overlay.Add(_tabs);
+            tabs.Add(optionsTab);
+            tabs.Add(controlsTab);
+            _overlay.Add(tabs);
             _overlay.Add(_options);
             _overlay.Add(Panel);
             ShowTab(true);

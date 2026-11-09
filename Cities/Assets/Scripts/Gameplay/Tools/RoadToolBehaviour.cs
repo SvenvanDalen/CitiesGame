@@ -89,7 +89,16 @@ namespace Cities.Gameplay.Tools
                 return;
             }
 
-            var step = keyboard.eKey.wasPressedThisFrame ? 1 : keyboard.qKey.wasPressedThisFrame ? -1 : 0;
+            var step = 0;
+            if (keyboard.eKey.wasPressedThisFrame)
+            {
+                step = 1;
+            }
+            else if (keyboard.qKey.wasPressedThisFrame)
+            {
+                step = -1;
+            }
+
             if (step == 0)
             {
                 return;

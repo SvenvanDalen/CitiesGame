@@ -231,7 +231,17 @@ namespace Cities.Gameplay.Tools
         private ToolPreview Marker(float3 point, EntityId<NodeKind>? node, string reason, bool onSegment)
         {
             _overlay.ShowMarker(point, reason == null);
-            return new ToolPreview(point, 0f, float2.zero, reason, node.HasValue ? "Bestaand kruispunt · klik om hier te beginnen" : onSegment ? "Aansluiten op bestaande weg · klik om hier te beginnen" : "Klik om de weg te beginnen");
+            var info = "Klik om de weg te beginnen";
+            if (node.HasValue)
+            {
+                info = "Bestaand kruispunt · klik om hier te beginnen";
+            }
+            else if (onSegment)
+            {
+                info = "Aansluiten op bestaande weg · klik om hier te beginnen";
+            }
+
+            return new ToolPreview(point, 0f, float2.zero, reason, info);
         }
 
         /// <summary>De hulplijn van het begin naar het buigpunt.</summary>

@@ -25,6 +25,6 @@ namespace Cities.Tests.EditMode.Tools
         public void UnknownCurrentStartsAtFirst() => Assert.That(RoadTypeCycle.Next(Ids, null, 1), Is.EqualTo("a"));
 
         [Test]
-        public void EmptyListGivesNull() => Assert.That(RoadTypeCycle.Next(new string[0], "a", 1), Is.Null);
+        public void EmptyListGivesNull() => Assert.That(RoadTypeCycle.Next(System.Array.Empty<string>(), "a", 1), Is.Null);
     }
 }
