@@ -11,6 +11,9 @@ namespace Cities.Presentation.UI
 
         public static string Money(long amount) => "€ " + Grouped(amount);
 
+        /// <summary>Het weeksaldo naast het geld, bijvoorbeeld "+€ 1.200 /week" of "-€ 300 /week" (E27-11).</summary>
+        public static string WeeklyNet(long net) => (net < 0 ? "-€ " : "+€ ") + Grouped(System.Math.Abs(net)) + " /week";
+
         public static string Population(long residents) => Grouped(residents);
 
         /// <summary>Datum en kloktijd, bijvoorbeeld "03-02-2030 14:30"; <paramref name="timeOfDay"/> loopt van 0 tot 1.</summary>

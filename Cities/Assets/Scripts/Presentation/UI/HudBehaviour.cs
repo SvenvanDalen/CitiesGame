@@ -21,6 +21,7 @@ namespace Cities.Presentation.UI
         [SerializeField] private PopulationHostBehaviour _population;
 
         private Label _money;
+        private Label _net;
         private Label _people;
         private Label _date;
         private CityMeter _residential;
@@ -46,7 +47,9 @@ namespace Cities.Presentation.UI
             _money = Badge();
             _people = Badge();
             _date = Badge();
+            _net = Badge();
             _bar.Add(_money);
+            _bar.Add(_net);
             _bar.Add(_people);
             _bar.Add(_date);
             _bar.Add(SpeedButton("⏸", SimulationSpeed.Paused));
@@ -73,6 +76,10 @@ namespace Cities.Presentation.UI
             var clock = _simulation.Clock;
             var city = _population.Population;
             _money.text = HudText.Money(_economy.Economy.Balance);
+            var economy = _economy.Economy;
+            var forecast = economy.Budget.Forecast(economy.Stations, economy.WeeklyTaxIncome(city));
+            _net.text = HudText.WeeklyNet(forecast.Net);
+            _net.style.color = forecast.Net < 0 ? new Color(1f, 0.45f, 0.4f) : new Color(0.55f, 0.9f, 0.55f);
             _people.text = "Inwoners " + HudText.Population(city.Population);
             _date.text = HudText.DateTime(clock.Calendar.Date, clock.Calendar.TimeOfDay);
             foreach (var (button, speed) in _speedButtons)
