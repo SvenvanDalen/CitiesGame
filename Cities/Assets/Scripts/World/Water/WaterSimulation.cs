@@ -157,6 +157,8 @@ namespace Cities.World.Water
 
         public void Dispose()
         {
+            // Een lopende stap leest en schrijft nog in deze arrays; eerst afronden, anders weigert Unity het vrijgeven.
+            _map.CompleteWaterWrites();
             _map.HeightChanged -= OnHeightChanged;
             _ground.Dispose();
             _water.Dispose();
