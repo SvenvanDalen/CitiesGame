@@ -134,7 +134,7 @@ namespace Cities.Tests.EditMode.Zoning
         {
             var eco = Variant(2, 2);
             Set(eco, "_spec", new BuildingSpec { FootprintWidth = 2, FootprintDepth = 2, Zone = ZoneType.Residential, Density = ZoneDensity.Low, Level = 1, Households = 1, Specialization = "eco" });
-            _zones.Paint(new RectInt(17, 10, 4, 12), ZoneType.Residential, ZoneDensity.Low);
+            _zones.Paint(new RectInt(17, 10, 4, 4), ZoneType.Residential, ZoneDensity.Low);
             var book = new Cities.Simulation.Policies.PolicyBook(new Dictionary<string, Cities.Simulation.Policies.PolicySpec>
             {
                 ["policy.eco"] = new Cities.Simulation.Policies.PolicySpec
@@ -155,6 +155,7 @@ namespace Cities.Tests.EditMode.Zoning
             Assert.That(kinds, Is.Not.Empty.And.All.False, "zonder beleid groeit alleen het gewone gebouw");
 
             kinds.Clear();
+            _zones.Paint(new RectInt(17, 14, 4, 8), ZoneType.Residential, ZoneDensity.Low);
             book.Activate("policy.eco");
             spawner.Grow(300);
             Assert.That(kinds, Has.Some.True, "met beleid krijgt de specialisatie veruit het grootste gewicht");

@@ -2,6 +2,7 @@ using System;
 using Cities.World.Grid;
 using Cities.World.Terrain;
 using NUnit.Framework;
+using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace Cities.Tests.EditMode.Terrain
@@ -20,6 +21,17 @@ namespace Cities.Tests.EditMode.Terrain
             Assert.That(terrain.SurfaceHeight(new float2(16f, 16f)), Is.EqualTo(13f).Within(1e-4f));
             Assert.That(terrain.SurfaceHeight(new float2(48f, 48f)), Is.EqualTo(10f).Within(1e-4f));
             Assert.That(terrain.SurfaceHeight(new float2(20f, 16f)), Is.EqualTo(11.5f).Within(1e-4f), "Halverwege interpoleert");
+        }
+
+        [Test]
+        public void ReadingTheSurfaceCompletesThePendingWaterWrites()
+        {
+            using var map = new WorldMap(new WorldDimensions(1, 1, 8, 8f), 10f);
+            map.WaterWriter = default(JobHandle);
+
+            new WorldMapTerrain(map).SurfaceHeight(new float2(10f, 10f));
+
+            Assert.That(map.WaterWriter.Equals(default(JobHandle)), Is.True);
         }
 
         [Test]

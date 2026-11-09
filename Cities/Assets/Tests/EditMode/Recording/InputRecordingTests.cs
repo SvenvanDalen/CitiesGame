@@ -26,7 +26,7 @@ namespace Cities.Tests.EditMode.Recording
 
             Assert.That(recording.Seed, Is.EqualTo(42ul));
             Assert.That(recording.GameVersion, Is.EqualTo("0.7.1"));
-            Assert.That(recording.Actions, Has.Count.EqualTo(4));
+            Assert.That(recording.Actions.Count, Is.EqualTo(4));
             Assert.That(recording.LastTick, Is.EqualTo(25));
         }
 

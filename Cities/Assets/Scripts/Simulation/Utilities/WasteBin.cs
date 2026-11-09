@@ -24,6 +24,9 @@ namespace Cities.Simulation.Utilities
 
         public float Capacity { get; }
 
+        // Met een kleine marge: 100 * 0,8f is op de ene runtime precies 80 en op de andere iets meer, en dan miste de bak zijn drempel net.
+        private bool AtThreshold() => Level >= (Capacity * CallThreshold) - 1e-4f;
+
         public float Level { get; private set; }
 
         /// <summary>Totaal afval dat niet meer in de opslag paste; het vervuilt de omgeving.</summary>
@@ -43,7 +46,7 @@ namespace Cities.Simulation.Utilities
             var stored = math.min(amount, Capacity - Level);
             Level += stored;
             Overflow += amount - stored;
-            PickupRequested |= Level >= Capacity * CallThreshold;
+            PickupRequested |= AtThreshold();
         }
 
         /// <summary>Een voertuig met <paramref name="vehicleCapacity"/> ruimte haalt op en geeft terug hoeveel het meeneemt.</summary>
@@ -56,7 +59,7 @@ namespace Cities.Simulation.Utilities
 
             var taken = math.min(Level, vehicleCapacity);
             Level -= taken;
-            PickupRequested = Level >= Capacity * CallThreshold;
+            PickupRequested = AtThreshold();
             return taken;
         }
     }

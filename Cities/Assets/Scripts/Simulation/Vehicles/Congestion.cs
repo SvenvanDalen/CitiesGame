@@ -27,8 +27,9 @@ namespace Cities.Simulation.Vehicles
             }
 
             var filled = 0f;
-            foreach (var car in vehicles)
+            for (var i = 0; i < vehicles.Count; i++)
             {
+                var car = vehicles[i];
                 filled += car.Length + car.Driver.MinGap;
             }
 

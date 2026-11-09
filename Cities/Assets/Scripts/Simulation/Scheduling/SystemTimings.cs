@@ -11,7 +11,7 @@ namespace Cities.Simulation.Scheduling
     {
         public const string TickName = "Tick";
 
-        private readonly Dictionary<string, Window> _windows = new Dictionary<string, Window>(StringComparer.Ordinal);
+        private readonly List<Window> _windows = new List<Window>();
         private readonly List<string> _names = new List<string>();
 
         public SystemTimings(int windowSize = 60)
@@ -36,10 +36,11 @@ namespace Cities.Simulation.Scheduling
                 throw new ArgumentNullException(nameof(system));
             }
 
-            if (!_windows.TryGetValue(system, out var window))
+            var window = Find(system);
+            if (window == null)
             {
-                window = new Window(WindowSize);
-                _windows.Add(system, window);
+                window = new Window(system, WindowSize);
+                _windows.Add(window);
                 if (system != TickName)
                 {
                     _names.Add(system);
@@ -49,8 +50,20 @@ namespace Cities.Simulation.Scheduling
             window.Add(Math.Max(0d, milliseconds));
         }
 
-        public TimingStats Get(string system) =>
-            _windows.TryGetValue(system, out var window) ? window.Stats() : default;
+        public TimingStats Get(string system) => Find(system)?.Stats() ?? default;
+
+        private Window Find(string system)
+        {
+            for (var i = 0; i < _windows.Count; i++)
+            {
+                if (string.Equals(_windows[i].Name, system, StringComparison.Ordinal))
+                {
+                    return _windows[i];
+                }
+            }
+
+            return null;
+        }
 
         public TimingStats Tick => Get(TickName);
 
@@ -67,7 +80,13 @@ namespace Cities.Simulation.Scheduling
             private int _count;
             private double _last;
 
-            public Window(int size) => _values = new double[size];
+            public Window(string name, int size)
+            {
+                Name = name;
+                _values = new double[size];
+            }
+
+            public string Name { get; }
 
             public void Add(double value)
             {

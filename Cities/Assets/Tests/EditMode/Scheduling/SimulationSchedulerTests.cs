@@ -95,8 +95,9 @@ namespace Cities.Tests.EditMode.Scheduling
         [Test]
         public void MeasureModeTimesEverySystemAndTheTick()
         {
-            _scheduler.Register(new LoggingSystem("Terrein", 1, _log));
-            _scheduler.Register(new LoggingSystem("Water", 2, _log));
+            var terrain = new LoggingSystem("Terrein", 1, _log);
+            _scheduler.Register(terrain);
+            _scheduler.Register(new LoggingSystem("Water", 2, _log), terrain);
 
             _scheduler.ScheduleTick(Tick);
             Assert.That(_scheduler.Timings.Systems, Is.Empty, "Zonder meetmodus wordt niets gemeten");

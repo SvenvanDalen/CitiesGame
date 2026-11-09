@@ -79,7 +79,7 @@ namespace Cities.Tests.EditMode.Aviation
             Assert.That(airport.UsableGateCount, Is.EqualTo(1));
             Assert.That(airport.LoudestClass, Is.EqualTo(AircraftClass.Narrowbody));
             Assert.That(airport.GateMovementsPerHour, Is.EqualTo(AviationRules.GateMovementsPerHour(AircraftClass.Narrowbody)).Within(1e-3f));
-            Assert.That(airport.Gates, Has.Count.EqualTo(2));
+            Assert.That(airport.Gates.Count, Is.EqualTo(2));
         }
 
         [Test]

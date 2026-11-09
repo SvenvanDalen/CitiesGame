@@ -130,6 +130,7 @@ namespace Cities.World.Water
                     Grid = Grid, CoarseGround = _ground, CoarseWater = _water,
                     FineGround = _map.Height.Values, FineWater = _map.WaterDepth.Values,
                 }.Schedule(fine.Depth, 8, handle);
+                _map.WaterWriter = handle;
             }
 
             return handle;
