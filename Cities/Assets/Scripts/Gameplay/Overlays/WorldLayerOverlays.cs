@@ -59,7 +59,11 @@ namespace Cities.Gameplay.Overlays
                     cellsX,
                     cellsZ,
                     new OverlayLegend("Waterdiepte", "m", 0f, 10f, OverlayColorScale.Hot, "0.0"),
-                    (x, z) => map.WaterDepth[x, z],
+                    (x, z) =>
+                    {
+                        map.CompleteWaterWrites();
+                        return map.WaterDepth[x, z];
+                    },
                     version),
                 new DelegateCellOverlaySource(
                     ZonesId,

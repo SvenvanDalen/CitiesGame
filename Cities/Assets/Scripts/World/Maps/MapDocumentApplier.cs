@@ -41,6 +41,7 @@ namespace Cities.World.Maps
                 throw new ArgumentNullException(nameof(map));
             }
 
+            map.CompleteWaterWrites();
             var document = new MapDocument(map.Dimensions, name);
             for (var z = 0; z < document.CornersZ; z++)
             {

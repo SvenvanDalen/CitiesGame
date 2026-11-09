@@ -112,14 +112,21 @@ namespace Cities.World.Grid
             _trees.Layout.Length;
 
         /// <summary>Waterspiegel (terrein plus waterdiepte) op een hoekpunt.</summary>
-        public float WaterSurface(int x, int z) => _height[x, z] + _waterDepth[x, z];
+        public float WaterSurface(int x, int z)
+        {
+            CompleteWaterWrites();
+            return _height[x, z] + _waterDepth[x, z];
+        }
 
         /// <summary>Een cel staat onder water als een van de vier hoekpunten water heeft.</summary>
-        public bool IsUnderwater(CellCoord cell, float minimumDepth = 0.05f) =>
-            _waterDepth[cell.X, cell.Z] > minimumDepth ||
-            _waterDepth[cell.X + 1, cell.Z] > minimumDepth ||
-            _waterDepth[cell.X, cell.Z + 1] > minimumDepth ||
-            _waterDepth[cell.X + 1, cell.Z + 1] > minimumDepth;
+        public bool IsUnderwater(CellCoord cell, float minimumDepth = 0.05f)
+        {
+            CompleteWaterWrites();
+            return _waterDepth[cell.X, cell.Z] > minimumDepth ||
+                _waterDepth[cell.X + 1, cell.Z] > minimumDepth ||
+                _waterDepth[cell.X, cell.Z + 1] > minimumDepth ||
+                _waterDepth[cell.X + 1, cell.Z + 1] > minimumDepth;
+        }
 
         public void Dispose()
         {

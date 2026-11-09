@@ -3268,7 +3268,7 @@ MonoBehaviour:
   - {fileID: 1308647569}
   - {fileID: 618219828}
   _mask: 126
-  _showOverlay: 1
+  _showOverlay: 0
 --- !u!4 &820399532
 Transform:
   m_ObjectHideFlags: 0

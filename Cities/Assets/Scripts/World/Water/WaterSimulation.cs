@@ -69,6 +69,7 @@ namespace Cities.World.Water
         {
             get
             {
+                _map.CompleteWaterWrites();
                 var cell = _map.Dimensions.CellSize * Ratio;
                 double total = 0;
                 foreach (var depth in _water)
