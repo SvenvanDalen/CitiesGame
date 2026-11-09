@@ -14,17 +14,12 @@ namespace Cities.Tests.PlayMode.MainScene
     /// <summary>Plaatsen via de echte toolketen en weer ongedaan maken (E01-12): object en dekking verdwijnen en komen terug met redo.</summary>
     public class PlacementUndoPlayTests
     {
-        [UnitySetUp]
-        public IEnumerator LoadMain()
+        [UnityTest]
+        public IEnumerator UndoingAServicePlacementRemovesItAndRedoBringsItBack()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             yield return null;
             yield return null;
-        }
-
-        [UnityTest]
-        public IEnumerator UndoingAServicePlacementRemovesItAndRedoBringsItBack()
-        {
             var tools = Object.FindAnyObjectByType<ToolsBehaviour>();
             var services = Object.FindAnyObjectByType<ServicesHostBehaviour>();
             var police = Object.FindObjectsByType<PrefabPlacementBehaviour>().First(p => p.Tool.Name.Contains("Politie"));

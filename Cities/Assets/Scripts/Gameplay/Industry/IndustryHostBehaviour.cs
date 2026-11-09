@@ -4,7 +4,6 @@ using Cities.Simulation.Economy;
 using Cities.Simulation.Industry;
 using Cities.Simulation.Scheduling;
 using Cities.Simulation.Timing;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace Cities.Gameplay.Industry
@@ -51,7 +50,7 @@ namespace Cities.Gameplay.Industry
                 if (placement.Source != null)
                 {
                     var kind = placement.Kind;
-                    placement.Source.Placed += (go, position) => _undo[go] = OnPlaced(kind, position);
+                    placement.Source.Placed += (go, position) => _undo[go] = OnPlaced(kind);
                     placement.Source.Removed += (go, position) =>
                     {
                         if (_undo.TryGetValue(go, out var undo))
@@ -75,7 +74,7 @@ namespace Cities.Gameplay.Industry
         }
 
         /// <summary>Voegt toe wat bij de plaatsing hoort en geeft terug hoe dat weer weg te halen is (E01-12).</summary>
-        private System.Action OnPlaced(IndustryPlacementKind kind, float3 position)
+        private System.Action OnPlaced(IndustryPlacementKind kind)
         {
             switch (kind)
             {
