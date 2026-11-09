@@ -162,6 +162,34 @@ namespace Cities.Presentation.Tools
 
         private VisualElement _roadMore;
         private bool _roadMoreOpen;
+        private bool _zoneOverlayOpenedByTool;
+
+        /// <summary>Het zonegereedschap toont zelf de zone-overlay (E27-07) en zet die weer uit als je ervan wisselt, tenzij je zelf een andere overlay koos.</summary>
+        private void ShowZoneOverlayFor(ITool active)
+        {
+            var overlays = UnityEngine.Object.FindAnyObjectByType<Cities.Presentation.Overlays.OverlayBehaviour>();
+            if (overlays == null || _zones == null)
+            {
+                return;
+            }
+
+            var controller = overlays.Controller;
+            if (ReferenceEquals(active, _zones.Tool))
+            {
+                if (controller.Active == null)
+                {
+                    _zoneOverlayOpenedByTool = controller.Activate(Cities.Gameplay.Overlays.WorldLayerOverlays.ZonesId);
+                }
+            }
+            else if (_zoneOverlayOpenedByTool)
+            {
+                _zoneOverlayOpenedByTool = false;
+                if (controller.Active?.Id == Cities.Gameplay.Overlays.WorldLayerOverlays.ZonesId)
+                {
+                    controller.Deactivate();
+                }
+            }
+        }
 
         private VisualElement Panel(ToolbarTab tab) => _panels[tab];
 
@@ -288,6 +316,7 @@ namespace Cities.Presentation.Tools
 
         private void OnActiveChanged(ITool active)
         {
+            ShowZoneOverlayFor(active);
             foreach (var (button, placement) in _buttons)
             {
                 button.Selected = active != null && ReferenceEquals(active, placement.Tool);
@@ -397,9 +426,9 @@ namespace Cities.Presentation.Tools
         {
             var zone = _zones.Tool;
             AddSeparator(toolbar);
-            AddBrush(toolbar, "Zone kwast", zone, () => zone.Mode = ZoneMode.Brush, () => zone.Mode == ZoneMode.Brush);
+            AddBrush(toolbar, "Strook langs weg", zone, () => zone.Mode = ZoneMode.Fill, () => zone.Mode == ZoneMode.Fill);
             AddBrush(toolbar, "Zone vlak", zone, () => zone.Mode = ZoneMode.Rectangle, () => zone.Mode == ZoneMode.Rectangle);
-            AddBrush(toolbar, "Zone vullen", zone, () => zone.Mode = ZoneMode.Fill, () => zone.Mode == ZoneMode.Fill);
+            AddBrush(toolbar, "Zone kwast", zone, () => zone.Mode = ZoneMode.Brush, () => zone.Mode == ZoneMode.Brush);
             AddBrush(toolbar, "Wonen", zone, () => Zone(zone, ZoneType.Residential), () => !zone.Erase && zone.Type == ZoneType.Residential);
             AddBrush(toolbar, "Handel", zone, () => Zone(zone, ZoneType.Commercial), () => !zone.Erase && zone.Type == ZoneType.Commercial);
             AddBrush(toolbar, "Industrie", zone, () => Zone(zone, ZoneType.Industrial), () => !zone.Erase && zone.Type == ZoneType.Industrial);

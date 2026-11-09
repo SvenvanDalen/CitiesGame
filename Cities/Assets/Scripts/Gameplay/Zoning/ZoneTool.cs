@@ -49,7 +49,7 @@ namespace Cities.Gameplay.Zoning
             _overlay = overlay ?? throw new ArgumentNullException(nameof(overlay));
         }
 
-        public ZoneMode Mode { get; set; } = ZoneMode.Brush;
+        public ZoneMode Mode { get; set; } = ZoneMode.Fill;
 
         public ZoneType Type { get; set; } = ZoneType.Residential;
 
@@ -95,7 +95,7 @@ namespace Cities.Gameplay.Zoning
             Draw(cell);
             var count = _cells.Count;
             var reason = count == 0 ? Why(cell) : null;
-            return new ToolPreview(point, 0f, float2.zero, reason, count > 0 ? $"{count} cellen" : null);
+            return new ToolPreview(point, 0f, float2.zero, reason, count > 0 ? Describe(count) : null);
         }
 
         public void Apply(in ToolPreview preview)
@@ -206,6 +206,9 @@ namespace Cities.Gameplay.Zoning
             var zone = _map.Zones.GetForCell(cell);
             return Erase ? zone.IsZoned : _service.Reason(cell) == null && zone != new ZoneCell(Type, Density);
         }
+
+        /// <summary>De tekst bij de cursor: het aantal cellen en wat ze vullen (E27-07).</summary>
+        public static string Describe(int cells) => cells == 1 ? "1 cel" : $"{cells} cellen";
 
         private string Why(CellCoord cell) => Erase ? "Geen zone om te wissen" : _service.Reason(cell) ?? "Al gezoned";
     }

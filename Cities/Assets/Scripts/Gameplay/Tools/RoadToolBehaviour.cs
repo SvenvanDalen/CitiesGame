@@ -80,6 +80,26 @@ namespace Cities.Gameplay.Tools
             }
         }
 
+        /// <summary>Q en E wisselen het wegtype terwijl de wegtool actief is, ook midden in het tekenen.</summary>
+        private void Update()
+        {
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard == null || Types.Count == 0 || !ReferenceEquals(_tools.Controller.Active, Tool))
+            {
+                return;
+            }
+
+            var step = keyboard.eKey.wasPressedThisFrame ? 1 : keyboard.qKey.wasPressedThisFrame ? -1 : 0;
+            if (step == 0)
+            {
+                return;
+            }
+
+            var id = RoadTypeCycle.Next(Types.Select(t => t.Id).ToList(), Tool.TypeId, step);
+            var type = Types.First(t => t.Id == id);
+            Tool.Use(type.Id, type.Spec);
+        }
+
         private void Start()
         {
             if (_selectOnStart)

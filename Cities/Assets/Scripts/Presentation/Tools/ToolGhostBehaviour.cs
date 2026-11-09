@@ -47,9 +47,7 @@ namespace Cities.Presentation.Tools
             var preview = controller.Preview;
             UseModel(controller.Active?.Ghost);
             var brushState = preview.IsValid ? 1f : -1f;
-            Shader.SetGlobalVector(Brush, controller.Active is IBrushTool brush && preview.IsVisible
-                ? new Vector4(preview.Position.x, preview.Position.z, brush.Radius, brushState)
-                : Vector4.zero);
+            Shader.SetGlobalVector(Brush, BrushVector(controller.Active, preview, brushState));
             if (!preview.IsVisible)
             {
                 SetGhostVisible(false);
@@ -75,6 +73,22 @@ namespace Cities.Presentation.Tools
                 var matrix = Matrix4x4.TRS(position + (Vector3.up * _footprintLift), rotation, new Vector3(preview.Size.x, 1f, preview.Size.y));
                 Graphics.RenderMesh(new RenderParams(_footprintMaterial) { matProps = _block, shadowCastingMode = ShadowCastingMode.Off }, _quad, 0, matrix);
             }
+        }
+
+        /// <summary>De ring op het terrein: de rand van het penseel, of bij plaatsen het bereik van de dienst (E27-08).</summary>
+        private static Vector4 BrushVector(ITool active, in ToolPreview preview, float state)
+        {
+            if (!preview.IsVisible)
+            {
+                return Vector4.zero;
+            }
+
+            if (active is IBrushTool brush)
+            {
+                return new Vector4(preview.Position.x, preview.Position.z, brush.Radius, state);
+            }
+
+            return preview.RangeMeters > 0f ? new Vector4(preview.Position.x, preview.Position.z, preview.RangeMeters, state) : Vector4.zero;
         }
 
         private void OnDestroy()

@@ -84,6 +84,16 @@ namespace Cities.Tests.EditMode.Zoning
         }
 
         [Test]
+        public void DescribeUsesSingularForOneCell()
+        {
+            Assert.That(ZoneTool.Describe(1), Is.EqualTo("1 cel"));
+            Assert.That(ZoneTool.Describe(12), Is.EqualTo("12 cellen"));
+        }
+
+        [Test]
+        public void StartsInStripMode() => Assert.That(_tool.Mode, Is.EqualTo(ZoneMode.Fill));
+
+        [Test]
         public void OutsideTheMapIsRefused()
         {
             var preview = _tool.UpdatePreview(new ToolInput(Ground(new float3(-50f, 0f, 10f))));
