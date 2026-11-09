@@ -35,6 +35,9 @@ namespace Cities.Gameplay.Events
             Disasters.PhaseChanged += OnPhase;
         }
 
+        /// <summary>Zoveel dagen na de start ontstaan er geen rampen vanzelf, zodat een nieuwe stad eerst kan groeien.</summary>
+        public const int GraceDays = 90;
+
         public DisasterManager Disasters { get; }
 
         public MilestoneTracker Milestones { get; }
@@ -57,7 +60,7 @@ namespace Cities.Gameplay.Events
 
             Day = day;
             var random = new DeterministicRandom(_seed, (ulong)day);
-            var damage = Disasters.Step(ref random, area);
+            var damage = Disasters.Step(ref random, area, day >= GraceDays);
             if (damage > 0)
             {
                 TotalDamage += damage;

@@ -67,9 +67,9 @@ namespace Cities.Simulation.Disasters
         /// <summary>
         /// Eén dag: rekent de kosten van de lopende rampen af, schuift ze op en laat daarna nieuwe vanzelf ontstaan op een willekeurige
         /// plek in een gebied van <paramref name="area"/> meter. De kosten volgen de schadefactor en de kans de frequentiefactor van de
-        /// <see cref="Settings"/>. Geeft de totale kosten van vandaag.
+        /// <see cref="Settings"/>. Met <paramref name="allowNew"/> uit lopen alleen de bestaande rampen door. Geeft de totale kosten van vandaag.
         /// </summary>
-        public long Step(ref DeterministicRandom random, float2 area)
+        public long Step(ref DeterministicRandom random, float2 area, bool allowNew = true)
         {
             var cost = 0L;
             foreach (var disaster in _running.ToArray())
@@ -82,7 +82,7 @@ namespace Cities.Simulation.Disasters
             }
 
             _running.RemoveAll(d => d.Phase == DisasterPhase.Ended);
-            if (RandomEnabled)
+            if (allowNew && RandomEnabled)
             {
                 foreach (var spec in _specs.Where(s => IsEnabled(s.Name) && _running.All(d => d.Spec != s)).ToArray())
                 {

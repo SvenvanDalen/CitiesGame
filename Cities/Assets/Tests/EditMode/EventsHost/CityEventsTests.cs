@@ -66,6 +66,24 @@ namespace Cities.Tests.EditMode.EventsHost
         }
 
         [Test]
+        public void NoRandomDisasterStrikesDuringTheGracePeriodOfANewCity()
+        {
+            var events = new CityEvents(1);
+            events.Disasters.Register(new Cities.Simulation.Disasters.DisasterSpec("Brand", 1f, 1, 2, 1, 100, 10));
+            var ledger = new Ledger(0);
+            for (var day = 1; day < CityEvents.GraceDays; day++)
+            {
+                events.Daily(day, 1, 0, ledger, Area);
+            }
+
+            Assert.That(events.Disasters.Running, Is.Empty, "in de eerste maanden gebeurt er niets vanzelf");
+
+            events.Daily(CityEvents.GraceDays, 1, 0, ledger, Area);
+
+            Assert.That(events.Disasters.Running, Is.Not.Empty, "daarna werkt de kans weer");
+        }
+
+        [Test]
         public void RandomDisastersAreReproducibleForTheSameSeed()
         {
             string Run()
