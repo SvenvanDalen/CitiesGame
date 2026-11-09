@@ -23,6 +23,9 @@ namespace Cities.Gameplay.Tools
 
         public void Add(in Footprint footprint) => _placed.Add(footprint);
 
+        /// <summary>Geeft de cellen van een eerder geplaatste footprint weer vrij; <c>false</c> als hij er niet stond.</summary>
+        public bool Remove(in Footprint footprint) => _placed.Remove(footprint);
+
         public void Clear() => _placed.Clear();
     }
 }

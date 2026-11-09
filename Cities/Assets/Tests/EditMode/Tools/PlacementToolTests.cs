@@ -26,6 +26,26 @@ namespace Cities.Tests.EditMode.Tools
             }
         }
 
+        private sealed class UndoTarget : IUndoablePlacementTarget
+        {
+            public readonly FootprintOccupancy Occupancy = new FootprintOccupancy();
+            public int Count;
+
+            public string Check(in Footprint footprint) => Occupancy.Check(footprint);
+
+            public void Place(in Footprint footprint, float3 position)
+            {
+                Occupancy.Add(footprint);
+                Count++;
+            }
+
+            public void Unplace(in Footprint footprint, float3 position)
+            {
+                Occupancy.Remove(footprint);
+                Count--;
+            }
+        }
+
         /// <summary>Helling langs X: elke meter oostwaarts een vaste stijging.</summary>
         private sealed class Slope : ITerrainHeight
         {
@@ -64,6 +84,40 @@ namespace Cities.Tests.EditMode.Tools
 
         private static PlacementTool Tool(Target target, ITerrainHeight terrain = null) =>
             new PlacementTool("Huis", 2, 3, Dimensions, terrain ?? new FlatTerrain(4f), target);
+
+        [Test]
+        public void PlacingWithAnUndoableTargetGivesAnUndoThatFreesTheCells()
+        {
+            var target = new UndoTarget();
+            var tool = new PlacementTool("Huis", 2, 3, Dimensions, new FlatTerrain(4f), target);
+            tool.Activate();
+            var preview = tool.UpdatePreview(At(33f, 30f));
+            tool.Apply(preview);
+
+            var undo = tool.TakeUndo();
+            Assert.That(undo, Is.Not.Null);
+            Assert.That(tool.TakeUndo(), Is.Null, "de actie wordt maar één keer teruggegeven");
+            Assert.That(target.Count, Is.EqualTo(1));
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).InvalidReason, Is.EqualTo(FootprintOccupancy.Occupied));
+
+            undo.Undo();
+            Assert.That(target.Count, Is.EqualTo(0));
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).IsValid, Is.True, "de cellen zijn weer vrij");
+
+            undo.Redo();
+            Assert.That(target.Count, Is.EqualTo(1));
+            Assert.That(tool.UpdatePreview(At(33f, 30f)).InvalidReason, Is.EqualTo(FootprintOccupancy.Occupied));
+        }
+
+        [Test]
+        public void ATargetWithoutUnplaceGivesNoUndo()
+        {
+            var tool = Tool(new Target());
+            tool.Activate();
+            tool.Apply(tool.UpdatePreview(At(33f, 30f)));
+
+            Assert.That(tool.TakeUndo(), Is.Null);
+        }
 
         [Test]
         public void LockedTileBlocksPlacement()

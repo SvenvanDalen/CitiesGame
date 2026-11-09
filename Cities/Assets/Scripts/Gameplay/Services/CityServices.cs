@@ -74,6 +74,19 @@ namespace Cities.Gameplay.Services
             }
         }
 
+        /// <summary>Haalt een geplaatste dienst weer weg (plaatsing ongedaan gemaakt, E01-12); <c>false</c> als er geen op die plek staat.</summary>
+        public bool Remove(CityService kind, float2 position)
+        {
+            var index = _placed.FindIndex(p => p.Kind == kind && p.Position.Equals(position));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            _placed.RemoveAt(index);
+            return true;
+        }
+
         public bool IsCovered(CityService kind, float2 point)
         {
             var radius = RadiusOf(kind);

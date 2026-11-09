@@ -11,7 +11,7 @@ namespace Cities.Gameplay.Tools
     /// kaart erbij wordt de grond onder het gebouw bebouwd en verdwijnen de bomen daar.
     /// </summary>
     [DefaultExecutionOrder(-300)]
-    public sealed class PrefabPlacementBehaviour : MonoBehaviour, IPlacementTarget
+    public sealed class PrefabPlacementBehaviour : MonoBehaviour, IUndoablePlacementTarget
     {
         [SerializeField] private ToolsBehaviour _tools;
         [SerializeField] private GameObject _prefab;
@@ -31,11 +31,19 @@ namespace Cities.Gameplay.Tools
         [SerializeField] private Zoning.ZoneToolBehaviour _roads;
 
         private readonly FootprintOccupancy _occupancy = new FootprintOccupancy();
+        private readonly System.Collections.Generic.List<(Footprint Footprint, GameObject Object, float3 Position)> _objects =
+            new System.Collections.Generic.List<(Footprint, GameObject, float3)>();
 
         public PlacementTool Tool { get; private set; }
 
         /// <summary>Er is een object geplaatst (E26-03): het object en zijn positie.</summary>
         public event System.Action<GameObject, float3> Placed;
+
+        /// <summary>Een geplaatst object is ongedaan gemaakt (E01-12): het object, vóór het wordt vernietigd, en zijn positie.</summary>
+        public event System.Action<GameObject, float3> Removed;
+
+        /// <summary>Optioneel: een host kan het weghalen weigeren (bijvoorbeeld een halte die al in een lijn ligt); het object blijft dan staan.</summary>
+        public System.Func<GameObject, bool> CanRemove { get; set; }
 
         public FootprintOccupancy Occupancy => _occupancy;
 
@@ -50,7 +58,35 @@ namespace Cities.Gameplay.Tools
             }
 
             var placed = Instantiate(_prefab, position, Quaternion.Euler(0f, footprint.YawDegrees, 0f), transform);
+            _objects.Add((footprint, placed, position));
             Placed?.Invoke(placed, position);
+        }
+
+        public void Unplace(in Footprint footprint, float3 position)
+        {
+            for (var i = _objects.Count - 1; i >= 0; i--)
+            {
+                if (!_objects[i].Footprint.Equals(footprint))
+                {
+                    continue;
+                }
+
+                var placed = _objects[i].Object;
+                if (CanRemove != null && !CanRemove(placed))
+                {
+                    return;
+                }
+
+                _objects.RemoveAt(i);
+                _occupancy.Remove(footprint);
+                Removed?.Invoke(placed, position);
+                if (placed != null)
+                {
+                    Destroy(placed);
+                }
+
+                return;
+            }
         }
 
         /// <summary>Na de <see cref="Picking.PickingBehaviour"/> (die het terrein kiest) en vóór de UI (die de tool nodig heeft).</summary>
