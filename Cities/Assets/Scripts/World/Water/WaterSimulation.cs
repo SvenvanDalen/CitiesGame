@@ -69,6 +69,7 @@ namespace Cities.World.Water
         {
             get
             {
+                _map.CompleteWaterWrites();
                 var cell = _map.Dimensions.CellSize * Ratio;
                 double total = 0;
                 foreach (var depth in _water)
@@ -156,6 +157,8 @@ namespace Cities.World.Water
 
         public void Dispose()
         {
+            // Een lopende stap leest en schrijft nog in deze arrays; eerst afronden, anders weigert Unity het vrijgeven.
+            _map.CompleteWaterWrites();
             _map.HeightChanged -= OnHeightChanged;
             _ground.Dispose();
             _water.Dispose();

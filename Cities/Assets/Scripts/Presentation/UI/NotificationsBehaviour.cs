@@ -29,6 +29,7 @@ namespace Cities.Presentation.UI
             _list.style.right = 8;
             _list.style.top = 56;
             _list.style.width = 320;
+            _list.style.overflow = Overflow.Hidden;
             root.Add(_list);
             _lastCount = -1;
         }
@@ -56,6 +57,7 @@ namespace Cities.Presentation.UI
                 var label = new Label(item.Text);
                 label.style.color = item.Severity == Severity.Critical ? new Color(1f, 0.45f, 0.4f) : Color.white;
                 label.style.marginBottom = 2;
+                label.style.whiteSpace = WhiteSpace.Normal;
                 if (item.Location.HasValue)
                 {
                     var location = item.Location.Value;

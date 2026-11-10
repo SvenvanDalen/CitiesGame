@@ -31,6 +31,7 @@ namespace Cities.Simulation.Timing
             StartDate = startDate;
             _start = startDate.ToDateTime();
             Date = startDate;
+            TimeOfDay = (float)(_offsetTicks % ticksPerDay) / ticksPerDay;
         }
 
         /// <summary>Begint een nieuwe dag; wordt aangeroepen vóór <see cref="MonthStarted"/> en <see cref="YearStarted"/>.</summary>

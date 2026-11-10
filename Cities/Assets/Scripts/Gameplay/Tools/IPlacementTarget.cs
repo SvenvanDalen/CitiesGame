@@ -12,4 +12,11 @@ namespace Cities.Gameplay.Tools
         /// <param name="position">Midden van de onderkant in de wereld.</param>
         void Place(in Footprint footprint, float3 position);
     }
+
+    /// <summary>Een plaatsingsdoel dat een geplaatst object ook weer kan weghalen (E01-12), zodat plaatsen ongedaan te maken is.</summary>
+    public interface IUndoablePlacementTarget : IPlacementTarget
+    {
+        /// <summary>Haalt het object weg dat met deze footprint is geplaatst en maakt de cellen weer vrij.</summary>
+        void Unplace(in Footprint footprint, float3 position);
+    }
 }

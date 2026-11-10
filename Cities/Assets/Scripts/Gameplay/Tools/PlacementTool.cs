@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Cities.Gameplay.Zoning;
+using Cities.Simulation.Commands;
 using Cities.World.Grid;
 using Cities.World.Tiles;
 using Cities.World.Terrain;
@@ -10,7 +11,7 @@ using UnityEngine;
 namespace Cities.Gameplay.Tools
 {
     /// <summary>Plaatst een object met een vaste footprint, gesnapt op het cellenraster en draaibaar per kwartslag.</summary>
-    public sealed class PlacementTool : ITool
+    public sealed class PlacementTool : ITool, IUndoSource
     {
         public const string OutsideMap = "Buiten de kaart";
         public const string TooSteep = "Te steil";
@@ -25,6 +26,7 @@ namespace Cities.Gameplay.Tools
         private readonly float2[] _samples = new float2[5];
         private Footprint _footprint;
         private int _manualTurns;
+        private UndoAction _undo;
 
         /// <param name="maxRise">Grootste hoogteverschil binnen de footprint in meters.</param>
         public PlacementTool(
@@ -108,7 +110,23 @@ namespace Cities.Gameplay.Tools
             return new ToolPreview(new float3(center.x, baseHeight, center.y), _footprint.YawDegrees, size, reason, null, Cost).WithRange(RangeMeters);
         }
 
-        public void Apply(in ToolPreview preview) => _target.Place(_footprint, preview.Position);
+        public void Apply(in ToolPreview preview)
+        {
+            var footprint = _footprint;
+            var position = preview.Position;
+            _target.Place(footprint, position);
+            if (_target is IUndoablePlacementTarget undoable)
+            {
+                _undo = new UndoAction("Plaatsen " + Name, 0, () => undoable.Unplace(footprint, position), () => _target.Place(footprint, position));
+            }
+        }
+
+        public UndoAction TakeUndo()
+        {
+            var action = _undo;
+            _undo = null;
+            return action;
+        }
 
         public bool CancelStep() => false;
 

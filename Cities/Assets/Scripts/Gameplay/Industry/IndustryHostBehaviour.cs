@@ -4,7 +4,6 @@ using Cities.Simulation.Economy;
 using Cities.Simulation.Industry;
 using Cities.Simulation.Scheduling;
 using Cities.Simulation.Timing;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace Cities.Gameplay.Industry
@@ -37,6 +36,8 @@ namespace Cities.Gameplay.Industry
         [SerializeField] private EconomyHostBehaviour _economy;
         [SerializeField] private Placement[] _placements = System.Array.Empty<Placement>();
 
+        private readonly System.Collections.Generic.Dictionary<GameObject, System.Action> _undo = new System.Collections.Generic.Dictionary<GameObject, System.Action>();
+
         public CityIndustry Industry { get; } = new CityIndustry();
 
         /// <summary>De laatst afgesloten week, voor het scherm.</summary>
@@ -49,7 +50,15 @@ namespace Cities.Gameplay.Industry
                 if (placement.Source != null)
                 {
                     var kind = placement.Kind;
-                    placement.Source.Placed += (go, position) => OnPlaced(kind, position);
+                    placement.Source.Placed += (go, position) => _undo[go] = OnPlaced(kind);
+                    placement.Source.Removed += (go, position) =>
+                    {
+                        if (_undo.TryGetValue(go, out var undo))
+                        {
+                            undo();
+                            _undo.Remove(go);
+                        }
+                    };
                 }
             }
 
@@ -64,17 +73,28 @@ namespace Cities.Gameplay.Industry
             }
         }
 
-        private void OnPlaced(IndustryPlacementKind kind, float3 position)
+        /// <summary>Voegt toe wat bij de plaatsing hoort en geeft terug hoe dat weer weg te halen is (E01-12).</summary>
+        private System.Action OnPlaced(IndustryPlacementKind kind)
         {
             switch (kind)
             {
-                case IndustryPlacementKind.Agriculture: Industry.AddSite(IndustryKind.Agriculture); break;
-                case IndustryPlacementKind.Forestry: Industry.AddSite(IndustryKind.Forestry); break;
-                case IndustryPlacementKind.Ore: Industry.AddSite(IndustryKind.Ore); break;
-                case IndustryPlacementKind.Oil: Industry.AddSite(IndustryKind.Oil); break;
-                case IndustryPlacementKind.Attraction: Industry.AddAttraction("Trekpleister " + Industry.Tourism.NextId, 60, 8, 400); break;
-                default: Industry.AddHotel(); break;
+                case IndustryPlacementKind.Agriculture: return Site(IndustryKind.Agriculture);
+                case IndustryPlacementKind.Forestry: return Site(IndustryKind.Forestry);
+                case IndustryPlacementKind.Ore: return Site(IndustryKind.Ore);
+                case IndustryPlacementKind.Oil: return Site(IndustryKind.Oil);
+                case IndustryPlacementKind.Attraction:
+                    var attraction = Industry.AddAttraction("Trekpleister " + Industry.Tourism.NextId, 60, 8, 400);
+                    return () => Industry.RemoveAttraction(attraction);
+                default:
+                    Industry.AddHotel();
+                    return Industry.RemoveHotel;
             }
+        }
+
+        private System.Action Site(IndustryKind kind)
+        {
+            var site = Industry.AddSite(kind);
+            return () => Industry.RemoveSite(site.Id);
         }
 
         private void OnDay(GameDate date)

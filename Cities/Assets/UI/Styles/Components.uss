@@ -148,6 +148,7 @@
 
 .c-panel__title {
     flex-grow: 1;
+    color: var(--color-text);
     font-size: var(--font-size-emphasis);
     -unity-font-definition: url("project://database/Assets/UI/Fonts/Inter/Inter-SemiBold.asset");
 }

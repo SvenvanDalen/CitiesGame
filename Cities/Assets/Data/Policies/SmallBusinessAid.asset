@@ -18,8 +18,8 @@ MonoBehaviour:
   _icon: {fileID: 0}
   _spec:
     Scope: 0
-    ActivationCost: 1100000
-    MonthlyCost: 200000
+    ActivationCost: 110000
+    MonthlyCost: 20000
     MonthlyCostPerCitizen: 0.1
     UnlockPopulation: 5000
     Effects:

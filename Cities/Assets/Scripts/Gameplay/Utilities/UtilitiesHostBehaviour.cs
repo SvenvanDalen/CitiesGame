@@ -32,6 +32,7 @@ namespace Cities.Gameplay.Utilities
         [SerializeField, Min(1)] private int _tintInterval = 30;
 
         private readonly Dictionary<GameObject, int> _handles = new Dictionary<GameObject, int>();
+        private readonly Dictionary<GameObject, int> _placedPlants = new Dictionary<GameObject, int>();
         private readonly List<(int Handle, Renderer[] Renderers)> _buildings = new List<(int, Renderer[])>();
         private MaterialPropertyBlock _block;
 
@@ -61,7 +62,15 @@ namespace Cities.Gameplay.Utilities
                 if (plant.Placement != null)
                 {
                     var kind = plant.Kind;
-                    plant.Placement.Placed += (go, position) => Utilities.AddPlant(kind, new float2(position.x, position.z));
+                    plant.Placement.Placed += (go, position) => _placedPlants[go] = Utilities.AddPlant(kind, new float2(position.x, position.z));
+                    plant.Placement.Removed += (go, position) =>
+                    {
+                        if (_placedPlants.TryGetValue(go, out var handle))
+                        {
+                            Utilities.Remove(handle);
+                            _placedPlants.Remove(go);
+                        }
+                    };
                 }
             }
 

@@ -50,12 +50,12 @@ namespace Cities.Gameplay.NewCity
             return settings;
         }
 
-        /// <summary>De klokinstellingen met het gekozen startjaar, begin januari.</summary>
+        /// <summary>De klokinstellingen met het gekozen startjaar, begin april: een nieuwe stad begint op een lichte lenteochtend in plaats van in een winterse schemering.</summary>
         public SimulationClockSettings Clock()
         {
             var settings = SimulationClockSettings.Default;
             settings.StartYear = StartYear;
-            settings.StartMonth = 1;
+            settings.StartMonth = 4;
             settings.StartDay = 1;
             settings.StartHour = SimulationClockSettings.DefaultStartHour;
             return settings;

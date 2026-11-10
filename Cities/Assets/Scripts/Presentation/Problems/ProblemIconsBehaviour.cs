@@ -79,6 +79,7 @@ namespace Cities.Presentation.Problems
                 baseMaterial = _owned = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             }
 
+            baseMaterial.enableInstancing = true;
             for (var i = 0; i < _perKind.Length; i++)
             {
                 _perKind[i] = new List<Matrix4x4>();

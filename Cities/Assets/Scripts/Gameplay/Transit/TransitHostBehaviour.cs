@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Cities.Gameplay.Economy;
 using Cities.Gameplay.Population;
@@ -29,6 +30,8 @@ namespace Cities.Gameplay.Transit
 
         private readonly List<Matrix4x4> _matrices = new List<Matrix4x4>();
         private readonly List<Matrix4x4> _stops = new List<Matrix4x4>();
+        private readonly List<int> _stopIds = new List<int>();
+        private readonly System.Collections.Generic.Dictionary<GameObject, int> _placedStops = new System.Collections.Generic.Dictionary<GameObject, int>();
 
         public CityTransit Transit { get; } = new CityTransit();
 
@@ -37,6 +40,8 @@ namespace Cities.Gameplay.Transit
             if (_stopPlacement != null)
             {
                 _stopPlacement.Placed += OnStopPlaced;
+                _stopPlacement.Removed += OnStopRemoved;
+                _stopPlacement.CanRemove = go => !_placedStops.TryGetValue(go, out var stop) || !OnAnyLine(stop);
             }
 
             _simulation.Clock.Ticked += OnTick;
@@ -48,6 +53,7 @@ namespace Cities.Gameplay.Transit
             if (_stopPlacement != null)
             {
                 _stopPlacement.Placed -= OnStopPlaced;
+                _stopPlacement.Removed -= OnStopRemoved;
             }
 
             if (_simulation != null && _simulation.Clock != null)
@@ -57,13 +63,32 @@ namespace Cities.Gameplay.Transit
             }
         }
 
-        private void OnStopPlaced(GameObject placed, float3 position) => RestoreStop(new float2(position.x, position.z), position.y);
+        private void OnStopPlaced(GameObject placed, float3 position) =>
+            _placedStops[placed] = RestoreStop(new float2(position.x, position.z), position.y);
+
+        private bool OnAnyLine(int stop) => Transit.Network.Lines.Any(l => l.Stops.Contains(stop));
+
+        /// <summary>De plaatsing van een halte is ongedaan gemaakt (E01-12): de halte en haar weergave gaan weg.</summary>
+        private void OnStopRemoved(GameObject placed, float3 position)
+        {
+            if (_placedStops.TryGetValue(placed, out var stop) && Transit.Network.TryRemoveStop(stop))
+            {
+                _placedStops.Remove(placed);
+                var index = _stopIds.IndexOf(stop);
+                if (index >= 0)
+                {
+                    _stopIds.RemoveAt(index);
+                    _stops.RemoveAt(index);
+                }
+            }
+        }
 
         /// <summary>Voegt een halte toe, ook bij het laden van een save (E26-14); geeft het halte-id terug.</summary>
         public int RestoreStop(float2 position, float height = 0f)
         {
             var id = Transit.AddStop(position);
             _stops.Add(Matrix4x4.TRS(new Vector3(position.x, height + 2f, position.y), Quaternion.identity, new Vector3(2f, 4f, 2f)));
+            _stopIds.Add(id);
             return id;
         }
 

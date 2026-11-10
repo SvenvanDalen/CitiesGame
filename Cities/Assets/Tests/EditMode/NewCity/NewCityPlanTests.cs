@@ -29,7 +29,7 @@ namespace Cities.Tests.EditMode.NewCity
 
             Assert.That(plan.Terrain().Seed, Is.EqualTo(4242));
             Assert.That(plan.Clock().StartYear, Is.EqualTo(1975));
-            Assert.That(plan.Clock().StartMonth, Is.EqualTo(1));
+            Assert.That(plan.Clock().StartMonth, Is.EqualTo(4));
             Assert.That(plan.Clock().StartDay, Is.EqualTo(1));
         }
 

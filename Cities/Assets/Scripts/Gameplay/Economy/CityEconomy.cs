@@ -56,6 +56,14 @@ namespace Cities.Gameplay.Economy
             Budget.Apply(_stations);
         }
 
+        public void RemoveStation(ServiceStation station)
+        {
+            if (_stations.Remove(station))
+            {
+                Budget.Apply(_stations);
+            }
+        }
+
         public void AddUpkeep(long perMonth) => _upkeepPerMonth += perMonth;
 
         /// <summary>Kosten na de moeilijkheidsfactor.</summary>

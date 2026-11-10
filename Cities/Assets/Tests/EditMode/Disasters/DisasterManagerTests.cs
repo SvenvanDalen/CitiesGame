@@ -75,6 +75,11 @@ namespace Cities.Tests.EditMode.Disasters
             Assert.That(off.Running, Is.Empty);
             Assert.That(off.Trigger("Brand", float2.zero), Is.Not.Null, "handmatig kan altijd");
 
+            var graceful = new DisasterManager();
+            graceful.Register(Fire(1f));
+            graceful.Step(ref random, Area, allowNew: false);
+            Assert.That(graceful.Running, Is.Empty, "zonder nieuwe rampen ontstaat er niets");
+
             var typeOff = new DisasterManager();
             typeOff.Register(Fire(1f));
             typeOff.SetEnabled("Brand", false);

@@ -66,6 +66,12 @@ namespace Cities.Gameplay.Industry
 
         public void AddHotel() => Beds += BedsPerHotel;
 
+        public void RemoveHotel() => Beds = Math.Max(0, Beds - BedsPerHotel);
+
+        public bool RemoveSite(int id) => Sites.Remove(id);
+
+        public bool RemoveAttraction(int id) => Tourism.Remove(id);
+
         /// <summary>Zet het aantal hotelbedden terug uit een save (E26-14).</summary>
         public void RestoreBeds(int beds) => Beds = Math.Max(0, beds);
 

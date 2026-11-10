@@ -59,6 +59,8 @@ namespace Cities.Gameplay.Services
             public float2 Position;
         }
 
+        private readonly Dictionary<GameObject, (CityService Kind, float2 Position, Cities.Simulation.Services.ServiceStation Station)> _placedServices =
+            new Dictionary<GameObject, (CityService, float2, Cities.Simulation.Services.ServiceStation)>();
         private readonly List<Tracked> _buildings = new List<Tracked>();
         private readonly List<float2> _points = new List<float2>();
         private int _nextId;
@@ -74,7 +76,8 @@ namespace Cities.Gameplay.Services
                 {
                     var kind = service.Kind;
                     service.Placement.Tool.RangeMeters = CityServices.RadiusOf(kind);
-                    service.Placement.Placed += (go, position) => OnService(kind, position);
+                    service.Placement.Placed += (go, position) => _placedServices[go] = (kind, new float2(position.x, position.z), OnService(kind, position));
+                    service.Placement.Removed += (go, position) => OnServiceRemoved(go);
                 }
             }
 
@@ -102,7 +105,7 @@ namespace Cities.Gameplay.Services
         /// <summary>Zet een opgeslagen dienst terug in het model (E26-14); het gebouwobject zelf wordt niet teruggezet.</summary>
         public void Restore(CityService kind, float2 position) => OnService(kind, new float3(position.x, 0f, position.y));
 
-        private void OnService(CityService kind, float3 position)
+        private Cities.Simulation.Services.ServiceStation OnService(CityService kind, float3 position)
         {
             var station = Services.Place(kind, new float2(position.x, position.z));
             if (station != null)
@@ -111,6 +114,25 @@ namespace Cities.Gameplay.Services
             }
 
             _economy.Economy.AddUpkeep(CityServices.UpkeepPerMonthOf(kind));
+            return station;
+        }
+
+        /// <summary>De plaatsing van een dienst is ongedaan gemaakt (E01-12): dekking, station en onderhoud gaan weer weg.</summary>
+        private void OnServiceRemoved(GameObject placed)
+        {
+            if (!_placedServices.TryGetValue(placed, out var entry))
+            {
+                return;
+            }
+
+            _placedServices.Remove(placed);
+            Services.Remove(entry.Kind, entry.Position);
+            if (entry.Station != null)
+            {
+                _economy.Economy.RemoveStation(entry.Station);
+            }
+
+            _economy.Economy.AddUpkeep(-CityServices.UpkeepPerMonthOf(entry.Kind));
         }
 
         private void OnBuilding(BuildingDefinition definition, GameObject building, float3 position)

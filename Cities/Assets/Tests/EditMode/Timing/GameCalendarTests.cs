@@ -166,7 +166,7 @@ namespace Cities.Tests.EditMode.Timing
             var days = new List<GameDate>();
             calendar.DayStarted += days.Add;
 
-            Assert.That(calendar.TimeOfDay, Is.EqualTo(0f), "voor de eerste Update");
+            Assert.That(calendar.TimeOfDay, Is.EqualTo(8f / 24f).Within(0.01f), "ook voor de eerste Update staat de hemel op het beginuur");
             calendar.Update(0);
             Assert.That(calendar.TimeOfDay, Is.EqualTo(8f / 24f).Within(0.01f));
             calendar.Update(70);
