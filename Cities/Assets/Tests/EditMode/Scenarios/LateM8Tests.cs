@@ -43,7 +43,7 @@ namespace Cities.Tests.EditMode.Scenarios
             metrics["debt"] = 5;
             Assert.That(scenario.Evaluate(100, metrics), Is.EqualTo(GoalState.Failed));
             Assert.Throws<ArgumentNullException>(() => scenario.Evaluate(1, null));
-            Assert.Throws<ArgumentException>(() => new Scenario("x", new ScenarioGoal[0], 10));
+            Assert.Throws<ArgumentException>(() => new Scenario("x", Array.Empty<ScenarioGoal>(), 10));
             Assert.Throws<ArgumentException>(() => new ScenarioGoal("", "m", 1));
         }
 

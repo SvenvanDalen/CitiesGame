@@ -9,7 +9,7 @@ namespace Cities.Tests.EditMode
         [Test]
         public void EveryModeHasASpec()
         {
-            foreach (ExtraTransitMode mode in Enum.GetValues(typeof(ExtraTransitMode)))
+            foreach (ExtraTransitMode mode in Enum.GetValues<ExtraTransitMode>())
             {
                 var spec = ExtraTransitModes.Of(mode);
                 Assert.That(spec.Name, Is.Not.Empty);
