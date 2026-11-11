@@ -30,6 +30,7 @@ namespace Cities.Gameplay.Expansion
         [SerializeField] private ToolsBehaviour _tools;
         [SerializeField] private UtilitiesHostBehaviour _utilities;
         [SerializeField] private EconomyHostBehaviour _economy;
+        [SerializeField] private VenuesHostBehaviour _venues;
 
         [Header("Weergave (standaard aan)")]
         [SerializeField] private bool _seasons = true;
@@ -101,7 +102,7 @@ namespace Cities.Gameplay.Expansion
             var buildings = _spawner != null ? _spawner.Built.Count : 0;
             var days = (int)_simulation.Clock.Calendar.DaysElapsed;
             var wasHeatwave = Expansion.Heatwaves.Current != null;
-            Expansion.Daily(days, date.Month, _population.Population.Population, buildings, snowing, sinks: 0);
+            Expansion.Daily(days, date.Month, _population.Population.Population, buildings, snowing, sinks: _venues != null ? _venues.Venues.Sinks : 0);
             if (_traffic != null && _traffic.Traffic != null)
             {
                 _traffic.Traffic.Grip = Expansion.TrafficGrip;
