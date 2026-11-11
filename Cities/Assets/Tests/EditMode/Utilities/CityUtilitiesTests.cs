@@ -96,9 +96,11 @@ namespace Cities.Tests.EditMode.Utilities
             utilities.SetDemandFactors(2f, 1.5f);
             Assert.That(utilities.PowerFactor, Is.EqualTo(2f));
             Assert.That(utilities.WaterFactor, Is.EqualTo(1.5f));
+            utilities.Power.Tick();
             Assert.That(utilities.Power.Demand(utilities.Power.NetworkOf(node)), Is.EqualTo(12 * CityUtilities.PowerPerPerson * 2f).Within(0.01f));
             utilities.SetDemandFactors(2f, 1.5f);
             utilities.SetDemandFactors(1f, 1f);
+            utilities.Power.Tick();
             Assert.That(utilities.Power.Demand(utilities.Power.NetworkOf(node)), Is.EqualTo(12 * CityUtilities.PowerPerPerson).Within(0.01f));
             utilities.Remove(house);
             utilities.SetDemandFactors(3f, 3f);
