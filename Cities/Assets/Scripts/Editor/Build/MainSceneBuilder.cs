@@ -252,8 +252,12 @@ namespace Cities.Editor.Build
             Wire(host, ("_simulation", simulation), ("_population", population),
                 ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()), ("_traffic", traffic),
                 ("_atmosphere", Object.FindAnyObjectByType<Cities.Presentation.Atmosphere.AtmosphereBehaviour>()),
-                ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()), ("_tools", tools));
+                ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()), ("_tools", tools),
+                ("_utilities", Object.FindAnyObjectByType<Cities.Gameplay.Utilities.UtilitiesHostBehaviour>()),
+                ("_economy", Object.FindAnyObjectByType<Cities.Gameplay.Economy.EconomyHostBehaviour>()));
             Wire(save, ("_expansion", host));
+            var tint = new GameObject("Seizoenskleur").AddComponent<Cities.Presentation.Trees.SeasonTintBehaviour>();
+            Wire(tint, ("_simulation", simulation), ("_expansion", host), ("_trees", Object.FindAnyObjectByType<Cities.Presentation.Trees.TreeRendererBehaviour>()));
         }
 
         /// <summary>E26-13: dag en nacht, weer en omgevingsgeluid.</summary>

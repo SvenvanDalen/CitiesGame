@@ -51,6 +51,7 @@ namespace Cities.Gameplay.Utilities
         public const int PeoplePerHousehold = 3;
 
         private readonly Dictionary<int, (int Power, int Water, int Sewage, int Waste)> _nodes = new Dictionary<int, (int, int, int, int)>();
+        private readonly Dictionary<int, (float Power, float Water)> _baseDemand = new Dictionary<int, (float, float)>();
         private int _next;
 
         public CityUtilities()
@@ -87,11 +88,39 @@ namespace Cities.Gameplay.Utilities
         public int AddBuilding(float2 position, int households, int workplaces)
         {
             var people = (Math.Max(0, households) * PeoplePerHousehold) + Math.Max(0, workplaces);
-            return Register(
-                Power.Add(position, 0f, people * PowerPerPerson),
-                Water.Add(position, 0f, people * WaterPerPerson),
+            var handle = Register(
+                Power.Add(position, 0f, people * PowerPerPerson * PowerFactor),
+                Water.Add(position, 0f, people * WaterPerPerson * WaterFactor),
                 Sewage.Add(position, 0f, people * SewagePerPerson),
                 Waste.Add(position, 0f, people * WastePerPerson));
+            _baseDemand[handle] = (people * PowerPerPerson, people * WaterPerPerson);
+            return handle;
+        }
+
+        /// <summary>Huidige vraagfactor voor stroom (bijvoorbeeld hittegolf of winter), 1 is normaal.</summary>
+        public float PowerFactor { get; private set; } = 1f;
+
+        /// <summary>Huidige vraagfactor voor water, 1 is normaal.</summary>
+        public float WaterFactor { get; private set; } = 1f;
+
+        /// <summary>Past de vraag van alle aangesloten gebouwen aan; doet niets als de factoren niet veranderen.</summary>
+        public void SetDemandFactors(float power, float water)
+        {
+            power = Math.Max(0.1f, power);
+            water = Math.Max(0.1f, water);
+            if (Math.Abs(power - PowerFactor) < 0.0001f && Math.Abs(water - WaterFactor) < 0.0001f)
+            {
+                return;
+            }
+
+            PowerFactor = power;
+            WaterFactor = water;
+            foreach (var pair in _baseDemand)
+            {
+                var node = _nodes[pair.Key];
+                Power.Set(node.Power, 0f, pair.Value.Power * power);
+                Water.Set(node.Water, 0f, pair.Value.Water * water);
+            }
         }
 
         public int AddPlant(PlantKind kind, float2 position)
@@ -113,6 +142,7 @@ namespace Cities.Gameplay.Utilities
                 Sewage.Remove(n.Sewage);
                 Waste.Remove(n.Waste);
                 _nodes.Remove(handle);
+                _baseDemand.Remove(handle);
             }
         }
 

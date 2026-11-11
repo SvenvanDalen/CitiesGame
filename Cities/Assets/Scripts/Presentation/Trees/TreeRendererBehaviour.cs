@@ -28,6 +28,9 @@ namespace Cities.Presentation.Trees
 
         [SerializeField] private WorldMapHostBehaviour _world;
         [SerializeField] private TreeModelSet _models;
+
+        /// <summary>De boommodellen, voor het seizoenskleuren van het blad.</summary>
+        public TreeModelSet Models => _models;
         [SerializeField] private UnityEngine.Camera _camera;
 
         [Tooltip("Tot hier het volle model met schaduw.")]

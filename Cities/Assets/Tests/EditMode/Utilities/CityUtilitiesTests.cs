@@ -1,3 +1,4 @@
+using System.Linq;
 using Cities.Gameplay.Utilities;
 using NUnit.Framework;
 using Unity.Mathematics;
@@ -82,6 +83,26 @@ namespace Cities.Tests.EditMode.Utilities
             {
                 Assert.That(CityUtilities.CapacityOf(kind), Is.GreaterThan(0f));
             }
+        }
+
+        [Test]
+        public void DemandFactorsRaiseTheLoadAndComeBack()
+        {
+            var utilities = new CityUtilities();
+            var house = utilities.AddBuilding(new float2(0, 0), households: 4, workplaces: 0);
+            utilities.AddPlant(PlantKind.PowerPlant, new float2(10, 0));
+            var node = utilities.Power.Nodes.First();
+
+            utilities.SetDemandFactors(2f, 1.5f);
+            Assert.That(utilities.PowerFactor, Is.EqualTo(2f));
+            Assert.That(utilities.WaterFactor, Is.EqualTo(1.5f));
+            Assert.That(utilities.Power.Demand(utilities.Power.NetworkOf(node)), Is.EqualTo(12 * CityUtilities.PowerPerPerson * 2f).Within(0.01f));
+            utilities.SetDemandFactors(2f, 1.5f);
+            utilities.SetDemandFactors(1f, 1f);
+            Assert.That(utilities.Power.Demand(utilities.Power.NetworkOf(node)), Is.EqualTo(12 * CityUtilities.PowerPerPerson).Within(0.01f));
+            utilities.Remove(house);
+            utilities.SetDemandFactors(3f, 3f);
+            Assert.That(utilities.PowerFactor, Is.EqualTo(3f));
         }
     }
 }

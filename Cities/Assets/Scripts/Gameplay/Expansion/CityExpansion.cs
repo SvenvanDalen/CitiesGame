@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cities.Core.Persistence;
 using Cities.Core.Randomness;
 using Cities.Gameplay.Replay;
+using Cities.Gameplay.Scenarios;
 using Cities.Gameplay.UI;
 using Cities.Gameplay.Visuals;
 using Cities.Simulation.Disasters;
@@ -77,6 +78,18 @@ namespace Cities.Gameplay.Expansion
 
         public ToolHints Hints { get; }
 
+        /// <summary>Het standaarddoel "Eerste stad": zonder tijdslimiet en zonder straf, alleen een melding als het doel gehaald is.</summary>
+        public Scenario Goal { get; } = new Scenario(
+            "Eerste stad",
+            new[] { new ScenarioGoal("5.000 inwoners", "population", 5_000), new ScenarioGoal("Geen schuld", "debt", 0, atLeast: false, mustHold: false) },
+            int.MaxValue);
+
+        /// <summary>Toestand van <see cref="Goal"/> na de laatste dag.</summary>
+        public GoalState GoalState { get; private set; }
+
+        /// <summary>Waar zodra de toestand van het doel net veranderd is (voor één melding).</summary>
+        public bool GoalChanged { get; private set; }
+
         /// <summary>Snelheidsfactor voor het verkeer: 1, of lager door sneeuw als winter aan staat.</summary>
         public float TrafficGrip => Settings.Winter ? Winter.RoadGrip : 1f;
 
@@ -128,6 +141,15 @@ namespace Cities.Gameplay.Expansion
             {
                 Timelapse.Record(day, population, buildings);
             }
+        }
+
+        /// <summary>Beoordeelt het doel met de bank en inwoners; zet <see cref="GoalChanged"/> bij een nieuwe toestand.</summary>
+        public void EvaluateGoal(int day, int population, long balance)
+        {
+            var metrics = new Dictionary<string, double> { { "population", population }, { "debt", Math.Max(0L, -balance) } };
+            var state = Goal.Evaluate(day, metrics);
+            GoalChanged = state != GoalState;
+            GoalState = state;
         }
 
         private void AdvanceHeatwave(int day, int month, float temperature)

@@ -137,5 +137,28 @@ namespace Cities.Tests.EditMode.Expansion
             Assert.That(sections.Count, Is.EqualTo(3));
             Assert.That(other.Carbon.TotalEmitted, Is.EqualTo(expansion.Carbon.TotalEmitted).Within(1e-6));
         }
+
+        [Test]
+        public void GoalIsReachedOnceAndReportedOnce()
+        {
+            var expansion = new CityExpansion(9);
+            expansion.EvaluateGoal(1, 100, 5000);
+            Assert.That(expansion.GoalState, Is.EqualTo(Cities.Gameplay.Scenarios.GoalState.Open));
+            Assert.That(expansion.GoalChanged, Is.False);
+            expansion.EvaluateGoal(2, 6000, 5000);
+            Assert.That(expansion.GoalState, Is.EqualTo(Cities.Gameplay.Scenarios.GoalState.Reached));
+            Assert.That(expansion.GoalChanged, Is.True);
+            expansion.EvaluateGoal(3, 6000, 5000);
+            Assert.That(expansion.GoalChanged, Is.False);
+        }
+
+        [Test]
+        public void SeasonTintGoesFromBareToSummerToAutumn()
+        {
+            var summer = new Unity.Mathematics.float3(0.2f, 0.6f, 0.2f);
+            Assert.That(SeasonTint.Leaf(summer, 0f, 0f), Is.EqualTo(SeasonTint.Bare));
+            Assert.That(SeasonTint.Leaf(summer, 1f, 0f), Is.EqualTo(summer));
+            Assert.That(SeasonTint.Leaf(summer, 1f, 1f), Is.EqualTo(SeasonTint.Autumn));
+        }
     }
 }
