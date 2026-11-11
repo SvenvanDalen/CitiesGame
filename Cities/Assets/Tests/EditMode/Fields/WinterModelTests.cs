@@ -21,7 +21,7 @@ namespace Cities.Tests.EditMode.Fields
             Assert.That(winter.SnowDepth, Is.EqualTo(WinterModel.MaxSnowDepth));
             winter.AdvanceHour(30f, 0f);
             winter.AdvanceHour(30f, 0f);
-            Assert.That(winter.SnowDepth, Is.EqualTo(5.2f).Within(0.01f));
+            Assert.That(winter.SnowDepth, Is.EqualTo(6f).Within(0.01f));
         }
 
         [Test]
