@@ -31,6 +31,7 @@ namespace Cities.Gameplay.Economy
             Taxes = new TaxPolicy();
             Budget = new Budget();
             Loans = new Loans(Ledger, LoanLimit);
+            Cycle = new BusinessCycle(0UL);
         }
 
         public DifficultySettings Settings { get; }
@@ -42,6 +43,9 @@ namespace Cities.Gameplay.Economy
         public Budget Budget { get; }
 
         public Loans Loans { get; }
+
+        /// <summary>Optionele conjunctuur (E11-12); standaard uit.</summary>
+        public BusinessCycle Cycle { get; set; }
 
         public IReadOnlyList<ServiceStation> Stations => _stations;
 
@@ -75,21 +79,21 @@ namespace Cities.Gameplay.Economy
         public bool CanAfford(long cost) => Ledger.CanAfford(cost);
 
         /// <summary>Wat de stad deze week zou ophalen aan belasting.</summary>
-        public long WeeklyTaxIncome(CityPopulation population)
+        public long WeeklyTaxIncome(CityPopulation population, int week = 0)
         {
-            return Taxes.Revenue(TaxZone.Residential, TaxDensity.Low, population.Population * TaxableValuePerResident)
-                + Taxes.Revenue(TaxZone.Commercial, TaxDensity.Low, population.ShopCapacity * 7)
-                + Taxes.Revenue(TaxZone.Industrial, TaxDensity.Low, population.Jobs * TaxableValuePerJob / 2)
-                + Taxes.Revenue(TaxZone.Office, TaxDensity.Low, population.Jobs * TaxableValuePerJob / 2);
+            return Taxes.Revenue(TaxZone.Residential, TaxDensity.Low, Cycle.Scale(week, population.Population * TaxableValuePerResident))
+                + Taxes.Revenue(TaxZone.Commercial, TaxDensity.Low, Cycle.Scale(week, population.ShopCapacity * 7))
+                + Taxes.Revenue(TaxZone.Industrial, TaxDensity.Low, Cycle.Scale(week, population.Jobs * TaxableValuePerJob / 2))
+                + Taxes.Revenue(TaxZone.Office, TaxDensity.Low, Cycle.Scale(week, population.Jobs * TaxableValuePerJob / 2));
         }
 
         /// <summary>Sluit een spelweek af: belasting binnen, diensten en onderhoud betaald, lening doorgerekend.</summary>
         public void EndWeek(int week, CityPopulation population)
         {
-            Taxes.Collect(Ledger, week, TaxZone.Residential, TaxDensity.Low, population.Population * TaxableValuePerResident);
-            Taxes.Collect(Ledger, week, TaxZone.Commercial, TaxDensity.Low, population.ShopCapacity * 7);
-            Taxes.Collect(Ledger, week, TaxZone.Industrial, TaxDensity.Low, population.Jobs * TaxableValuePerJob / 2);
-            Taxes.Collect(Ledger, week, TaxZone.Office, TaxDensity.Low, population.Jobs * TaxableValuePerJob / 2);
+            Taxes.Collect(Ledger, week, TaxZone.Residential, TaxDensity.Low, Cycle.Scale(week, population.Population * TaxableValuePerResident));
+            Taxes.Collect(Ledger, week, TaxZone.Commercial, TaxDensity.Low, Cycle.Scale(week, population.ShopCapacity * 7));
+            Taxes.Collect(Ledger, week, TaxZone.Industrial, TaxDensity.Low, Cycle.Scale(week, population.Jobs * TaxableValuePerJob / 2));
+            Taxes.Collect(Ledger, week, TaxZone.Office, TaxDensity.Low, Cycle.Scale(week, population.Jobs * TaxableValuePerJob / 2));
             Budget.Pay(Ledger, week, _stations);
             var upkeep = BuildingCosts.WeeklyUpkeep(Settings.Cost(_upkeepPerMonth));
             if (upkeep > 0)

@@ -34,6 +34,28 @@ namespace Cities.Tests.EditMode.Traffic
         }
 
         [Test]
+        public void LowGripSlowsTheCars()
+        {
+            float Drive(float grip)
+            {
+                var traffic = new RoadTraffic(_network, 7) { Grip = grip };
+                traffic.Spawn();
+                var cars = new List<TrafficCar>();
+                traffic.Collect(cars);
+                var start = cars[0].Position;
+                for (var i = 0; i < 100; i++)
+                {
+                    traffic.Step(0.1f);
+                }
+
+                traffic.Collect(cars);
+                return cars.Count > 0 ? math.distance(cars[0].Position, start) : 0f;
+            }
+
+            Assert.That(Drive(0.3f), Is.LessThan(Drive(1f)));
+        }
+
+        [Test]
         public void CarsDriveAlongTheRoad()
         {
             var traffic = new RoadTraffic(_network, 7);
