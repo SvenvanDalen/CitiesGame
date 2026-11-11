@@ -90,6 +90,7 @@ namespace Cities.Editor.Build
             var carMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.8f, 0.85f), enableInstancing = true };
             Wire(traffic, ("_simulation", simulation), ("_network", network), ("_population", population), ("_mesh", carMesh), ("_material", carMaterial));
 
+            BuildVenues(simulation, population, economy);
             BuildExpansion(simulation, population, tools, traffic, save);
             QuietStart();
             var clockSettings = new SerializedObject(simulation).FindProperty("_settings.StartHour");
@@ -245,6 +246,66 @@ namespace Cities.Editor.Build
                 ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()));
         }
 
+        /// <summary>M8: plaatsbare voorzieningen (parken, campus, financieel, magazijn, haven, luchthaven, promenade, groen, vervoer, helikopter).</summary>
+        private static void BuildVenues(SimulationHostBehaviour simulation, Object population, Object economy)
+        {
+            var template = Object.FindAnyObjectByType<Cities.Gameplay.Tools.PrefabPlacementBehaviour>();
+            var toolbar = Object.FindAnyObjectByType<Cities.Presentation.Tools.ToolbarBehaviour>();
+            if (template == null)
+            {
+                return;
+            }
+
+            var host = new GameObject("Voorzieningen");
+            var venues = host.AddComponent<Cities.Gameplay.Expansion.VenuesHostBehaviour>();
+            var kinds = new (Cities.Gameplay.Expansion.VenueKind, string, int, Color, long)[]
+            {
+                (Cities.Gameplay.Expansion.VenueKind.Zoo, "Dierentuin", 6, new Color(0.5f, 0.75f, 0.35f), 200_000L),
+                (Cities.Gameplay.Expansion.VenueKind.ThemePark, "Pretpark", 8, new Color(0.95f, 0.5f, 0.6f), 400_000L),
+                (Cities.Gameplay.Expansion.VenueKind.NatureReserve, "Natuurreservaat", 8, new Color(0.15f, 0.55f, 0.3f), 100_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Faculty, "Faculteit", 4, new Color(0.45f, 0.45f, 0.8f), 250_000L),
+                (Cities.Gameplay.Expansion.VenueKind.SportsField, "Sportveld", 4, new Color(0.3f, 0.7f, 0.4f), 80_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Office, "Kantoor", 3, new Color(0.55f, 0.6f, 0.7f), 120_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Exchange, "Beurs", 4, new Color(0.7f, 0.6f, 0.3f), 300_000L),
+                (Cities.Gameplay.Expansion.VenueKind.ConferenceHotel, "Congreshotel", 4, new Color(0.3f, 0.45f, 0.8f), 250_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Warehouse, "Magazijn", 4, new Color(0.6f, 0.5f, 0.4f), 90_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Quay, "Kade", 3, new Color(0.35f, 0.4f, 0.5f), 150_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Crane, "Kraan", 2, new Color(0.9f, 0.7f, 0.2f), 100_000L),
+                (Cities.Gameplay.Expansion.VenueKind.FishingBoat, "Vissersboot", 2, new Color(0.3f, 0.55f, 0.75f), 40_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Terminal, "Terminal", 6, new Color(0.7f, 0.7f, 0.75f), 500_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Runway, "Landingsbaan", 10, new Color(0.25f, 0.25f, 0.28f), 600_000L),
+                (Cities.Gameplay.Expansion.VenueKind.CargoHall, "Vrachthal", 4, new Color(0.5f, 0.5f, 0.55f), 200_000L),
+                (Cities.Gameplay.Expansion.VenueKind.NoiseBarrier, "Geluidswal", 3, new Color(0.4f, 0.55f, 0.4f), 60_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Promenade, "Promenade", 4, new Color(0.85f, 0.8f, 0.6f), 70_000L),
+                (Cities.Gameplay.Expansion.VenueKind.WindFarm, "Windpark", 6, new Color(0.85f, 0.95f, 0.95f), 300_000L),
+                (Cities.Gameplay.Expansion.VenueKind.ChargeStation, "Laadpunt", 1, new Color(0.2f, 0.85f, 0.5f), 30_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Monorail, "Monorail", 3, new Color(0.6f, 0.4f, 0.8f), 400_000L),
+                (Cities.Gameplay.Expansion.VenueKind.CableCar, "Kabelbaan", 2, new Color(0.8f, 0.5f, 0.3f), 250_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Airship, "Luchtschip", 3, new Color(0.7f, 0.7f, 0.9f), 350_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Ferry, "Veerdienst", 2, new Color(0.25f, 0.5f, 0.8f), 120_000L),
+                (Cities.Gameplay.Expansion.VenueKind.Helicopter, "Helikopterplatform", 3, new Color(0.9f, 0.3f, 0.3f), 200_000L),
+            };
+            var placements = new Object[kinds.Length];
+            var so = new SerializedObject(venues);
+            var list = so.FindProperty("_placements");
+            list.arraySize = kinds.Length;
+            for (var i = 0; i < kinds.Length; i++)
+            {
+                placements[i] = MakePlacement(host, new SerializedObject(template), kinds[i].Item2, kinds[i].Item3, kinds[i].Item4, kinds[i].Item5);
+                list.GetArrayElementAtIndex(i).FindPropertyRelative("Kind").enumValueIndex = (int)kinds[i].Item1;
+                list.GetArrayElementAtIndex(i).FindPropertyRelative("Source").objectReferenceValue = placements[i];
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Wire(venues, ("_simulation", simulation), ("_population", population), ("_economy", economy),
+                ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()),
+                ("_atmosphere", Object.FindAnyObjectByType<Cities.Presentation.Atmosphere.AtmosphereBehaviour>()));
+            if (toolbar != null)
+            {
+                AppendPlacements(toolbar, placements);
+            }
+        }
+
         /// <summary>M8: seizoenen, ongevallen, winter, hittegolven, klimaat, hints en timelapse.</summary>
         private static void BuildExpansion(SimulationHostBehaviour simulation, Object population, Object tools, Object traffic, Object save)
         {
@@ -254,7 +315,8 @@ namespace Cities.Editor.Build
                 ("_atmosphere", Object.FindAnyObjectByType<Cities.Presentation.Atmosphere.AtmosphereBehaviour>()),
                 ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()), ("_tools", tools),
                 ("_utilities", Object.FindAnyObjectByType<Cities.Gameplay.Utilities.UtilitiesHostBehaviour>()),
-                ("_economy", Object.FindAnyObjectByType<Cities.Gameplay.Economy.EconomyHostBehaviour>()));
+                ("_economy", Object.FindAnyObjectByType<Cities.Gameplay.Economy.EconomyHostBehaviour>()),
+                ("_venues", Object.FindAnyObjectByType<Cities.Gameplay.Expansion.VenuesHostBehaviour>()));
             Wire(save, ("_expansion", host));
             var tint = new GameObject("Seizoenskleur").AddComponent<Cities.Presentation.Trees.SeasonTintBehaviour>();
             Wire(tint, ("_simulation", simulation), ("_expansion", host), ("_trees", Object.FindAnyObjectByType<Cities.Presentation.Trees.TreeRendererBehaviour>()));
