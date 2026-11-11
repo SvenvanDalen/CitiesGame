@@ -14,6 +14,12 @@ namespace Cities.Gameplay.Visuals
         Storm,
     }
 
+    /// <summary>Wie het huidige weer kent; de scène koppelt zo het weer aan de uitbreidingen zonder laagovertreding.</summary>
+    public interface IWeatherSource
+    {
+        WeatherKind CurrentWeather { get; }
+    }
+
     /// <summary>
     /// Het weer (E19-04): regen, mist, wind en onweer. De toestand wisselt na een aantal uur naar een nieuwe, gekozen met kansen per seizoen
     /// (<see cref="Weights"/>), uit de seed van de simulatie. Uit de toestand volgen zicht, regen, bewolking, windsnelheid, bliksemkans en

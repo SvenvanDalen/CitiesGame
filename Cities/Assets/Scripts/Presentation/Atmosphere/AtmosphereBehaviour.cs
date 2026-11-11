@@ -9,7 +9,7 @@ namespace Cities.Presentation.Atmosphere
     /// Dag en nacht, weer en omgevingsgeluid in de scene (E26-13): draait de zon en stuurt licht en mist met <see cref="CityAtmosphere"/>.
     /// Het omgevingsgeluid (stad, natuur, water, wind) is gesynthetiseerde ruis; er zijn nog geen opgenomen geluiden.
     /// </summary>
-    public sealed class AtmosphereBehaviour : MonoBehaviour
+    public sealed class AtmosphereBehaviour : MonoBehaviour, IWeatherSource
     {
         private const int ClipSeconds = 4;
         private const int SampleRate = 22050;
@@ -32,6 +32,8 @@ namespace Cities.Presentation.Atmosphere
         private long _lastTick;
 
         public CityAtmosphere Atmosphere => _atmosphere;
+
+        public WeatherKind CurrentWeather => _atmosphere != null ? _atmosphere.Weather.Kind : WeatherKind.Clear;
 
         private void Start()
         {

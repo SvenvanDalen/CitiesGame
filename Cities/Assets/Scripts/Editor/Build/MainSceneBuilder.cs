@@ -90,6 +90,7 @@ namespace Cities.Editor.Build
             var carMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.8f, 0.85f), enableInstancing = true };
             Wire(traffic, ("_simulation", simulation), ("_network", network), ("_population", population), ("_mesh", carMesh), ("_material", carMaterial));
 
+            BuildExpansion(simulation, population, tools, traffic, save);
             QuietStart();
             var clockSettings = new SerializedObject(simulation).FindProperty("_settings.StartHour");
             if (clockSettings != null)
@@ -242,6 +243,17 @@ namespace Cities.Editor.Build
                 ("_industry", Object.FindAnyObjectByType<Cities.Gameplay.Industry.IndustryHostBehaviour>()));
             Wire(save, ("_cityState", host), ("_policies", Object.FindAnyObjectByType<Cities.Gameplay.Policies.PolicyHostBehaviour>()),
                 ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()));
+        }
+
+        /// <summary>M8: seizoenen, ongevallen, winter, hittegolven, klimaat, hints en timelapse.</summary>
+        private static void BuildExpansion(SimulationHostBehaviour simulation, Object population, Object tools, Object traffic, Object save)
+        {
+            var host = new GameObject("Uitbreidingen").AddComponent<Cities.Gameplay.Expansion.ExpansionHostBehaviour>();
+            Wire(host, ("_simulation", simulation), ("_population", population),
+                ("_spawner", Object.FindAnyObjectByType<Cities.Gameplay.Zoning.BuildingSpawnerBehaviour>()), ("_traffic", traffic),
+                ("_atmosphere", Object.FindAnyObjectByType<Cities.Presentation.Atmosphere.AtmosphereBehaviour>()),
+                ("_events", Object.FindAnyObjectByType<Cities.Gameplay.Events.EventsHostBehaviour>()), ("_tools", tools));
+            Wire(save, ("_expansion", host));
         }
 
         /// <summary>E26-13: dag en nacht, weer en omgevingsgeluid.</summary>

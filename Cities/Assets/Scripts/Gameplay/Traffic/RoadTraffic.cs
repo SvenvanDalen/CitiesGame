@@ -62,6 +62,14 @@ namespace Cities.Gameplay.Traffic
 
         public int Count { get; private set; }
 
+        /// <summary>Optioneel (E08-15): ongelukken op drukke wegvakken. Een vak met ongeluk staat stil tot het is opgeruimd.</summary>
+        public AccidentModel Accidents { get; set; }
+
+        /// <summary>Optioneel (E25-01): factor op de rijsnelheid door sneeuw of nat wegdek, 1 is normaal.</summary>
+        public float Grip { get; set; } = 1f;
+
+        private ulong _step;
+
         /// <summary>Gemiddelde bezetting (0 tot 1) van de segmenten waarop voertuigen rijden.</summary>
         public float AverageOccupancy { get; private set; }
 
@@ -111,6 +119,10 @@ namespace Cities.Gameplay.Traffic
                 throw new ArgumentOutOfRangeException(nameof(dt));
             }
 
+            _step++;
+            var accidents = Accidents != null && Accidents.Enabled ? Accidents : null;
+            accidents?.Tick(dt);
+            dt *= Math.Max(0.1f, Math.Min(1f, Grip));
             _keys.Clear();
             foreach (var key in _lanes.Keys)
             {
@@ -139,6 +151,11 @@ namespace Cities.Gameplay.Traffic
 
                 var length = _network.GetSegment(segment).Length;
                 var blocked = LeaderWaitsAtEnd(lane, segment, forward, length);
+                if (accidents != null)
+                {
+                    blocked |= CheckAccident(accidents, segment, lane.Agents, length);
+                }
+
                 LaneTraffic.Step(lane.Agents, length, blocked, dt);
                 occupancy += Congestion.Occupancy(lane.Agents, length);
                 lanesWithCars++;
@@ -174,6 +191,20 @@ namespace Cities.Gameplay.Traffic
                     Enter(segment, forward, id, new VehicleAgent { Speed = 0f }, spawn: false);
                 }
             }
+        }
+
+        // Eens in de dertig seconden (300 stappen) een controle per drukke baan; het wegvak is geblokkeerd zolang er een ongeluk staat.
+        private bool CheckAccident(AccidentModel accidents, EntityId<SegmentKind> segment, List<VehicleAgent> agents, float length)
+        {
+            var key = segment.Packed;
+            if (_step % 300UL == (key % 300UL))
+            {
+                var road = _network.GetSegment(segment);
+                var mid = road.Curve.Position(0.5f);
+                accidents.Check(key, new float2(mid.x, mid.z), Congestion.Occupancy(agents, length), _step);
+            }
+
+            return accidents.IsBlocked(key);
         }
 
         /// <summary>De voertuigen met hun plek in de wereld.</summary>

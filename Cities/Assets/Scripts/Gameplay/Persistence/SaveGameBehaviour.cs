@@ -41,6 +41,9 @@ namespace Cities.Gameplay.Persistence
         [Tooltip("Rampen en mijlpalen (E26-14).")]
         [SerializeField] private Cities.Gameplay.Events.EventsHostBehaviour _events;
 
+        [Tooltip("Ongevallen, hittegolven en CO2 (M8).")]
+        [SerializeField] private Cities.Gameplay.Expansion.ExpansionHostBehaviour _expansion;
+
         [SerializeField] private string _cityName = "Nieuwe stad";
 
         [Tooltip("Naam van de save voor de contextmenu-opdrachten in de inspector.")]
@@ -113,6 +116,11 @@ namespace Cities.Gameplay.Persistence
             if (_events != null)
             {
                 sections.Add(new Cities.Simulation.Milestones.MilestoneSection(_events.Events.Milestones));
+            }
+
+            if (_expansion != null)
+            {
+                sections.AddRange(_expansion.Expansion.Sections());
             }
 
             var storage = new SaveStorage(_directory ?? SavesDirectory);
