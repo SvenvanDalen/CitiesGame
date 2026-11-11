@@ -1,8 +1,11 @@
+using Cities.Gameplay.Economy;
 using Cities.Gameplay.Events;
 using Cities.Gameplay.Population;
 using Cities.Gameplay.Statistics;
+using Cities.Gameplay.Scenarios;
 using Cities.Gameplay.Tools;
 using Cities.Gameplay.Traffic;
+using Cities.Gameplay.Utilities;
 using Cities.Gameplay.Visuals;
 using Cities.Gameplay.Zoning;
 using Cities.Simulation.Scheduling;
@@ -25,6 +28,8 @@ namespace Cities.Gameplay.Expansion
         [SerializeField] private MonoBehaviour _atmosphere;
         [SerializeField] private EventsHostBehaviour _events;
         [SerializeField] private ToolsBehaviour _tools;
+        [SerializeField] private UtilitiesHostBehaviour _utilities;
+        [SerializeField] private EconomyHostBehaviour _economy;
 
         [Header("Weergave (standaard aan)")]
         [SerializeField] private bool _seasons = true;
@@ -100,6 +105,20 @@ namespace Cities.Gameplay.Expansion
             if (_traffic != null && _traffic.Traffic != null)
             {
                 _traffic.Traffic.Grip = Expansion.TrafficGrip;
+            }
+
+            if (_utilities != null)
+            {
+                _utilities.Utilities.SetDemandFactors(Expansion.EnergyDemandFactor, Expansion.WaterDemandFactor);
+            }
+
+            if (_economy != null)
+            {
+                Expansion.EvaluateGoal(days, _population.Population.Population, _economy.Economy.Ledger.Balance);
+                if (Expansion.GoalChanged && Expansion.GoalState == GoalState.Reached && _events != null)
+                {
+                    _events.Events.Notifications.Post("goal", Severity.Info, "Doel gehaald: je eerste stad is een feit!", days * CityEvents.SecondsPerDay);
+                }
             }
 
             if (!wasHeatwave && Expansion.Heatwaves.Current != null && _events != null)
