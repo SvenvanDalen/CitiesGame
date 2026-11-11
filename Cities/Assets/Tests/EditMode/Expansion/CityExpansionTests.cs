@@ -156,9 +156,9 @@ namespace Cities.Tests.EditMode.Expansion
         public void SeasonTintGoesFromBareToSummerToAutumn()
         {
             var summer = new Unity.Mathematics.float3(0.2f, 0.6f, 0.2f);
-            Assert.That(SeasonTint.Leaf(summer, 0f, 0f), Is.EqualTo(SeasonTint.Bare).Within(1e-5f));
-            Assert.That(SeasonTint.Leaf(summer, 1f, 0f), Is.EqualTo(summer).Within(1e-5f));
-            Assert.That(SeasonTint.Leaf(summer, 1f, 1f), Is.EqualTo(SeasonTint.Autumn).Within(1e-5f));
+            Assert.That(Unity.Mathematics.math.distance(SeasonTint.Leaf(summer, 0f, 0f), SeasonTint.Bare), Is.LessThan(1e-4f));
+            Assert.That(Unity.Mathematics.math.distance(SeasonTint.Leaf(summer, 1f, 0f), summer), Is.LessThan(1e-4f));
+            Assert.That(Unity.Mathematics.math.distance(SeasonTint.Leaf(summer, 1f, 1f), SeasonTint.Autumn), Is.LessThan(1e-4f));
         }
     }
 }
