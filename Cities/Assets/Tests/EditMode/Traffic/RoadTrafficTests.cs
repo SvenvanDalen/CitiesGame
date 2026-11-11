@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Cities.Gameplay.Traffic;
 using Cities.Simulation.Network;
+using Cities.Simulation.Vehicles;
 using NUnit.Framework;
 using Unity.Mathematics;
 
@@ -91,6 +93,31 @@ namespace Cities.Tests.EditMode.Traffic
 
             Assert.That(traffic.Count, Is.EqualTo(spawned));
             Assert.That(traffic.AverageOccupancy, Is.InRange(0f, 1f));
+        }
+
+        [Test]
+        public void AccidentHookStaysQuietWhenOffAndBoundedWhenOn()
+        {
+            int Run(bool enabled, out AccidentModel model)
+            {
+                model = new AccidentModel(11) { Enabled = enabled };
+                var traffic = new RoadTraffic(_network, 3) { Accidents = model };
+                var seen = 0;
+                for (var i = 0; i < 3000; i++)
+                {
+                    traffic.Spawn();
+                    traffic.Step(0.2f);
+                    seen = Math.Max(seen, model.Active.Count);
+                }
+
+                Assert.That(traffic.Count, Is.GreaterThan(0));
+                return seen;
+            }
+
+            Assert.That(Run(false, out var off), Is.EqualTo(0));
+            Assert.That(off.Active.Count, Is.EqualTo(0));
+            Assert.That(Run(true, out var on), Is.LessThanOrEqualTo(AccidentModel.MaxActive));
+            Assert.That(on.Enabled, Is.True);
         }
 
         [Test]
